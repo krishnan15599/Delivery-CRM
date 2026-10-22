@@ -187,14 +187,14 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col',
+        'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col',
         className
       )}
     >
       {/* Bulk action toolbar when items are selected */}
       {selectable && currentSelectedKeys.length > 0 && (
-        <div className="bg-blue-50/80 px-5 py-2.5 border-b border-blue-100 flex items-center justify-between transition-all">
-          <span className="text-xs font-semibold text-[#1a5bc9]">
+        <div className="bg-indigo-50/80 px-5 py-2.5 border-b border-indigo-100 flex items-center justify-between transition-all">
+          <span className="text-xs font-semibold text-indigo-700">
             {currentSelectedKeys.length} {currentSelectedKeys.length === 1 ? 'item' : 'items'} selected
           </span>
           {bulkActions && <div className="flex items-center gap-2">{bulkActions}</div>}
@@ -203,8 +203,8 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* Table Container */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
-          <thead className="bg-gray-50/70 text-xs font-semibold uppercase text-gray-500 tracking-wider select-none border-b border-gray-100">
+        <table className="w-full text-left text-sm text-slate-600">
+          <thead className="bg-slate-50/70 text-xs font-semibold uppercase text-slate-500 tracking-wide select-none border-b border-slate-200">
             <tr>
               {selectable && (
                 <th className="w-12 px-4 py-3.5 text-center">
@@ -215,7 +215,7 @@ export function DataTable<T extends Record<string, any>>({
                       if (el) el.indeterminate = isSomeSelected;
                     }}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded text-[#2c5fbf] border-gray-300 focus:ring-[#2c5fbf] cursor-pointer"
+                    className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-600 cursor-pointer"
                   />
                 </th>
               )}
@@ -233,9 +233,9 @@ export function DataTable<T extends Record<string, any>>({
                     key={col.key}
                     style={{ width: col.width }}
                     className={cn(
-                      'px-5 py-3.5 font-semibold',
+                      'px-5 py-3.5 font-semibold text-slate-500',
                       alignClass,
-                      col.sortable ? 'cursor-pointer hover:bg-gray-100/70 transition-colors' : '',
+                      col.sortable ? 'cursor-pointer hover:bg-slate-100/70 transition-colors' : '',
                       col.className
                     )}
                     onClick={() => col.sortable && handleSort(col.key)}
@@ -252,12 +252,12 @@ export function DataTable<T extends Record<string, any>>({
                     >
                       <span>{col.header}</span>
                       {col.sortable && (
-                        <span className="text-gray-400">
+                        <span className="text-slate-400">
                           {currentSortCol === col.key ? (
                             currentSortDir === 'asc' ? (
-                              <ArrowUp className="w-3.5 h-3.5 text-[#2c5fbf]" />
+                              <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
                             ) : (
-                              <ArrowDown className="w-3.5 h-3.5 text-[#2c5fbf]" />
+                              <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
                             )
                           ) : (
                             <ArrowUpDown className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export function DataTable<T extends Record<string, any>>({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-200">
             {sortedData.length > 0 ? (
               sortedData.map((row, rowIdx) => {
                 const id = getRowId(row);
@@ -283,7 +283,7 @@ export function DataTable<T extends Record<string, any>>({
                     onClick={() => onRowClick?.(row)}
                     className={cn(
                       'transition-colors',
-                      isSelected ? 'bg-blue-50/40 hover:bg-blue-50/60' : 'hover:bg-gray-50/60',
+                      isSelected ? 'bg-indigo-50/40 hover:bg-indigo-50/60' : 'hover:bg-slate-50/70',
                       onRowClick ? 'cursor-pointer' : ''
                     )}
                   >
@@ -296,7 +296,7 @@ export function DataTable<T extends Record<string, any>>({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => {}} // handled by click
-                          className="w-4 h-4 rounded text-[#2c5fbf] border-gray-300 focus:ring-[#2c5fbf] cursor-pointer"
+                          className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-600 cursor-pointer"
                         />
                       </td>
                     )}
@@ -312,7 +312,7 @@ export function DataTable<T extends Record<string, any>>({
                       return (
                         <td
                           key={col.key}
-                          className={cn('px-5 py-3.5 text-gray-700', alignClass, col.className)}
+                          className={cn('px-5 py-3.5 text-slate-700', alignClass, col.className)}
                         >
                           {col.render ? col.render(row, rowIdx) : row[col.key]}
                         </td>

@@ -30,8 +30,8 @@ export const Card = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden transition-all',
-        hoverable ? 'hover:shadow-md hover:border-gray-200' : '',
+        'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all',
+        hoverable ? 'hover:shadow-md hover:border-slate-300' : '',
         className
       )}
       {...props}
@@ -39,30 +39,30 @@ export const Card = ({
       {hasHeader && (
         <div
           className={cn(
-            'px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4',
+            'px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-4',
             headerClassName
           )}
         >
           <div>
             {title && (
-              <h3 className="text-base font-semibold text-gray-900 leading-snug">
+              <h3 className="text-lg font-semibold text-slate-900 leading-snug">
                 {title}
               </h3>
             )}
             {subtitle && (
-              <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+              <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
             )}
           </div>
           {action && <div className="flex items-center gap-2 shrink-0">{action}</div>}
         </div>
       )}
 
-      <div className={cn('p-6', bodyClassName)}>{children}</div>
+      <div className={cn('p-5', bodyClassName)}>{children}</div>
 
       {footer && (
         <div
           className={cn(
-            'px-6 py-3 bg-gray-50/70 border-t border-gray-100 text-xs text-gray-500',
+            'px-5 py-3 bg-slate-50/70 border-t border-slate-200 text-xs text-slate-500',
             footerClassName
           )}
         >

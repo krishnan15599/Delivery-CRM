@@ -14,7 +14,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   return (
     <div
       className={cn(
-        'animate-pulse bg-gray-200/80',
+        'animate-pulse bg-slate-200/80',
         circle ? 'rounded-full' : 'rounded-md',
         className
       )}
@@ -35,13 +35,13 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
   className = '',
 }) => {
   return (
-    <div className={cn('w-full border border-gray-100 rounded-xl overflow-hidden bg-white', className)}>
-      <div className="bg-gray-50/70 p-4 border-b border-gray-100 flex items-center justify-between gap-4">
+    <div className={cn('w-full border border-slate-200 rounded-xl overflow-hidden bg-white', className)}>
+      <div className="bg-slate-50/70 p-4 border-b border-slate-200 flex items-center justify-between gap-4">
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1 max-w-[120px]" />
         ))}
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-slate-200">
         {Array.from({ length: rows }).map((_, r) => (
           <div key={r} className="p-4 flex items-center justify-between gap-4">
             {Array.from({ length: columns }).map((_, c) => (
@@ -63,7 +63,7 @@ export interface SkeletonCardProps {
 
 export const SkeletonCard: React.FC<SkeletonCardProps> = ({ className = '' }) => {
   return (
-    <div className={cn('bg-white p-5 rounded-xl border border-gray-100 shadow-sm', className)}>
+    <div className={cn('bg-white p-5 rounded-xl border border-slate-200 shadow-sm', className)}>
       <div className="flex items-center justify-between mb-4">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="h-9 w-9 rounded-xl" />

@@ -22,7 +22,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const renderIcon = () => {
     if (!icon) {
       return (
-        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-3">
+        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
           <PackageOpen className="w-6 h-6" />
         </div>
       );
@@ -32,7 +32,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     }
     const IconComp = icon as React.ComponentType<{ className?: string }>;
     return (
-      <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#2c5fbf] mb-3">
+      <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-3">
         <IconComp className="w-6 h-6" />
       </div>
     );
@@ -46,9 +46,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
     >
       {renderIcon()}
-      <h3 className="text-base font-semibold text-gray-900 mb-1">{title}</h3>
+      <h3 className="text-base font-semibold text-slate-900 mb-1">{title}</h3>
       {description && (
-        <p className="text-xs text-gray-500 mb-5 max-w-sm leading-relaxed">
+        <p className="text-sm text-slate-500 mb-5 max-w-sm leading-relaxed">
           {description}
         </p>
       )}

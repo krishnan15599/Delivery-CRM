@@ -40,7 +40,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <div className={cn('mb-6 flex flex-col gap-2', className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center space-x-1.5 text-xs text-gray-500 mb-1">
+        <nav className="flex items-center space-x-1.5 text-xs text-slate-500 mb-1">
           {breadcrumbs.map((crumb, idx) => {
             const isLast = idx === breadcrumbs.length - 1;
             return (
@@ -48,17 +48,17 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 {crumb.path && !isLast ? (
                   <Link
                     to={crumb.path}
-                    className="hover:text-[#2c5fbf] transition-colors"
+                    className="hover:text-indigo-600 transition-colors"
                   >
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span className={isLast ? 'font-medium text-gray-800' : ''}>
+                  <span className={isLast ? 'font-medium text-slate-800' : ''}>
                     {crumb.label}
                   </span>
                 )}
                 {!isLast && (
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
               </React.Fragment>
             );
@@ -72,18 +72,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <button
               onClick={handleBack}
               type="button"
-              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
               aria-label="Go back"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-none">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-sm text-gray-500 mt-1.5">{subtitle}</p>
+              <p className="text-sm text-slate-500 mt-1.5">{subtitle}</p>
             )}
           </div>
         </div>

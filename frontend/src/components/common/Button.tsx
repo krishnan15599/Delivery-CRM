@@ -29,12 +29,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 select-none disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer';
 
     const variants = {
-      primary: 'bg-[#2c5fbf] hover:bg-[#224ca0] active:bg-[#1a3d82] text-white focus:ring-[#2c5fbf]/40 shadow-sm',
-      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 focus:ring-gray-300',
-      outline: 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-blue-200',
-      ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-200',
-      danger: 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-300 shadow-sm',
-      success: 'bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-300 shadow-sm',
+      primary: 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white focus:ring-indigo-500/40 shadow-sm',
+      secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-300',
+      outline: 'border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 focus:ring-indigo-200',
+      ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-200',
+      danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 shadow-sm',
+      success: 'bg-green-600 hover:bg-green-700 text-white focus:ring-green-300 shadow-sm',
     };
 
     const sizes = {
