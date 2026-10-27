@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { supabase } = require('./config/supabase');
+const customerRoutes = require('./routes/customerRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,13 +21,35 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'Not Configured';
+  let customerCount = 0;
+
+  if (supabase) {
+    try {
+      const { count, error } = await supabase.from('customers').select('*', { count: 'exact', head: true });
+      if (error) {
+        dbStatus = `Error: ${error.message}`;
+      } else {
+        dbStatus = 'Connected';
+        customerCount = count;
+      }
+    } catch (err) {
+      dbStatus = `Error: ${err.message}`;
+    }
+  }
+
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    supabaseConfigured: Boolean(supabase)
+    supabaseConfigured: Boolean(supabase),
+    databaseStatus: dbStatus,
+    sampleCount: customerCount
   });
 });
+
+// API Routes
+app.use('/api/customers', customerRoutes);
 
 // Start Server
 app.listen(PORT, () => {
