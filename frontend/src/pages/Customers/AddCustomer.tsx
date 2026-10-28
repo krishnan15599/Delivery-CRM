@@ -73,8 +73,10 @@ export const AddCustomer: React.FC = () => {
       const created = await customerService.createCustomer(formData);
       toast.success(`Customer "${created.name}" created successfully!`);
       navigate('/customers');
-    } catch {
-      toast.error('Failed to create customer. Please check your data.');
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || 'Failed to create customer. Please check your data.';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

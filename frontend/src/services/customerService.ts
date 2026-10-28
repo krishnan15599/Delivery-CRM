@@ -1,14 +1,43 @@
 import { mockStorage, delay } from './mockStorage';
 import type {
   Customer,
+  BackendCustomer,
   CreateCustomerInput,
   UpdateCustomerInput,
   CustomerFilter,
 } from '../types/customer';
 import type { Delivery } from '../types/delivery';
-import type { PaginatedResponse } from '../types/common';
+import type { PaginatedResponse, ApiResponse } from '../types/common';
+import api from './api';
+import { API_ENDPOINTS } from '../constants/endpoints';
+
+/**
+ * Type-safe mapper from Backend DB schema to Frontend Customer model
+ */
+const mapBackendCustomer = (c: BackendCustomer): Customer => ({
+  id: c.id,
+  name: c.name,
+  email: c.email,
+  phone: c.phone,
+  address: c.address,
+  city: c.city ?? undefined,
+  state: c.state ?? undefined,
+  pincode: c.pincode ?? undefined,
+  totalOrders: c.total_orders ?? 0,
+  totalSpent: c.total_spent ?? 0,
+  status: c.status ?? 'Active',
+  createdAt: c.created_at,
+  updatedAt: c.updated_at,
+});
 
 export const customerService = {
+  async getAllCustomers(): Promise<Customer[]> {
+    const response = await api.get<ApiResponse<BackendCustomer[]>>(
+      API_ENDPOINTS.CUSTOMERS.BASE
+    );
+    const list = response.data.data || [];
+    return list.map(mapBackendCustomer);
+  },
   async getCustomers(filter: CustomerFilter = {}): Promise<PaginatedResponse<Customer>> {
     await delay(250);
     let items = mockStorage.getCustomers();
@@ -57,23 +86,11 @@ export const customerService = {
   },
 
   async createCustomer(input: CreateCustomerInput): Promise<Customer> {
-    await delay(350);
-    const customers = mockStorage.getCustomers();
-    const newId = `CUST-${String(customers.length + 1).padStart(3, '0')}`;
-    const now = new Date().toISOString().split('T')[0];
-
-    const newCustomer: Customer = {
-      id: newId,
-      ...input,
-      totalOrders: 0,
-      totalSpent: 0,
-      status: 'Active',
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    mockStorage.setCustomers([newCustomer, ...customers]);
-    return newCustomer;
+    const response = await api.post<ApiResponse<BackendCustomer>>(
+      API_ENDPOINTS.CUSTOMERS.BASE,
+      input
+    );
+    return mapBackendCustomer(response.data.data);
   },
 
   async updateCustomer(id: string, input: UpdateCustomerInput): Promise<Customer> {

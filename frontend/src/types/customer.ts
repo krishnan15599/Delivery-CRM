@@ -16,6 +16,25 @@ export interface Customer {
   updatedAt: string | Date;
 }
 
+/**
+ * Raw customer schema as returned by the Backend API / Database
+ */
+export interface BackendCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  total_orders?: number;
+  total_spent?: number;
+  status?: CustomerStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateCustomerInput {
   name: string;
   email: string;
