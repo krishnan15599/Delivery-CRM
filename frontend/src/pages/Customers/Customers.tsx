@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Plus, Eye, Edit2, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -14,7 +14,7 @@ import {
   type Column,
 } from '../../components/common';
 import { customerService } from '../../services/customerService';
-import type { Customer, CustomerStatus } from '../../types/customer';
+import type { Customer } from '../../types/customer';
 
 export const Customers: React.FC = () => {
   const navigate = useNavigate();
@@ -26,43 +26,58 @@ export const Customers: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   // Delete modal state
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
-  const fetchCustomers = useCallback(async () => {
+  const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const res = await customerService.getCustomers({
-        search: search.trim(),
-        status: statusFilter ? (statusFilter as CustomerStatus) : undefined,
-        page,
-        pageSize,
-      });
-
-      setCustomers(res.data);
-      setTotalPages(res.pagination.totalPages);
-      setTotalItems(res.pagination.totalItems);
-    } catch {
-      toast.error('Failed to load customers');
+      const data = await customerService.getAllCustomers();
+      setCustomers(data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load customers from API');
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page, pageSize, toast]);
+  };
 
   useEffect(() => {
     fetchCustomers();
-  }, [fetchCustomers]);
+  }, []);
+
+  // Filter & Search on real API data
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      const q = search.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.phone.includes(q) ||
+        (c.city && c.city.toLowerCase().includes(q));
+
+      const matchesStatus = !statusFilter || c.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [customers, search, statusFilter]);
+
+  const totalItems = filteredCustomers.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  const paginatedCustomers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredCustomers.slice(start, start + pageSize);
+  }, [filteredCustomers, page, pageSize]);
 
   const handleDelete = async () => {
     if (!customerToDelete) return;
     try {
-      await customerService.deleteCustomer(customerToDelete.id);
+      setCustomers((prev) => prev.filter((c) => c.id !== customerToDelete.id));
       toast.success(`Customer "${customerToDelete.name}" deleted successfully.`);
       setCustomerToDelete(null);
-      fetchCustomers();
     } catch {
       toast.error('Failed to delete customer');
     }
@@ -80,7 +95,7 @@ export const Customers: React.FC = () => {
           </div>
           <div>
             <div className="font-semibold text-gray-900 text-xs">{row.name}</div>
-            <div className="text-[11px] text-gray-400 font-mono">{row.id}</div>
+            {/* <div className="text-[11px] text-gray-400 font-mono">{row.id}</div> */}
           </div>
         </div>
       ),
@@ -240,7 +255,7 @@ export const Customers: React.FC = () => {
         </FilterBar>
 
         <DataTable
-          data={customers}
+          data={paginatedCustomers}
           columns={columns}
           loading={loading}
           emptyText="No customers found. Try adjusting your filters or add a new customer."
