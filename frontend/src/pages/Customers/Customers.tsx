@@ -7,7 +7,6 @@ import {
   SearchBar,
   FilterBar,
   Button,
-  Select,
   StatusBadge,
   ConfirmDialog,
   useToast,
@@ -23,7 +22,6 @@ export const Customers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -47,22 +45,19 @@ export const Customers: React.FC = () => {
     fetchCustomers();
   }, []);
 
-  // Filter & Search on real API data
+  // Search on real API data
   const filteredCustomers = useMemo(() => {
     return customers.filter((c) => {
       const q = search.trim().toLowerCase();
-      const matchesSearch =
+      return (
         !q ||
         c.name.toLowerCase().includes(q) ||
         c.email.toLowerCase().includes(q) ||
         c.phone.includes(q) ||
-        (c.city && c.city.toLowerCase().includes(q));
-
-      const matchesStatus = !statusFilter || c.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+        (c.city && c.city.toLowerCase().includes(q))
+      );
     });
-  }, [customers, search, statusFilter]);
+  }, [customers, search]);
 
   const totalItems = filteredCustomers.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
@@ -218,16 +213,13 @@ export const Customers: React.FC = () => {
           totalResults={totalItems}
           onClearAll={() => {
             setSearch('');
-            setStatusFilter('');
             setPage(1);
           }}
           activeFilters={[
             ...(search ? [{ id: 'search', label: 'Search', value: search }] : []),
-            ...(statusFilter ? [{ id: 'status', label: 'Status', value: statusFilter }] : []),
           ]}
           onRemoveFilter={(id) => {
             if (id === 'search') setSearch('');
-            if (id === 'status') setStatusFilter('');
           }}
         >
           <SearchBar
@@ -238,19 +230,6 @@ export const Customers: React.FC = () => {
             }}
             placeholder="Search by name, email, phone, city..."
             className="max-w-xs"
-          />
-          <Select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-36 text-xs"
-            options={[
-              { value: '', label: 'All Statuses' },
-              { value: 'Active', label: 'Active' },
-              { value: 'Inactive', label: 'Inactive' },
-            ]}
           />
         </FilterBar>
 
