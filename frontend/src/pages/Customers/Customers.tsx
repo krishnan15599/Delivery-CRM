@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Eye, Edit2, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,9 +19,8 @@ import type { Customer } from '../../types/customer';
 export const Customers: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -28,22 +28,22 @@ export const Customers: React.FC = () => {
   // Delete modal state
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
-  const fetchCustomers = async () => {
-    try {
-      setLoading(true);
-      const data = await customerService.getAllCustomers();
-      setCustomers(data);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load customers from API');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 🚀 TanStack Query: Replaces manual useEffect, useState, loading, error handling!
+  const {
+    data: customers = [],
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['customers'],
+    queryFn: customerService.getAllCustomers,
+  });
 
   useEffect(() => {
-    fetchCustomers();
-  }, []);
+    if (isError) {
+      toast.error((error as Error)?.message || 'Failed to load customers from API');
+    }
+  }, [isError, error, toast]);
 
   // Search on real API data
   const filteredCustomers = useMemo(() => {
@@ -70,7 +70,9 @@ export const Customers: React.FC = () => {
   const handleDelete = async () => {
     if (!customerToDelete) return;
     try {
-      setCustomers((prev) => prev.filter((c) => c.id !== customerToDelete.id));
+      queryClient.setQueryData<Customer[]>(['customers'], (prev = []) =>
+        prev.filter((c) => c.id !== customerToDelete.id)
+      );
       toast.success(`Customer "${customerToDelete.name}" deleted successfully.`);
       setCustomerToDelete(null);
     } catch {

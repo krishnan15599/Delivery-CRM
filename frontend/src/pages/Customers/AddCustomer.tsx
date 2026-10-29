@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Save, ArrowLeft } from 'lucide-react';
 import {
   PageHeader,
@@ -15,6 +16,7 @@ import type { CreateCustomerInput } from '../../types/customer';
 export const AddCustomer: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const queryClient = useQueryClient();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateCustomerInput>({
@@ -71,6 +73,7 @@ export const AddCustomer: React.FC = () => {
     try {
       setIsSubmitting(true);
       const created = await customerService.createCustomer(formData);
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success(`Customer "${created.name}" created successfully!`);
       navigate('/customers');
     } catch (err: any) {
