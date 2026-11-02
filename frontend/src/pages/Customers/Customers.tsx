@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Eye, Edit2, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -7,62 +8,73 @@ import {
   SearchBar,
   FilterBar,
   Button,
-  Select,
   StatusBadge,
   ConfirmDialog,
   useToast,
   type Column,
 } from '../../components/common';
 import { customerService } from '../../services/customerService';
-import type { Customer, CustomerStatus } from '../../types/customer';
+import type { Customer } from '../../types/customer';
 
 export const Customers: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   // Delete modal state
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
-  const fetchCustomers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await customerService.getCustomers({
-        search: search.trim(),
-        status: statusFilter ? (statusFilter as CustomerStatus) : undefined,
-        page,
-        pageSize,
-      });
-
-      setCustomers(res.data);
-      setTotalPages(res.pagination.totalPages);
-      setTotalItems(res.pagination.totalItems);
-    } catch {
-      toast.error('Failed to load customers');
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusFilter, page, pageSize, toast]);
+  // 🚀 TanStack Query: Replaces manual useEffect, useState, loading, error handling!
+  const {
+    data: customers = [],
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['customers'],
+    queryFn: customerService.getAllCustomers,
+  });
 
   useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+    if (isError) {
+      toast.error((error as Error)?.message || 'Failed to load customers from API');
+    }
+  }, [isError, error, toast]);
+
+  // Search on real API data
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      const q = search.trim().toLowerCase();
+      return (
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.phone.includes(q) ||
+        (c.city && c.city.toLowerCase().includes(q))
+      );
+    });
+  }, [customers, search]);
+
+  const totalItems = filteredCustomers.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  const paginatedCustomers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredCustomers.slice(start, start + pageSize);
+  }, [filteredCustomers, page, pageSize]);
 
   const handleDelete = async () => {
     if (!customerToDelete) return;
     try {
-      await customerService.deleteCustomer(customerToDelete.id);
+      queryClient.setQueryData<Customer[]>(['customers'], (prev = []) =>
+        prev.filter((c) => c.id !== customerToDelete.id)
+      );
       toast.success(`Customer "${customerToDelete.name}" deleted successfully.`);
       setCustomerToDelete(null);
-      fetchCustomers();
     } catch {
       toast.error('Failed to delete customer');
     }
@@ -80,7 +92,7 @@ export const Customers: React.FC = () => {
           </div>
           <div>
             <div className="font-semibold text-gray-900 text-xs">{row.name}</div>
-            <div className="text-[11px] text-gray-400 font-mono">{row.id}</div>
+            {/* <div className="text-[11px] text-gray-400 font-mono">{row.id}</div> */}
           </div>
         </div>
       ),
@@ -203,16 +215,13 @@ export const Customers: React.FC = () => {
           totalResults={totalItems}
           onClearAll={() => {
             setSearch('');
-            setStatusFilter('');
             setPage(1);
           }}
           activeFilters={[
             ...(search ? [{ id: 'search', label: 'Search', value: search }] : []),
-            ...(statusFilter ? [{ id: 'status', label: 'Status', value: statusFilter }] : []),
           ]}
           onRemoveFilter={(id) => {
             if (id === 'search') setSearch('');
-            if (id === 'status') setStatusFilter('');
           }}
         >
           <SearchBar
@@ -224,23 +233,10 @@ export const Customers: React.FC = () => {
             placeholder="Search by name, email, phone, city..."
             className="max-w-xs"
           />
-          <Select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-36 text-xs"
-            options={[
-              { value: '', label: 'All Statuses' },
-              { value: 'Active', label: 'Active' },
-              { value: 'Inactive', label: 'Inactive' },
-            ]}
-          />
         </FilterBar>
 
         <DataTable
-          data={customers}
+          data={paginatedCustomers}
           columns={columns}
           loading={loading}
           emptyText="No customers found. Try adjusting your filters or add a new customer."
