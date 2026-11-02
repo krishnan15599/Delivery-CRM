@@ -1,9 +1,13 @@
+import api from './api';
 import type { User, UserRole, LoginResponse } from '../types/auth';
 
 const TOKEN_KEY = 'delivery_crm_auth_token';
-const REFRESH_TOKEN_KEY = 'delivery_crm_refresh_token';
 const USER_KEY = 'delivery_crm_auth_user';
 
+// ---------------------------------------------------------------------------
+// DEMO_USERS is kept for AuthContext's default-state initialisation only.
+// It is NOT used to generate tokens — login() always calls the backend.
+// ---------------------------------------------------------------------------
 export const DEMO_USERS: Record<UserRole, User> = {
   Admin: {
     id: 'USR-001',
@@ -33,8 +37,9 @@ export const authService = {
     return localStorage.getItem(TOKEN_KEY);
   },
 
+  /** Kept for API compat with older callers; no separate refresh token is used. */
   getStoredRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return null;
   },
 
   getStoredUser(): User | null {
@@ -47,59 +52,57 @@ export const authService = {
     }
   },
 
-  async login(email: string, _password?: string): Promise<LoginResponse> {
-    // Artificial latency
-    await new Promise((res) => setTimeout(res, 300));
+  /**
+   * Authenticates against POST /api/auth/login.
+   * Stores the backend-issued JWT so every subsequent API call is authenticated.
+   *
+   * Throws on network error, 401 (bad credentials), or 503 (DB down).
+   */
+  async login(email: string, password?: string): Promise<LoginResponse> {
+    const { data: body } = await api.post<{
+      success: boolean;
+      data: { user: User; token: string; expiresIn: number };
+    }>('/auth/login', { email, password: password ?? '' });
 
-    // Determine user by email or default to Admin
-    let user: User = DEMO_USERS.Admin;
-    const lowerEmail = email.toLowerCase().trim();
-
-    if (lowerEmail.includes('manager')) {
-      user = DEMO_USERS.Manager;
-    } else if (lowerEmail.includes('agent')) {
-      user = DEMO_USERS.Agent;
-    } else if (lowerEmail.includes('admin')) {
-      user = DEMO_USERS.Admin;
-    }
-
-    const token = `jwt_mock_${user.role.toLowerCase()}_${Date.now()}`;
-    const refreshToken = `jwt_mock_refresh_${Date.now()}`;
+    const { user, token, expiresIn } = body.data;
 
     localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
 
     return {
       user,
       token,
-      refreshToken,
-      expiresIn: 3600,
+      // Backend doesn't issue a separate refresh token yet
+      refreshToken: '',
+      expiresIn,
     };
   },
 
+  /**
+   * Re-uses the stored token (no server round-trip).
+   * When Supabase Auth is adopted this becomes supabase.auth.refreshSession().
+   */
   async refreshToken(): Promise<string> {
-    await new Promise((res) => setTimeout(res, 200));
-    const current = this.getStoredRefreshToken();
-    if (!current) throw new Error('No refresh token available');
-
-    const currentUser = this.getStoredUser() || DEMO_USERS.Admin;
-    const newToken = `jwt_mock_${currentUser.role.toLowerCase()}_${Date.now()}`;
-    localStorage.setItem(TOKEN_KEY, newToken);
-    return newToken;
+    const current = this.getStoredToken();
+    if (!current) throw new Error('No token available. Please log in again.');
+    return current;
   },
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
   },
 
+  /**
+   * Updates the locally-stored user record and re-stores it so the UI reflects
+   * the new role immediately (dev/demo only — the backend still owns the real role).
+   *
+   * TODO: once Supabase Auth is in place, issue a profile update instead.
+   */
   switchRole(role: UserRole): User {
-    const user = DEMO_USERS[role];
-    const token = `jwt_mock_${role.toLowerCase()}_${Date.now()}`;
-    localStorage.setItem(TOKEN_KEY, token);
+    const user: User = { ...(this.getStoredUser() ?? DEMO_USERS[role]), role };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    // No token change — the backend will enforce the real role from the JWT.
     return user;
   },
 };
