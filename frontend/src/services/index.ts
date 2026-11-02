@@ -5,3 +5,6 @@ export * from './agentService';
 export * from './collectionService';
 export * from './chatService';
 export * from './reportService';
+export * from './authService';
+export * from './profileService';
+

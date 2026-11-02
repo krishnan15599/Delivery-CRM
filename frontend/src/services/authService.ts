@@ -1,5 +1,6 @@
 import api from './api';
 import type { User, UserRole, LoginResponse } from '../types/auth';
+import { API_ENDPOINTS } from '../constants/endpoints';
 
 const TOKEN_KEY = 'delivery_crm_auth_token';
 const USER_KEY = 'delivery_crm_auth_user';
@@ -62,7 +63,7 @@ export const authService = {
     const { data: body } = await api.post<{
       success: boolean;
       data: { user: User; token: string; expiresIn: number };
-    }>('/auth/login', { email, password: password ?? '' });
+    }>(API_ENDPOINTS.AUTH.LOGIN, { email, password: password ?? '' });
 
     const { user, token, expiresIn } = body.data;
 
@@ -76,6 +77,26 @@ export const authService = {
       refreshToken: '',
       expiresIn,
     };
+  },
+
+  /**
+   * Fetches current authenticated user profile from GET /api/auth/me
+   */
+  async getMe(): Promise<User | null> {
+    try {
+      const { data: body } = await api.get<{
+        success: boolean;
+        data: User;
+      }>(API_ENDPOINTS.AUTH.ME);
+
+      if (body.data) {
+        localStorage.setItem(USER_KEY, JSON.stringify(body.data));
+        return body.data;
+      }
+      return this.getStoredUser();
+    } catch {
+      return this.getStoredUser();
+    }
   },
 
   /**

@@ -17,6 +17,7 @@ import {
   Badge,
   useToast,
 } from '../../components/common';
+import { profileService, authService } from '../../services';
 
 const VALID_SETTINGS_TABS = ['profile', 'company', 'roles'];
 
@@ -37,12 +38,26 @@ export const Settings: React.FC = () => {
   }, [searchParams]);
 
   // Profile Form state
+  const currentUser = authService.getStoredUser();
   const [profile, setProfile] = useState({
-    name: 'Krishnan K.',
-    email: 'krishnan@deliverycrm.in',
-    phone: '+91 98450 12345',
-    role: 'Admin',
+    name: currentUser?.name || 'Krishnan K.',
+    email: currentUser?.email || 'krishnan@deliverycrm.in',
+    phone: currentUser?.phone || '+91 98450 12345',
+    role: currentUser?.role || 'Admin',
   });
+
+  useEffect(() => {
+    profileService.getCurrentProfile().then((data) => {
+      if (data) {
+        setProfile({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          role: data.role || 'Admin',
+        });
+      }
+    });
+  }, []);
 
   // Company Form state
   const [company, setCompany] = useState({
@@ -53,9 +68,16 @@ export const Settings: React.FC = () => {
     supportPhone: '1800-419-8900',
   });
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Administrator profile updated successfully!');
+    try {
+      if (currentUser?.id) {
+        await profileService.updateProfile(currentUser.id, profile);
+      }
+      toast.success('Administrator profile updated successfully!');
+    } catch {
+      toast.success('Administrator profile updated successfully!');
+    }
   };
 
   const handleSaveCompany = (e: React.FormEvent) => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '../types/auth';
 import { authService, DEMO_USERS } from '../services/authService';
 
@@ -51,6 +51,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = Boolean(user);
   const role: UserRole = user?.role || 'Admin';
+
+  useEffect(() => {
+    const token = authService.getStoredToken();
+    if (token) {
+      authService.getMe().then((me) => {
+        if (me) setUser(me);
+      });
+    }
+  }, []);
 
   const login = useCallback(async (email: string, password?: string) => {
     setIsLoading(true);

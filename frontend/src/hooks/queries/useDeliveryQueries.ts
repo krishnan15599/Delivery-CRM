@@ -8,6 +8,7 @@ export const deliveryKeys = {
   list: (filter: DeliveryFilter) => [...deliveryKeys.lists(), filter] as const,
   details: () => [...deliveryKeys.all, 'detail'] as const,
   detail: (id: string) => [...deliveryKeys.details(), id] as const,
+  tracking: (trackingNumber: string) => [...deliveryKeys.all, 'tracking', trackingNumber] as const,
 };
 
 export const useDeliveries = (filter: DeliveryFilter = {}) => {
@@ -23,6 +24,14 @@ export const useDelivery = (id?: string) => {
     queryKey: deliveryKeys.detail(id || ''),
     queryFn: () => (id ? deliveryService.getDeliveryById(id) : null),
     enabled: Boolean(id),
+  });
+};
+
+export const useDeliveryByTracking = (trackingNumber?: string) => {
+  return useQuery({
+    queryKey: deliveryKeys.tracking(trackingNumber || ''),
+    queryFn: () => (trackingNumber ? deliveryService.getDeliveryByTracking(trackingNumber) : null),
+    enabled: Boolean(trackingNumber),
   });
 };
 
@@ -84,3 +93,16 @@ export const useBulkAssignDeliveries = () => {
     },
   });
 };
+
+export const useDeleteDelivery = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deliveryService.deleteDelivery(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    },
+  });
+};
+

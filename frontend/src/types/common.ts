@@ -15,6 +15,13 @@ export interface ApiResponse<T> {
   data: T;
   count?: number;
   message?: string;
+  meta?: { total?: number };
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface DateRangeFilter {

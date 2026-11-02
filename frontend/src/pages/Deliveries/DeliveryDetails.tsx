@@ -118,7 +118,8 @@ export const DeliveryDetails: React.FC = () => {
     if (!id || !selectedAgentId) return;
     try {
       setIsReassigning(true);
-      const [updated] = await deliveryService.bulkAssignDeliveries([id], selectedAgentId);
+      await deliveryService.bulkAssignDeliveries([id], selectedAgentId);
+      const updated = await deliveryService.getDeliveryById(id);
       if (updated) setDelivery(updated);
       toast.success('Agent reassigned successfully!');
       setIsAssignModalOpen(false);
