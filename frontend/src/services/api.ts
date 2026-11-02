@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://delivery-crm-7fl4.onrender.com/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -22,6 +22,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('delivery_crm_auth_token');
+      localStorage.removeItem('delivery_crm_auth_user');
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }

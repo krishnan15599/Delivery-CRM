@@ -70,6 +70,7 @@ export const Customers: React.FC = () => {
   const handleDelete = async () => {
     if (!customerToDelete) return;
     try {
+      await customerService.deleteCustomer(customerToDelete.id);
       queryClient.setQueryData<Customer[]>(['customers'], (prev = []) =>
         prev.filter((c) => c.id !== customerToDelete.id)
       );

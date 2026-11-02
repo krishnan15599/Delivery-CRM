@@ -1,378 +1,502 @@
 import { mockStorage, delay } from './mockStorage';
 import type {
   Delivery,
+  BackendDelivery,
   CreateDeliveryInput,
   UpdateDeliveryInput,
   DeliveryFilter,
   DeliveryStatus,
 } from '../types/delivery';
-import type { PaginatedResponse } from '../types/common';
+import type { PaginatedResponse, ApiResponse } from '../types/common';
+import api from './api';
+import { API_ENDPOINTS } from '../constants/endpoints';
+
+/**
+ * Maps DB raw delivery payload to frontend Delivery model
+ */
+export const mapBackendDelivery = (d: BackendDelivery | any): Delivery => ({
+  id: d.id,
+  trackingNumber: d.tracking_number || d.trackingNumber || '',
+  customerName: d.customer_name || d.customerName || '',
+  customerId: d.customer_id || d.customerId || undefined,
+  customerPhone: d.customer_phone || d.customerPhone || undefined,
+  pickupAddress: d.pickup_address || d.pickupAddress || '',
+  deliveryAddress: d.delivery_address || d.deliveryAddress || '',
+  city: d.city ?? undefined,
+  pincode: d.pincode ?? undefined,
+  packageType: d.package_type || d.packageType || 'Standard',
+  itemDescription: d.item_description || d.itemDescription || undefined,
+  amount: Number(d.amount ?? 0),
+  codAmount: Number(d.cod_amount ?? d.codAmount ?? d.amount ?? 0),
+  agentId: d.agent_id || d.agentId || undefined,
+  agentName: d.agent_name || d.agentName || undefined,
+  agentPhone: d.agent_phone || d.agentPhone || undefined,
+  status: d.status || 'Pending',
+  paymentStatus: d.payment_status || d.paymentStatus || 'Pending',
+  timeline: Array.isArray(d.timeline)
+    ? d.timeline.map((evt: any) => ({
+        status: evt.status,
+        timestamp: evt.timestamp || new Date().toISOString(),
+        note: evt.note,
+        updatedBy: evt.updatedBy || evt.updated_by,
+      }))
+    : [],
+  notes: d.notes ?? undefined,
+  date: d.date || d.created_at || new Date().toISOString(),
+  scheduledDate: d.scheduled_date || d.scheduledDate || undefined,
+  createdAt: d.created_at ?? undefined,
+  updatedAt: d.updated_at ?? undefined,
+});
 
 export const deliveryService = {
+  /**
+   * Fetch paginated and filtered deliveries
+   */
   async getDeliveries(filter: DeliveryFilter = {}): Promise<PaginatedResponse<Delivery>> {
-    await delay(300);
-    let items = mockStorage.getDeliveries();
-
-    if (filter.search) {
-      const q = filter.search.toLowerCase().trim();
-      items = items.filter(
-        (d) =>
-          d.trackingNumber.toLowerCase().includes(q) ||
-          d.customerName.toLowerCase().includes(q) ||
-          (d.agentName && d.agentName.toLowerCase().includes(q)) ||
-          d.deliveryAddress.toLowerCase().includes(q) ||
-          (d.city && d.city.toLowerCase().includes(q))
+    try {
+      const response = await api.get<ApiResponse<BackendDelivery[]>>(
+        API_ENDPOINTS.DELIVERIES.BASE,
+        { params: filter }
       );
-    }
+      const list = (response.data.data || []).map(mapBackendDelivery);
+      const pagination = response.data.pagination;
 
-    if (filter.status && filter.status !== 'all') {
-      if (filter.status.toLowerCase() === 'unassigned') {
-        items = items.filter((d) => !d.agentId || d.status === 'Pending');
-      } else {
-        items = items.filter((d) => d.status.toLowerCase() === filter.status?.toLowerCase());
-      }
-    }
-
-    if (filter.agentId) {
-      items = items.filter((d) => d.agentId === filter.agentId);
-    }
-
-    if (filter.customerId) {
-      items = items.filter((d) => d.customerId === filter.customerId);
-    }
-
-    if (filter.startDate) {
-      items = items.filter((d) => String(d.date) >= (filter.startDate as string));
-    }
-
-    if (filter.endDate) {
-      items = items.filter((d) => String(d.date) <= (filter.endDate as string));
-    }
-
-    const page = filter.page || 1;
-    const pageSize = filter.pageSize || 10;
-    const totalItems = items.length;
-    const totalPages = Math.ceil(totalItems / pageSize) || 1;
-    const paginatedData = items.slice((page - 1) * pageSize, page * pageSize);
-
-    return {
-      data: paginatedData,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalItems,
-        pageSize,
-      },
-    };
-  },
-
-  async getDeliveryById(id: string): Promise<Delivery | null> {
-    await delay(200);
-    const deliveries = mockStorage.getDeliveries();
-    const item = deliveries.find((d) => d.id === id || d.trackingNumber === id);
-    return item || null;
-  },
-
-  async createDelivery(input: CreateDeliveryInput): Promise<Delivery> {
-    await delay(350);
-    const deliveries = mockStorage.getDeliveries();
-    const agents = mockStorage.getAgents();
-
-    const newId = `DEL-${9000 + deliveries.length + 1}`;
-    const trackingNumber = `TRK-${9000 + deliveries.length + 1}`;
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    let agentName: string | undefined;
-    let agentPhone: string | undefined;
-    if (input.agentId) {
-      const agent = agents.find((a) => a.id === input.agentId);
-      if (agent) {
-        agentName = agent.name;
-        agentPhone = agent.phone;
-      }
-    }
-
-    const initialStatus: DeliveryStatus = input.agentId ? 'Assigned' : 'Pending';
-
-    const newDelivery: Delivery = {
-      id: newId,
-      trackingNumber,
-      customerName: input.customerName,
-      customerId: input.customerId,
-      customerPhone: input.customerPhone,
-      pickupAddress: input.pickupAddress,
-      deliveryAddress: input.deliveryAddress,
-      city: input.city,
-      pincode: input.pincode,
-      packageType: input.packageType,
-      itemDescription: input.itemDescription,
-      amount: input.amount,
-      codAmount: input.codAmount ?? input.amount,
-      agentId: input.agentId,
-      agentName,
-      agentPhone,
-      status: initialStatus,
-      paymentStatus: input.paymentStatus || 'pending',
-      date: dateStr,
-      scheduledDate: dateStr,
-      notes: input.notes,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-      timeline: [
-        {
-          status: 'Pending',
-          timestamp: `${dateStr} ${timeStr}`,
-          note: 'Delivery order created',
-          updatedBy: 'Admin',
+      return {
+        data: list,
+        pagination: {
+          currentPage: pagination?.page || filter.page || 1,
+          totalPages: pagination?.totalPages || 1,
+          totalItems: pagination?.total ?? response.data.meta?.total ?? list.length,
+          pageSize: pagination?.pageSize || filter.pageSize || list.length,
         },
-        ...(input.agentId
-          ? [
-              {
-                status: 'Assigned' as DeliveryStatus,
-                timestamp: `${dateStr} ${timeStr}`,
-                note: `Assigned to ${agentName}`,
-                updatedBy: 'Dispatcher',
-              },
-            ]
-          : []),
-      ],
-    };
+      };
+    } catch (error) {
+      console.warn('Backend API unavailable, falling back to mock storage for getDeliveries:', error);
+      await delay(300);
+      let items = mockStorage.getDeliveries();
 
-    mockStorage.setDeliveries([newDelivery, ...deliveries]);
-
-    // Create pending collection if COD order
-    if (newDelivery.codAmount && newDelivery.codAmount > 0) {
-      const collections = mockStorage.getCollections();
-      collections.unshift({
-        id: `COL-${Date.now()}`,
-        deliveryId: newDelivery.id,
-        trackingNumber: newDelivery.trackingNumber,
-        customerName: newDelivery.customerName,
-        agentId: newDelivery.agentId || '',
-        agentName: newDelivery.agentName || 'Unassigned',
-        amount: newDelivery.codAmount,
-        status: 'Pending',
-        paymentMode: 'Cash',
-        createdAt: now.toISOString(),
-        notes: `Pending COD for ${newDelivery.trackingNumber}`,
-      });
-      mockStorage.setCollections(collections);
-    }
-
-    // Increment agent's assigned deliveries
-    if (newDelivery.agentId) {
-      const allAgents = mockStorage.getAgents();
-      const agIndex = allAgents.findIndex((a) => a.id === newDelivery.agentId);
-      if (agIndex !== -1) {
-        allAgents[agIndex].assignedDeliveriesCount =
-          (allAgents[agIndex].assignedDeliveriesCount || 0) + 1;
-        mockStorage.setAgents(allAgents);
+      if (filter.search) {
+        const q = filter.search.toLowerCase().trim();
+        items = items.filter(
+          (d) =>
+            d.trackingNumber.toLowerCase().includes(q) ||
+            d.customerName.toLowerCase().includes(q) ||
+            (d.agentName && d.agentName.toLowerCase().includes(q)) ||
+            d.deliveryAddress.toLowerCase().includes(q) ||
+            (d.city && d.city.toLowerCase().includes(q))
+        );
       }
-    }
 
-    // Increment customer's total orders
-    if (newDelivery.customerId) {
-      const allCustomers = mockStorage.getCustomers();
-      const cuIndex = allCustomers.findIndex((c) => c.id === newDelivery.customerId);
-      if (cuIndex !== -1) {
-        allCustomers[cuIndex].totalOrders = (allCustomers[cuIndex].totalOrders || 0) + 1;
-        mockStorage.setCustomers(allCustomers);
+      if (filter.status && filter.status !== 'all') {
+        if (filter.status.toLowerCase() === 'unassigned') {
+          items = items.filter((d) => !d.agentId || d.status === 'Pending');
+        } else {
+          items = items.filter((d) => d.status.toLowerCase() === filter.status?.toLowerCase());
+        }
       }
-    }
 
-    return newDelivery;
+      if (filter.agentId) {
+        items = items.filter((d) => d.agentId === filter.agentId);
+      }
+
+      if (filter.customerId) {
+        items = items.filter((d) => d.customerId === filter.customerId);
+      }
+
+      if (filter.startDate) {
+        items = items.filter((d) => String(d.date) >= (filter.startDate as string));
+      }
+
+      if (filter.endDate) {
+        items = items.filter((d) => String(d.date) <= (filter.endDate as string));
+      }
+
+      const page = filter.page || 1;
+      const pageSize = filter.pageSize || 10;
+      const totalItems = items.length;
+      const totalPages = Math.ceil(totalItems / pageSize) || 1;
+      const paginatedData = items.slice((page - 1) * pageSize, page * pageSize);
+
+      return {
+        data: paginatedData,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems,
+          pageSize,
+        },
+      };
+    }
   },
 
+  /**
+   * Fetch single delivery by ID
+   */
+  async getDeliveryById(id: string): Promise<Delivery | null> {
+    try {
+      const response = await api.get<ApiResponse<BackendDelivery>>(
+        API_ENDPOINTS.DELIVERIES.BY_ID(id)
+      );
+      return response.data.data ? mapBackendDelivery(response.data.data) : null;
+    } catch (error) {
+      console.warn(`Backend API unavailable, falling back to mock storage for getDeliveryById(${id}):`, error);
+      await delay(200);
+      const deliveries = mockStorage.getDeliveries();
+      const item = deliveries.find((d) => d.id === id || d.trackingNumber === id);
+      return item || null;
+    }
+  },
+
+  /**
+   * Fetch single delivery by tracking number
+   */
+  async getDeliveryByTracking(trackingNumber: string): Promise<Delivery | null> {
+    try {
+      const response = await api.get<ApiResponse<BackendDelivery>>(
+        API_ENDPOINTS.DELIVERIES.TRACKING(trackingNumber)
+      );
+      return response.data.data ? mapBackendDelivery(response.data.data) : null;
+    } catch (error) {
+      console.warn(`Backend API unavailable, falling back to mock storage for getDeliveryByTracking(${trackingNumber}):`, error);
+      await delay(200);
+      const deliveries = mockStorage.getDeliveries();
+      const item = deliveries.find((d) => d.trackingNumber === trackingNumber);
+      return item || null;
+    }
+  },
+
+  /**
+   * Create new delivery
+   */
+  async createDelivery(input: CreateDeliveryInput): Promise<Delivery> {
+    try {
+      const response = await api.post<ApiResponse<BackendDelivery>>(
+        API_ENDPOINTS.DELIVERIES.BASE,
+        input
+      );
+      return mapBackendDelivery(response.data.data);
+    } catch (error) {
+      console.warn('Backend API unavailable, falling back to mock storage for createDelivery:', error);
+      await delay(350);
+      const deliveries = mockStorage.getDeliveries();
+      const agents = mockStorage.getAgents();
+
+      const newId = `DEL-${9000 + deliveries.length + 1}`;
+      const trackingNumber = `TRK-${9000 + deliveries.length + 1}`;
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      let agentName: string | undefined;
+      let agentPhone: string | undefined;
+      if (input.agentId) {
+        const agent = agents.find((a) => a.id === input.agentId);
+        if (agent) {
+          agentName = agent.name;
+          agentPhone = agent.phone;
+        }
+      }
+
+      const initialStatus: DeliveryStatus = input.agentId ? 'Assigned' : 'Pending';
+
+      const newDelivery: Delivery = {
+        id: newId,
+        trackingNumber,
+        customerName: input.customerName,
+        customerId: input.customerId,
+        customerPhone: input.customerPhone,
+        pickupAddress: input.pickupAddress,
+        deliveryAddress: input.deliveryAddress,
+        city: input.city || 'Bengaluru',
+        pincode: input.pincode,
+        packageType: input.packageType,
+        itemDescription: input.itemDescription,
+        amount: input.amount,
+        codAmount: input.codAmount ?? input.amount,
+        agentId: input.agentId,
+        agentName,
+        agentPhone,
+        status: initialStatus,
+        paymentStatus: input.paymentStatus || (input.codAmount ? 'pending' : 'paid'),
+        timeline: [
+          {
+            status: 'Pending',
+            timestamp: `${dateStr} ${timeStr}`,
+            note: 'Delivery order created',
+          },
+          ...(input.agentId
+            ? [
+                {
+                  status: 'Assigned' as DeliveryStatus,
+                  timestamp: `${dateStr} ${timeStr}`,
+                  note: `Assigned to ${agentName}`,
+                },
+              ]
+            : []),
+        ],
+        notes: input.notes,
+        date: dateStr,
+      };
+
+      mockStorage.setDeliveries([newDelivery, ...deliveries]);
+
+      if ((newDelivery.paymentStatus === 'Pending' || newDelivery.paymentStatus === 'pending') && (newDelivery.codAmount || 0) > 0) {
+        const collections = mockStorage.getCollections();
+        collections.unshift({
+          id: `COL-${3000 + collections.length + 1}`,
+          deliveryId: newDelivery.id,
+          trackingNumber: newDelivery.trackingNumber,
+          customerName: newDelivery.customerName,
+          agentId: newDelivery.agentId || '',
+          agentName: newDelivery.agentName || '',
+          amount: newDelivery.codAmount || 0,
+          paymentMode: 'Cash',
+          status: 'Pending',
+          createdAt: dateStr,
+        });
+        mockStorage.setCollections(collections);
+      }
+
+      if (input.agentId) {
+        const allAgents = mockStorage.getAgents();
+        const agIdx = allAgents.findIndex((a) => a.id === input.agentId);
+        if (agIdx !== -1) {
+          allAgents[agIdx].assignedDeliveriesCount += 1;
+          mockStorage.setAgents(allAgents);
+        }
+      }
+
+      if (input.customerId) {
+        const allCustomers = mockStorage.getCustomers();
+        const cIdx = allCustomers.findIndex((c) => c.id === input.customerId);
+        if (cIdx !== -1) {
+          allCustomers[cIdx].totalOrders = (allCustomers[cIdx].totalOrders || 0) + 1;
+          mockStorage.setCustomers(allCustomers);
+        }
+      }
+
+      return newDelivery;
+    }
+  },
+
+  /**
+   * Update delivery metadata
+   */
   async updateDelivery(id: string, input: UpdateDeliveryInput): Promise<Delivery> {
-    await delay(300);
-    const deliveries = mockStorage.getDeliveries();
-    const index = deliveries.findIndex((d) => d.id === id);
-    if (index === -1) {
-      throw new Error(`Delivery with ID ${id} not found`);
+    try {
+      const response = await api.put<ApiResponse<BackendDelivery>>(
+        API_ENDPOINTS.DELIVERIES.BY_ID(id),
+        input
+      );
+      return mapBackendDelivery(response.data.data);
+    } catch (error) {
+      console.warn(`Backend API unavailable, falling back to mock storage for updateDelivery(${id}):`, error);
+      await delay(300);
+      const deliveries = mockStorage.getDeliveries();
+      const index = deliveries.findIndex((d) => d.id === id);
+      if (index === -1) {
+        throw new Error(`Delivery with ID ${id} not found`);
+      }
+
+      const updatedDelivery: Delivery = {
+        ...deliveries[index],
+        ...input,
+        updatedAt: new Date().toISOString().split('T')[0],
+      };
+
+      deliveries[index] = updatedDelivery;
+      mockStorage.setDeliveries(deliveries);
+      return updatedDelivery;
     }
-
-    const current = deliveries[index];
-    const updatedDelivery: Delivery = {
-      ...current,
-      ...input,
-      updatedAt: new Date().toISOString(),
-    };
-
-    deliveries[index] = updatedDelivery;
-    mockStorage.setDeliveries(deliveries);
-    return updatedDelivery;
   },
 
+  /**
+   * Update delivery status (transitions state and records timeline)
+   */
   async updateDeliveryStatus(
     id: string,
     status: DeliveryStatus,
     note?: string
   ): Promise<Delivery> {
-    await delay(300);
-    const deliveries = mockStorage.getDeliveries();
-    const index = deliveries.findIndex((d) => d.id === id);
-    if (index === -1) {
-      throw new Error(`Delivery with ID ${id} not found`);
-    }
+    try {
+      const response = await api.patch<ApiResponse<BackendDelivery>>(
+        API_ENDPOINTS.DELIVERIES.STATUS(id),
+        { status, note }
+      );
+      return mapBackendDelivery(response.data.data);
+    } catch (error) {
+      console.warn(`Backend API unavailable, falling back to mock storage for updateDeliveryStatus(${id}):`, error);
+      await delay(300);
+      const deliveries = mockStorage.getDeliveries();
+      const index = deliveries.findIndex((d) => d.id === id);
+      if (index === -1) {
+        throw new Error(`Delivery with ID ${id} not found`);
+      }
 
-    const current = deliveries[index];
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const current = deliveries[index];
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-    const newTimelineEvent = {
-      status,
-      timestamp: `${dateStr} ${timeStr}`,
-      note: note || `Status updated to ${status}`,
-      updatedBy: 'System',
-    };
+      const newTimeline = [
+        ...current.timeline,
+        {
+          status,
+          timestamp: `${dateStr} ${timeStr}`,
+          note: note || `Status updated to ${status}`,
+        },
+      ];
 
-    const isPaid = status === 'Delivered' ? ('paid' as const) : current.paymentStatus;
+      const updatedDelivery: Delivery = {
+        ...current,
+        status,
+        timeline: newTimeline,
+        updatedAt: dateStr,
+      };
 
-    const updatedDelivery: Delivery = {
-      ...current,
-      status,
-      paymentStatus: isPaid,
-      timeline: [...current.timeline, newTimelineEvent],
-      updatedAt: now.toISOString(),
-    };
+      if (status === 'Delivered' && (updatedDelivery.codAmount || 0) > 0) {
+        updatedDelivery.paymentStatus = 'paid';
+      }
 
-    deliveries[index] = updatedDelivery;
-    mockStorage.setDeliveries(deliveries);
+      deliveries[index] = updatedDelivery;
+      mockStorage.setDeliveries(deliveries);
 
-    // If marked delivered and COD exists, update collections and agent pending cash
-    const codAmt = updatedDelivery.codAmount || (updatedDelivery.paymentStatus === 'pending' ? updatedDelivery.amount : 0);
-
-    if (status === 'Delivered') {
-      if (codAmt > 0) {
+      if (status === 'Delivered' && (updatedDelivery.codAmount || 0) > 0) {
         const collections = mockStorage.getCollections();
-        const colIndex = collections.findIndex((c) => c.deliveryId === id);
-        if (colIndex !== -1) {
-          collections[colIndex].status = 'Collected';
-          collections[colIndex].collectedAt = now.toISOString();
-          if (updatedDelivery.agentId) {
-            collections[colIndex].agentId = updatedDelivery.agentId;
-            collections[colIndex].agentName = updatedDelivery.agentName || collections[colIndex].agentName;
-          }
+        const colIdx = collections.findIndex((c) => c.deliveryId === id);
+        if (colIdx !== -1) {
+          collections[colIdx].status = 'Collected';
+          collections[colIdx].collectedAt = `${dateStr} ${timeStr}`;
         } else {
-          // Create collection record
           collections.unshift({
-            id: `COL-${Date.now()}`,
+            id: `COL-${3000 + collections.length + 1}`,
             deliveryId: updatedDelivery.id,
             trackingNumber: updatedDelivery.trackingNumber,
             customerName: updatedDelivery.customerName,
             agentId: updatedDelivery.agentId || '',
-            agentName: updatedDelivery.agentName || 'Assigned Agent',
-            amount: codAmt,
-            status: 'Collected',
+            agentName: updatedDelivery.agentName || '',
+            amount: updatedDelivery.codAmount || 0,
             paymentMode: 'Cash',
-            collectedAt: now.toISOString(),
-            createdAt: now.toISOString(),
-            notes: `COD collected on delivery (${updatedDelivery.trackingNumber})`,
+            status: 'Collected',
+            createdAt: dateStr,
+            collectedAt: `${dateStr} ${timeStr}`,
           });
         }
         mockStorage.setCollections(collections);
-      }
 
-      // Update Agent performance stats & unsettled cash
-      if (updatedDelivery.agentId) {
+        if (updatedDelivery.agentId) {
+          const allAgents = mockStorage.getAgents();
+          const agIdx = allAgents.findIndex((a) => a.id === updatedDelivery.agentId);
+          if (agIdx !== -1) {
+            allAgents[agIdx].completedDeliveriesCount += 1;
+            allAgents[agIdx].pendingCashAmount += updatedDelivery.codAmount || 0;
+            mockStorage.setAgents(allAgents);
+          }
+        }
+
+        if (updatedDelivery.customerId) {
+          const allCustomers = mockStorage.getCustomers();
+          const cIdx = allCustomers.findIndex((c) => c.id === updatedDelivery.customerId);
+          if (cIdx !== -1) {
+            allCustomers[cIdx].totalSpent =
+              (allCustomers[cIdx].totalSpent || 0) + (updatedDelivery.amount || 0);
+            mockStorage.setCustomers(allCustomers);
+          }
+        }
+      } else if (status === 'Failed' && updatedDelivery.agentId) {
         const allAgents = mockStorage.getAgents();
-        const agIndex = allAgents.findIndex((a) => a.id === updatedDelivery.agentId);
-        if (agIndex !== -1) {
-          allAgents[agIndex].pendingCashAmount = (allAgents[agIndex].pendingCashAmount || 0) + codAmt;
-          allAgents[agIndex].completedDeliveriesCount = (allAgents[agIndex].completedDeliveriesCount || 0) + 1;
-          allAgents[agIndex].assignedDeliveriesCount = Math.max(0, (allAgents[agIndex].assignedDeliveriesCount || 1) - 1);
+        const agIdx = allAgents.findIndex((a) => a.id === updatedDelivery.agentId);
+        if (agIdx !== -1) {
+          allAgents[agIdx].failedDeliveriesCount += 1;
           mockStorage.setAgents(allAgents);
         }
       }
 
-      // Update customer total spent
-      if (updatedDelivery.customerId) {
-        const allCustomers = mockStorage.getCustomers();
-        const cuIndex = allCustomers.findIndex((c) => c.id === updatedDelivery.customerId);
-        if (cuIndex !== -1) {
-          allCustomers[cuIndex].totalSpent = (allCustomers[cuIndex].totalSpent || 0) + updatedDelivery.amount;
-          mockStorage.setCustomers(allCustomers);
-        }
-      }
-    } else if (status === 'Failed' || status === 'Returned') {
-      if (updatedDelivery.agentId) {
-        const allAgents = mockStorage.getAgents();
-        const agIndex = allAgents.findIndex((a) => a.id === updatedDelivery.agentId);
-        if (agIndex !== -1) {
-          allAgents[agIndex].failedDeliveriesCount = (allAgents[agIndex].failedDeliveriesCount || 0) + 1;
-          allAgents[agIndex].assignedDeliveriesCount = Math.max(0, (allAgents[agIndex].assignedDeliveriesCount || 1) - 1);
-          mockStorage.setAgents(allAgents);
-        }
-      }
+      return updatedDelivery;
     }
-
-    return updatedDelivery;
   },
 
-  async bulkAssignDeliveries(deliveryIds: string[], agentId: string): Promise<Delivery[]> {
-    await delay(400);
-    const deliveries = mockStorage.getDeliveries();
-    const agents = mockStorage.getAgents();
-    const agent = agents.find((a) => a.id === agentId);
-    if (!agent) {
-      throw new Error(`Agent with ID ${agentId} not found`);
-    }
+  /**
+   * Bulk assign deliveries to an agent
+   */
+  async bulkAssignDeliveries(
+    deliveryIds: string[],
+    agentId: string
+  ): Promise<{ assignedCount: number; agentName?: string }> {
+    try {
+      const response = await api.post<ApiResponse<{ assignedCount: number; agentName?: string }>>(
+        API_ENDPOINTS.DELIVERIES.BULK_ASSIGN,
+        { deliveryIds, agentId }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.warn('Backend API unavailable, falling back to mock storage for bulkAssignDeliveries:', error);
+      await delay(350);
+      const deliveries = mockStorage.getDeliveries();
+      const agents = mockStorage.getAgents();
+      const targetAgent = agents.find((a) => a.id === agentId);
 
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    const updatedItems: Delivery[] = [];
-
-    const newDeliveries = deliveries.map((d) => {
-      if (deliveryIds.includes(d.id)) {
-        const nextStatus: DeliveryStatus = d.status === 'Pending' ? 'Assigned' : d.status;
-        const updated: Delivery = {
-          ...d,
-          agentId: agent.id,
-          agentName: agent.name,
-          agentPhone: agent.phone,
-          status: nextStatus,
-          timeline: [
-            ...d.timeline,
-            {
-              status: 'Assigned',
-              timestamp: `${dateStr} ${timeStr}`,
-              note: `Bulk assigned to ${agent.name}`,
-              updatedBy: 'Dispatcher',
-            },
-          ],
-          updatedAt: now.toISOString(),
-        };
-        updatedItems.push(updated);
-        return updated;
+      if (!targetAgent) {
+        throw new Error(`Agent with ID ${agentId} not found`);
       }
-      return d;
-    });
 
-    mockStorage.setDeliveries(newDeliveries);
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-    // Update agent's assigned deliveries count
-    const agentIndex = agents.findIndex((a) => a.id === agentId);
-    if (agentIndex !== -1) {
-      agents[agentIndex].assignedDeliveriesCount =
-        (agents[agentIndex].assignedDeliveriesCount || 0) + updatedItems.length;
-      mockStorage.setAgents(agents);
+      let count = 0;
+      const newDeliveries = deliveries.map((d) => {
+        if (deliveryIds.includes(d.id)) {
+          count++;
+          return {
+            ...d,
+            agentId: targetAgent.id,
+            agentName: targetAgent.name,
+            agentPhone: targetAgent.phone,
+            status: 'Assigned' as DeliveryStatus,
+            timeline: [
+              ...d.timeline,
+              {
+                status: 'Assigned' as DeliveryStatus,
+                timestamp: `${dateStr} ${timeStr}`,
+                note: `Bulk assigned to ${targetAgent.name}`,
+              },
+            ],
+            updatedAt: dateStr,
+          };
+        }
+        return d;
+      });
+
+      mockStorage.setDeliveries(newDeliveries);
+
+      const agIdx = agents.findIndex((a) => a.id === agentId);
+      if (agIdx !== -1) {
+        agents[agIdx].assignedDeliveriesCount += count;
+        mockStorage.setAgents(agents);
+      }
+
+      return { assignedCount: count, agentName: targetAgent.name };
     }
-    return updatedItems;
   },
 
+  /**
+   * Delete delivery
+   */
   async deleteDelivery(id: string): Promise<boolean> {
-    await delay(300);
-    const deliveries = mockStorage.getDeliveries();
-    const filtered = deliveries.filter((d) => d.id !== id);
-    if (filtered.length === deliveries.length) {
-      return false;
+    try {
+      await api.delete(API_ENDPOINTS.DELIVERIES.BY_ID(id));
+      return true;
+    } catch (error) {
+      console.warn(`Backend API unavailable, falling back to mock storage for deleteDelivery(${id}):`, error);
+      await delay(300);
+      const deliveries = mockStorage.getDeliveries();
+      const filtered = deliveries.filter((d) => d.id !== id);
+      if (filtered.length === deliveries.length) {
+        return false;
+      }
+      mockStorage.setDeliveries(filtered);
+      return true;
     }
-    mockStorage.setDeliveries(filtered);
-    return true;
   },
 };

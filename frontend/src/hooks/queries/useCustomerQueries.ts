@@ -56,3 +56,14 @@ export const useUpdateCustomer = () => {
     },
   });
 };
+
+export const useDeleteCustomer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => customerService.deleteCustomer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all });
+    },
+  });
+};
+

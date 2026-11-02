@@ -43,6 +43,36 @@ export interface Delivery {
   updatedAt?: string;
 }
 
+/**
+ * Raw delivery schema returned from backend DB
+ */
+export interface BackendDelivery {
+  id: string;
+  tracking_number: string;
+  customer_id?: string | null;
+  customer_name: string;
+  customer_phone?: string | null;
+  pickup_address: string;
+  delivery_address: string;
+  city?: string | null;
+  pincode?: string | null;
+  package_type?: string;
+  item_description?: string | null;
+  amount?: number;
+  cod_amount?: number;
+  agent_id?: string | null;
+  agent_name?: string | null;
+  agent_phone?: string | null;
+  status: DeliveryStatus;
+  payment_status: PaymentStatus;
+  timeline?: DeliveryTimelineEvent[];
+  notes?: string | null;
+  date?: string;
+  scheduled_date?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface CreateDeliveryInput {
   customerId?: string;
   customerName: string;

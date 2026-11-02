@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '../types/auth';
-import { authService, DEMO_USERS } from '../services/authService';
+import { authService } from '../services/authService';
 
 export interface AuthContextType {
   user: User | null;
@@ -45,12 +45,23 @@ export const ROLE_ROUTE_PERMISSIONS: Record<UserRole, string[]> = {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    return authService.getStoredUser() || DEMO_USERS.Admin;
+    const token = authService.getStoredToken();
+    if (!token) return null;
+    return authService.getStoredUser();
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const isAuthenticated = Boolean(user);
+  const isAuthenticated = Boolean(user && authService.getStoredToken());
   const role: UserRole = user?.role || 'Admin';
+
+  useEffect(() => {
+    const token = authService.getStoredToken();
+    if (token) {
+      authService.getMe().then((me) => {
+        if (me) setUser(me);
+      });
+    }
+  }, []);
 
   const login = useCallback(async (email: string, password?: string) => {
     setIsLoading(true);
