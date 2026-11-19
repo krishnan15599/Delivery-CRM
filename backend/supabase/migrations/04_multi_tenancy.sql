@@ -78,6 +78,9 @@ ON CONFLICT (id) DO NOTHING;
 -- --------------------------------------------------------------------
 -- 3. New columns (nullable first, so existing rows can be backfilled)
 -- --------------------------------------------------------------------
+-- Older databases were created before 01 added agents.user_id (the agent's login)
+ALTER TABLE agents        ADD COLUMN IF NOT EXISTS user_id TEXT;
+
 ALTER TABLE profiles      ADD COLUMN IF NOT EXISTS organization_id TEXT;
 ALTER TABLE profiles      ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'Active';
 ALTER TABLE agents        ADD COLUMN IF NOT EXISTS organization_id TEXT;
