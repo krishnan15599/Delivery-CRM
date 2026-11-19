@@ -20,8 +20,27 @@ if (supabaseUrl && supabaseKey) {
   console.warn('⚠️ Supabase URL or Key is missing in environment. Database queries will return 503.');
 }
 
+/**
+ * Creates an isolated client specifically for user authentication calls (e.g. signInWithPassword).
+ * Ensures that authenticating a user does NOT hijack or replace credentials on the shared service-role client.
+ */
+const createAuthClient = () => {
+  if (!supabaseUrl) return null;
+  const authKey = env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!authKey) return null;
+
+  return createClient(supabaseUrl, authKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+};
+
 module.exports = {
   supabase,
+  createAuthClient,
   isDbConfigured: () => Boolean(supabase),
 };
 

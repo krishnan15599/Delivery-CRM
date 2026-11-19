@@ -7,6 +7,7 @@ const validateCreateAgent = (body = {}) => {
   const name = safeTrim(body.name);
   const phone = safeTrim(body.phone);
   const email = safeTrim(body.email);
+  const temporaryPassword = body.temporaryPassword !== undefined ? String(body.temporaryPassword) : '';
   const vehicleType = safeTrim(body.vehicleType || body.vehicle_type) || 'Bike';
   const vehicleNumber = safeTrim(body.vehicleNumber || body.vehicle_number) || '';
   const status = safeTrim(body.status) || 'Active';
@@ -25,6 +26,12 @@ const validateCreateAgent = (body = {}) => {
   if (!name || !phone) {
     return {
       error: { message: 'name and phone are required fields for creating an agent.' },
+    };
+  }
+
+  if (email && (!temporaryPassword || temporaryPassword.length < 8)) {
+    return {
+      error: { message: 'temporaryPassword is required and must be at least 8 characters long when email is provided.' },
     };
   }
 
@@ -50,6 +57,7 @@ const validateCreateAgent = (body = {}) => {
       name,
       phone,
       email: email ? email.toLowerCase() : null,
+      temporaryPassword,
       vehicleType,
       vehicleNumber,
       status,

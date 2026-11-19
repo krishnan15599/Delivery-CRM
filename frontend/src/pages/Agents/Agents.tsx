@@ -99,8 +99,8 @@ export const Agents: React.FC = () => {
       }
       setAgentToEdit(null);
       fetchAgents();
-    } catch {
-      toast.error('Failed to save agent profile');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to save agent profile');
     }
   };
 

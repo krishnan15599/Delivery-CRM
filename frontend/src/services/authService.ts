@@ -6,8 +6,8 @@ const TOKEN_KEY = 'delivery_crm_auth_token';
 const USER_KEY = 'delivery_crm_auth_user';
 
 // ---------------------------------------------------------------------------
-// DEMO_USERS is kept for AuthContext's default-state initialisation only.
-// It is NOT used to generate tokens — login() always calls the backend.
+// DEMO_USERS is only used by switchRole(), which the UI exposes in dev builds
+// only. login() never uses it — it always goes through the backend.
 // ---------------------------------------------------------------------------
 export const DEMO_USERS: Record<UserRole, User> = {
   Admin: {
@@ -55,98 +55,49 @@ export const authService = {
 
   /**
    * Authenticates against POST /api/auth/login.
-   * Stores the backend-issued JWT so every subsequent API call is authenticated.
-   * Falls back gracefully to reliable demo session if backend is offline or waking up.
+   * Stores the backend-issued token so every subsequent API call is authenticated.
+   * There is NO local/demo fallback: if the backend does not accept the
+   * credentials, login fails. A fake local session would only show mock data
+   * and make a wrong password look like it worked.
    */
   async login(email: string, password?: string): Promise<LoginResponse> {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Try calling the backend API
+    let body: { success: boolean; data: { user: User; token: string; expiresIn: number } } | undefined;
     try {
-      const { data: body } = await api.post<{
+      const response = await api.post<{
         success: boolean;
         data: { user: User; token: string; expiresIn: number };
       }>(API_ENDPOINTS.AUTH.LOGIN, { email: cleanEmail, password: password ?? '' });
-
-      if (body?.data?.user && body?.data?.token) {
-        const { user, token, expiresIn } = body.data;
-
-        localStorage.setItem(TOKEN_KEY, token);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-
-        return {
-          user,
-          token,
-          refreshToken: '',
-          expiresIn,
-        };
-      }
+      body = response.data;
     } catch (err: any) {
-      const isNetworkError =
-        !err.response ||
-        err.code === 'ERR_NETWORK' ||
-        err.code === 'ECONNABORTED' ||
-        err.response?.status >= 500;
-
-      const isDemoAccount =
-        cleanEmail.includes('admin') ||
-        cleanEmail.includes('manager') ||
-        cleanEmail.includes('agent');
-
-      // If backend explicitly rejected a non-demo user with 401, bubble the error
-      if (!isNetworkError && err.response?.status === 401 && !isDemoAccount) {
-        throw err;
+      const status: number | undefined = err?.response?.status;
+      if (status === 401) {
+        throw new Error('Invalid email or password.');
       }
-
-      console.warn('Backend Auth API unavailable or fell back for demo account. Using local session.', err?.message);
-    }
-
-    // 2. Check local profiles storage for dynamically created accounts
-    const localProfilesRaw = localStorage.getItem('delivery_crm_profiles');
-    let dynamicProfile: User | undefined;
-    if (localProfilesRaw) {
-      try {
-        const parsedProfiles: User[] = JSON.parse(localProfilesRaw);
-        dynamicProfile = parsedProfiles.find(
-          (p) => p.email && p.email.toLowerCase() === cleanEmail
-        );
-      } catch {}
-    }
-
-    let matchedRole: UserRole = dynamicProfile?.role || 'Admin';
-    if (!dynamicProfile) {
-      if (cleanEmail.includes('agent')) {
-        matchedRole = 'Agent';
-      } else if (cleanEmail.includes('manager')) {
-        matchedRole = 'Manager';
-      } else if (cleanEmail.includes('admin')) {
-        matchedRole = 'Admin';
+      if (status === 403) {
+        throw new Error(err.response?.data?.message || 'Your account is not allowed to sign in.');
       }
+      if (!err?.response || (status !== undefined && status >= 500)) {
+        // Render free tier can take ~1 minute to wake up after being idle
+        throw new Error('Server is not reachable right now (it may be waking up). Please try again in a minute.');
+      }
+      throw new Error(err.response?.data?.message || 'Login failed. Please try again.');
     }
 
-    const baseUser = DEMO_USERS[matchedRole];
-    const user: User = dynamicProfile
-      ? { ...baseUser, ...dynamicProfile }
-      : {
-          ...baseUser,
-          email: cleanEmail.includes('@') ? cleanEmail : baseUser.email,
-        };
+    if (!body?.data?.user || !body?.data?.token) {
+      throw new Error('Login failed: unexpected response from server.');
+    }
 
-    // Construct mock JWT with payload containing role and exp
-    const tokenHeader = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const tokenPayload = btoa(
-      JSON.stringify({ ...user, exp: Math.floor(Date.now() / 1000) + 86400 })
-    );
-    const demoToken = `${tokenHeader}.${tokenPayload}.demo_${matchedRole.toLowerCase()}_token`;
-
-    localStorage.setItem(TOKEN_KEY, demoToken);
+    const { user, token, expiresIn } = body.data;
+    localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
 
     return {
       user,
-      token: demoToken,
+      token,
       refreshToken: '',
-      expiresIn: 86400,
+      expiresIn,
     };
   },
 

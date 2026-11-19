@@ -5,6 +5,7 @@ const VALID_ROLES = ['Admin', 'Manager', 'Agent'];
 const validateCreateProfile = (body = {}) => {
   const name = safeTrim(body.name);
   const email = safeTrim(body.email);
+  const temporaryPassword = body.temporaryPassword !== undefined ? String(body.temporaryPassword) : '';
   // Default to lowest role 'Agent' instead of 'Admin'
   const role = safeTrim(body.role) || 'Agent';
   const phone = safeTrim(body.phone);
@@ -14,6 +15,14 @@ const validateCreateProfile = (body = {}) => {
     return {
       error: {
         message: 'name and email are required fields for creating a profile.',
+      },
+    };
+  }
+
+  if (!temporaryPassword || temporaryPassword.length < 8) {
+    return {
+      error: {
+        message: 'temporaryPassword is required and must be at least 8 characters long.',
       },
     };
   }
@@ -31,6 +40,7 @@ const validateCreateProfile = (body = {}) => {
       id: safeTrim(body.id),
       name,
       email: email.toLowerCase(),
+      temporaryPassword,
       role,
       phone,
       avatarUrl,

@@ -81,18 +81,24 @@ const authenticate = async (req, _res, next) => {
     try {
       const { data, error } = await supabase.auth.getUser(token);
       if (data?.user && !error) {
-        // Fetch user role from profiles table
+        // Fetch user profile by auth_user_id
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, name, email, role')
-          .eq('id', data.user.id)
+          .select('id, name, email, role, auth_user_id')
+          .eq('auth_user_id', data.user.id)
           .maybeSingle();
 
+        if (!profile) {
+          req.user = null;
+          return next();
+        }
+
         req.user = {
-          id: data.user.id,
-          email: data.user.email,
-          name: profile?.name || data.user.user_metadata?.name || data.user.email.split('@')[0],
-          role: profile?.role || 'Agent', // Default lowest role
+          id: profile.id,
+          email: profile.email,
+          name: profile.name || data.user.user_metadata?.name || data.user.email.split('@')[0],
+          role: profile.role,
+          authUserId: data.user.id,
         };
         return next();
       }

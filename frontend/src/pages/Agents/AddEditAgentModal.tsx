@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Eye, EyeOff } from 'lucide-react';
 import {
   Modal,
   FormField,
@@ -26,12 +26,14 @@ export const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
     name: '',
     phone: '',
     email: '',
+    temporaryPassword: '',
     vehicleType: 'Bike',
     vehicleNumber: '',
     hubLocation: 'Indiranagar Hub',
     status: 'Active',
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,6 +68,11 @@ export const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
     if (!formData.name.trim()) errs.name = 'Agent name is required';
     if (!formData.phone.trim()) errs.phone = 'Contact phone number is required';
     if (!formData.email.trim()) errs.email = 'Email address is required';
+    if (!agentToEdit && formData.email.trim()) {
+      if (!formData.temporaryPassword || formData.temporaryPassword.length < 8) {
+        errs.temporaryPassword = 'Temporary password is required (minimum 8 characters)';
+      }
+    }
     if (!formData.vehicleNumber.trim()) errs.vehicleNumber = 'Vehicle plate number is required';
     if (!formData.hubLocation.trim()) errs.hubLocation = 'Assigned hub location is required';
 
@@ -141,6 +148,33 @@ export const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
         </FormField>
+
+        {!agentToEdit && (
+          <FormField
+            label="Temporary Password"
+            required={Boolean(formData.email.trim())}
+            error={errors.temporaryPassword}
+          >
+            <div className="relative">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Minimum 8 characters"
+                value={formData.temporaryPassword || ''}
+                error={Boolean(errors.temporaryPassword)}
+                onChange={(e) => setFormData({ ...formData, temporaryPassword: e.target.value })}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </FormField>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Vehicle Type" required>

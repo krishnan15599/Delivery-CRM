@@ -18,7 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !role) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -44,14 +44,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             >
               Go to Allowed Workspace
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => switchRole('Admin')}
-              className="w-full"
-            >
-              Switch to Admin (Demo)
-            </Button>
+            {import.meta.env.DEV && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => switchRole('Admin')}
+                className="w-full"
+              >
+                Switch to Admin (Demo)
+              </Button>
+            )}
           </div>
         </div>
       </div>

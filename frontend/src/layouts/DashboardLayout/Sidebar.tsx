@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
   };
 
   const visibleNavItems = navItems.filter((item) =>
-    roleAllowedMap[item.name]?.includes(role)
+    role && roleAllowedMap[item.name]?.includes(role)
   );
 
   return (

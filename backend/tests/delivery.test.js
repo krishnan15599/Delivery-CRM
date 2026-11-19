@@ -99,13 +99,19 @@ test('null and undefined return null', () => {
 // 5. Profile role defaulting
 console.log('\n5. Profile Role Defaulting:');
 test('New profiles without a role default to "Agent"', () => {
-  const { value } = validateCreateProfile({ name: 'New Employee', email: 'emp@deliverycrm.in' });
+  const { value } = validateCreateProfile({ name: 'New Employee', email: 'emp@deliverycrm.in', temporaryPassword: 'password123' });
   assert.strictEqual(value.role, 'Agent');
 });
 
 test('Explicitly passing "Admin" is accepted', () => {
-  const { value } = validateCreateProfile({ name: 'Boss', email: 'boss@deliverycrm.in', role: 'Admin' });
+  const { value } = validateCreateProfile({ name: 'Boss', email: 'boss@deliverycrm.in', role: 'Admin', temporaryPassword: 'password123' });
   assert.strictEqual(value.role, 'Admin');
+});
+
+test('validateCreateProfile rejects a 7-character temporaryPassword', () => {
+  const { error } = validateCreateProfile({ name: 'Short Pass', email: 'short@deliverycrm.in', temporaryPassword: '1234567' });
+  assert(error, 'Expected validation error for short temporaryPassword');
+  assert(error.message.includes('8 characters'), 'Error message must mention at least 8 characters');
 });
 
 // 6. Generic Delivery Update Protection

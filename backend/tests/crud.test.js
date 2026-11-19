@@ -106,17 +106,22 @@ const runTests = async () => {
 
   // ── 3. Login ───────────────────────────────────────────────────────────────
   console.log('\n3. Auth login:');
-  await test('POST /api/auth/login with known demo email → 200 or 503 (DB unreachable in sandbox)', async () => {
+  await test('POST /api/auth/login with wrong password → 401 or 503', async () => {
     const r = await dispatchRequest(app, {
       method: 'POST', url: '/api/auth/login',
-      body: { email: 'admin@deliverycrm.in', password: 'any' },
+      body: { email: 'admin@deliverycrm.in', password: 'definitely-wrong-password-999' },
     });
-    // 200 = DB found profile and issued JWT (live environment)
-    // 503 = DB unreachable (sandbox / CI without Supabase), correct propagation
-    assert.ok([200, 503].includes(r.status), `Expected 200 or 503, got ${r.status}`);
-    if (r.status === 200) {
-      assert.ok(r.json.data.token, 'No token returned on 200');
-    }
+    // With login holes closed, a wrong password returns 401 (or 503 if DB is unreachable in sandbox)
+    assert.ok([401, 503].includes(r.status), `Expected 401 or 503 for wrong password, got ${r.status}`);
+  });
+
+  await test('POST /api/auth/login with someone-admin@x.com and any password → 401 or 503', async () => {
+    const r = await dispatchRequest(app, {
+      method: 'POST', url: '/api/auth/login',
+      body: { email: 'someone-admin@x.com', password: 'any' },
+    });
+    // Fallback demo logins based on substring 'admin' must be removed
+    assert.ok([401, 503].includes(r.status), `Expected 401 or 503 for non-existent admin-like email, got ${r.status}`);
   });
 
   await test('POST /api/auth/login with unknown email → 401 or 503', async () => {
