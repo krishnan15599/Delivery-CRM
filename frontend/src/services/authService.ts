@@ -68,7 +68,12 @@ export const authService = {
       const response = await api.post<{
         success: boolean;
         data: { user: User; token: string; expiresIn: number };
-      }>(API_ENDPOINTS.AUTH.LOGIN, { email: cleanEmail, password: password ?? '' });
+      }>(
+        API_ENDPOINTS.AUTH.LOGIN,
+        { email: cleanEmail, password: password ?? '' },
+        // Render free tier sleeps when idle and needs ~50s to wake up; the default 10s timeout would fail the first login
+        { timeout: 70000 }
+      );
       body = response.data;
     } catch (err: any) {
       const status: number | undefined = err?.response?.status;
