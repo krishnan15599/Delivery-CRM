@@ -127,12 +127,12 @@ export const Agents: React.FC = () => {
       sortable: true,
       render: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-100 text-[#2c5fbf] font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center shrink-0">
             {row.name.charAt(0)}
           </div>
           <div>
-            <div className="font-semibold text-gray-900 text-xs">{row.name}</div>
-            <div className="text-[11px] text-gray-400 font-mono">{row.id}</div>
+            <div className="font-semibold text-slate-900 text-xs">{row.name}</div>
+            <div className="text-[11px] text-slate-400 font-mono">{row.id}</div>
           </div>
         </div>
       ),
@@ -142,11 +142,11 @@ export const Agents: React.FC = () => {
       header: 'Contact & Hub',
       render: (row) => (
         <div className="text-xs space-y-0.5">
-          <div className="flex items-center gap-1.5 text-gray-700">
-            <Phone className="w-3 h-3 text-gray-400" />
+          <div className="flex items-center gap-1.5 text-slate-700">
+            <Phone className="w-3 h-3 text-slate-400" />
             <span>{row.phone}</span>
           </div>
-          <div className="text-[11px] text-gray-400">{row.hubLocation}</div>
+          <div className="text-[11px] text-slate-400">{row.hubLocation}</div>
         </div>
       ),
     },
@@ -155,8 +155,8 @@ export const Agents: React.FC = () => {
       header: 'Vehicle',
       render: (row) => (
         <div className="text-xs">
-          <span className="font-medium text-gray-900">{row.vehicleType}</span>
-          <div className="text-[11px] font-mono text-gray-400">{row.vehicleNumber}</div>
+          <span className="font-medium text-slate-900">{row.vehicleType}</span>
+          <div className="text-[11px] font-mono text-slate-400">{row.vehicleNumber}</div>
         </div>
       ),
     },
@@ -166,7 +166,7 @@ export const Agents: React.FC = () => {
       align: 'center',
       sortable: true,
       render: (row) => (
-        <span className="font-bold text-gray-900 text-xs">
+        <span className="font-bold text-slate-900 text-xs">
           {row.assignedDeliveriesCount}
         </span>
       ),
@@ -188,7 +188,7 @@ export const Agents: React.FC = () => {
       align: 'right',
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           ₹{row.pendingCashAmount.toLocaleString()}
         </span>
       ),
@@ -220,7 +220,7 @@ export const Agents: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/agents/${row.id}`)}
-            className="p-1 text-gray-400 hover:text-[#2c5fbf] hover:bg-blue-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             title="View Agent Profile"
           >
             <Eye className="w-4 h-4" />
@@ -231,7 +231,7 @@ export const Agents: React.FC = () => {
               setAgentToEdit(row);
               setIsModalOpen(true);
             }}
-            className="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
             title="Edit Agent"
           >
             <Edit2 className="w-4 h-4" />
@@ -239,7 +239,7 @@ export const Agents: React.FC = () => {
           <button
             type="button"
             onClick={() => setAgentToDelete(row)}
-            className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
             title="Delete Agent"
           >
             <Trash2 className="w-4 h-4" />
@@ -302,7 +302,7 @@ export const Agents: React.FC = () => {
         />
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3">
+      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
         <FilterBar
           totalResults={totalItems}
           onClearAll={() => {

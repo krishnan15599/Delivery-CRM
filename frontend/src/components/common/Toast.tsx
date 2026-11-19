@@ -32,29 +32,29 @@ const typeConfig: Record<
     icon: CheckCircle2,
     bg: 'bg-white',
     border: 'border-emerald-200',
-    text: 'text-gray-800',
+    text: 'text-slate-800',
     iconColor: 'text-emerald-500',
   },
   error: {
     icon: AlertCircle,
     bg: 'bg-white',
     border: 'border-rose-200',
-    text: 'text-gray-800',
+    text: 'text-slate-800',
     iconColor: 'text-rose-500',
   },
   warning: {
     icon: AlertTriangle,
     bg: 'bg-white',
     border: 'border-amber-200',
-    text: 'text-gray-800',
+    text: 'text-slate-800',
     iconColor: 'text-amber-500',
   },
   info: {
     icon: Info,
     bg: 'bg-white',
     border: 'border-blue-200',
-    text: 'text-gray-800',
-    iconColor: 'text-[#2c5fbf]',
+    text: 'text-slate-800',
+    iconColor: 'text-indigo-600',
   },
 };
 
@@ -129,17 +129,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
               <div className="flex-1">
                 {toast.title && (
-                  <h5 className="text-xs font-semibold text-gray-900 mb-0.5">
+                  <h5 className="text-xs font-semibold text-slate-900 mb-0.5">
                     {toast.title}
                   </h5>
                 )}
-                <p className="text-xs text-gray-600 leading-snug">{toast.message}</p>
+                <p className="text-xs text-slate-600 leading-snug">{toast.message}</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
-                className="shrink-0 p-1 text-gray-400 hover:text-gray-700 rounded-md transition-colors"
+                className="shrink-0 p-1 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
                 aria-label="Dismiss toast"
               >
                 <X className="w-3.5 h-3.5" />

@@ -51,7 +51,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       btnVariant: 'primary' as const,
     },
     primary: {
-      bg: 'bg-blue-50 text-[#2c5fbf]',
+      bg: 'bg-indigo-50 text-indigo-600',
       icon: Info,
       btnVariant: 'primary' as const,
     },
@@ -95,8 +95,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <IconComp className="w-6 h-6" />
         </div>
         <div>
-          <h4 className="text-base font-bold text-gray-900 mb-1">{title}</h4>
-          <div className="text-xs text-gray-600 leading-relaxed">{message}</div>
+          <h4 className="text-base font-bold text-slate-900 mb-1">{title}</h4>
+          <div className="text-xs text-slate-600 leading-relaxed">{message}</div>
         </div>
       </div>
     </Modal>

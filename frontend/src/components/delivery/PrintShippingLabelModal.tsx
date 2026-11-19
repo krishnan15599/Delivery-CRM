@@ -30,25 +30,25 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
         {/* Printable Label Paper Card */}
         <div
           id="shipping-label-printable"
-          className="border-2 border-dashed border-gray-400 bg-white p-6 rounded-xl space-y-4 font-mono text-gray-900"
+          className="border-2 border-dashed border-slate-400 bg-white p-6 rounded-xl space-y-4 font-mono text-slate-900"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b-2 border-gray-900">
+          <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
             <div className="flex items-center gap-2">
-              <Truck className="w-6 h-6 text-gray-900" />
+              <Truck className="w-6 h-6 text-slate-900" />
               <div>
                 <h2 className="text-base font-bold tracking-tight">DELIVERY CRM EXPRESS</h2>
-                <span className="text-[10px] text-gray-600 block">Next-Day Hub Logistics Network</span>
+                <span className="text-[10px] text-slate-600 block">Next-Day Hub Logistics Network</span>
               </div>
             </div>
             <div className="text-right">
               <span className="text-xs font-bold block uppercase">{delivery.packageType}</span>
-              <span className="text-[10px] text-gray-600">Standard Surface</span>
+              <span className="text-[10px] text-slate-600">Standard Surface</span>
             </div>
           </div>
 
           {/* Barcode & Tracking Number */}
-          <div className="py-2 text-center bg-gray-50 rounded border border-gray-200">
+          <div className="py-2 text-center bg-slate-50 rounded border border-slate-200">
             {/* Visual simulated Barcode */}
             <div className="h-12 w-64 mx-auto flex items-stretch justify-center gap-1 overflow-hidden py-1">
               {[...Array(38)].map((_, i) => (
@@ -64,34 +64,34 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
           </div>
 
           {/* Sender & Receiver Address Grid */}
-          <div className="grid grid-cols-2 gap-4 text-xs border-y-2 border-gray-900 py-3">
+          <div className="grid grid-cols-2 gap-4 text-xs border-y-2 border-slate-900 py-3">
             <div>
-              <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
                 FROM (SHIPPER):
               </span>
-              <p className="font-bold text-gray-900">Express Logistics Dispatch Hub</p>
-              <p className="text-gray-700 leading-tight">{delivery.pickupAddress}</p>
-              <p className="text-gray-600 mt-1">Contact: 1800-419-8900</p>
+              <p className="font-bold text-slate-900">Express Logistics Dispatch Hub</p>
+              <p className="text-slate-700 leading-tight">{delivery.pickupAddress}</p>
+              <p className="text-slate-600 mt-1">Contact: 1800-419-8900</p>
             </div>
 
-            <div className="border-l border-gray-300 pl-4">
-              <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+            <div className="border-l border-slate-300 pl-4">
+              <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
                 TO (CONSIGNEE):
               </span>
-              <p className="font-bold text-gray-900">{delivery.customerName}</p>
-              <p className="text-gray-700 leading-tight">{delivery.deliveryAddress}</p>
-              <p className="text-gray-900 font-bold mt-1">
+              <p className="font-bold text-slate-900">{delivery.customerName}</p>
+              <p className="text-slate-700 leading-tight">{delivery.deliveryAddress}</p>
+              <p className="text-slate-900 font-bold mt-1">
                 {delivery.city || 'Bengaluru'} - {delivery.pincode || '560001'}
               </p>
-              <p className="text-gray-600 mt-1">Phone: {delivery.customerPhone || 'N/A'}</p>
+              <p className="text-slate-600 mt-1">Phone: {delivery.customerPhone || 'N/A'}</p>
             </div>
           </div>
 
           {/* Package Details & COD Notice */}
           <div className="flex items-center justify-between text-xs pt-1">
             <div>
-              <span className="text-[10px] text-gray-500 block">DESCRIPTION:</span>
-              <span className="font-semibold text-gray-800">
+              <span className="text-[10px] text-slate-500 block">DESCRIPTION:</span>
+              <span className="font-semibold text-slate-800">
                 {delivery.itemDescription || delivery.packageType}
               </span>
             </div>
@@ -105,7 +105,7 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
                   </span>
                 </div>
               ) : (
-                <div className="p-1.5 border border-gray-400 rounded text-center">
+                <div className="p-1.5 border border-slate-400 rounded text-center">
                   <span className="text-[9px] font-bold block text-emerald-800">PREPAID ORDER</span>
                   <span className="text-xs font-bold font-mono">NO CASH DUE</span>
                 </div>
@@ -114,7 +114,7 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
           </div>
 
           {/* Footer Routing Code */}
-          <div className="pt-2 border-t border-gray-300 flex items-center justify-between text-[10px] text-gray-500">
+          <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-500">
             <span>ROUTING: BLR-HUB-01 &gt; SEC-4</span>
             <span>DATE: {String(delivery.date)}</span>
             <span>AGENT: {delivery.agentName || 'UNASSIGNED'}</span>

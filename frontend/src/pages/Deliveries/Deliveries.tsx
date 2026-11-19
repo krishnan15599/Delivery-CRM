@@ -143,10 +143,10 @@ export const Deliveries: React.FC = () => {
       sortable: true,
       render: (row) => (
         <div>
-          <span className="font-semibold text-gray-900 font-mono text-xs">
+          <span className="font-semibold text-slate-900 font-mono text-xs">
             {row.trackingNumber}
           </span>
-          <div className="text-[11px] text-gray-400 font-medium">{row.packageType}</div>
+          <div className="text-[11px] text-slate-400 font-medium">{row.packageType}</div>
         </div>
       ),
     },
@@ -156,8 +156,8 @@ export const Deliveries: React.FC = () => {
       sortable: true,
       render: (row) => (
         <div className="max-w-xs">
-          <div className="font-semibold text-gray-900 text-xs">{row.customerName}</div>
-          <div className="text-[11px] text-gray-400 truncate">{row.deliveryAddress}</div>
+          <div className="font-semibold text-slate-900 text-xs">{row.customerName}</div>
+          <div className="text-[11px] text-slate-400 truncate">{row.deliveryAddress}</div>
         </div>
       ),
     },
@@ -167,12 +167,12 @@ export const Deliveries: React.FC = () => {
       render: (row) => (
         <div className="text-xs">
           {row.agentName ? (
-            <span className="inline-flex items-center gap-1.5 font-medium text-gray-800">
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-800">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               {row.agentName}
             </span>
           ) : (
-            <span className="text-gray-400 italic">Unassigned</span>
+            <span className="text-slate-400 italic">Unassigned</span>
           )}
         </div>
       ),
@@ -182,8 +182,8 @@ export const Deliveries: React.FC = () => {
       header: 'Date',
       sortable: true,
       render: (row) => (
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-          <Calendar className="w-3 h-3 text-gray-400" />
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Calendar className="w-3 h-3 text-slate-400" />
           <span>{String(row.date)}</span>
         </div>
       ),
@@ -195,10 +195,10 @@ export const Deliveries: React.FC = () => {
       sortable: true,
       render: (row) => (
         <div>
-          <span className="font-semibold text-gray-900 text-xs">
+          <span className="font-semibold text-slate-900 text-xs">
             ₹{row.amount.toLocaleString()}
           </span>
-          <div className="text-[10px] text-gray-400 uppercase">{row.paymentStatus}</div>
+          <div className="text-[10px] text-slate-400 uppercase">{row.paymentStatus}</div>
         </div>
       ),
     },
@@ -217,7 +217,7 @@ export const Deliveries: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/deliveries/${row.id}`)}
-            className="p-1 text-gray-400 hover:text-[#2c5fbf] hover:bg-blue-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -226,7 +226,7 @@ export const Deliveries: React.FC = () => {
             <button
               type="button"
               onClick={() => setDeliveryToDelete(row)}
-              className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
               title="Delete Delivery"
             >
               <Trash2 className="w-4 h-4" />
@@ -268,7 +268,7 @@ export const Deliveries: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3">
+      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
         <FilterBar
           totalResults={totalItems}
           onClearAll={() => {

@@ -181,32 +181,32 @@ export const Reports: React.FC = () => {
 
   // Columns for Delivery Report
   const deliveryCols: Column<Delivery>[] = [
-    { key: 'trackingNumber', header: 'Tracking #', render: (r) => <span className="font-mono font-semibold text-xs text-gray-900">{r.trackingNumber}</span> },
-    { key: 'customerName', header: 'Customer', render: (r) => <span className="text-xs text-gray-800">{r.customerName}</span> },
-    { key: 'agentName', header: 'Agent', render: (r) => <span className="text-xs text-gray-600">{r.agentName || 'Unassigned'}</span> },
-    { key: 'amount', header: 'Amount', align: 'right', render: (r) => <span className="font-semibold text-xs text-gray-900">₹{r.amount}</span> },
+    { key: 'trackingNumber', header: 'Tracking #', render: (r) => <span className="font-mono font-semibold text-xs text-slate-900">{r.trackingNumber}</span> },
+    { key: 'customerName', header: 'Customer', render: (r) => <span className="text-xs text-slate-800">{r.customerName}</span> },
+    { key: 'agentName', header: 'Agent', render: (r) => <span className="text-xs text-slate-600">{r.agentName || 'Unassigned'}</span> },
+    { key: 'amount', header: 'Amount', align: 'right', render: (r) => <span className="font-semibold text-xs text-slate-900">₹{r.amount}</span> },
     { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} size="sm" /> },
-    { key: 'date', header: 'Date', render: (r) => <span className="text-xs text-gray-500">{String(r.date)}</span> },
+    { key: 'date', header: 'Date', render: (r) => <span className="text-xs text-slate-500">{String(r.date)}</span> },
   ];
 
   // Columns for Collection Report
   const collectionCols: Column<Collection>[] = [
-    { key: 'trackingNumber', header: 'Tracking #', render: (r) => <span className="font-mono font-semibold text-xs text-gray-900">{r.trackingNumber}</span> },
-    { key: 'customerName', header: 'Customer', render: (r) => <span className="text-xs text-gray-800">{r.customerName}</span> },
-    { key: 'agentName', header: 'Agent', render: (r) => <span className="text-xs text-gray-600">{r.agentName}</span> },
-    { key: 'amount', header: 'Collected', align: 'right', render: (r) => <span className="font-semibold text-xs text-gray-900">₹{r.amount}</span> },
-    { key: 'paymentMode', header: 'Mode', render: (r) => <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-medium">{r.paymentMode}</span> },
+    { key: 'trackingNumber', header: 'Tracking #', render: (r) => <span className="font-mono font-semibold text-xs text-slate-900">{r.trackingNumber}</span> },
+    { key: 'customerName', header: 'Customer', render: (r) => <span className="text-xs text-slate-800">{r.customerName}</span> },
+    { key: 'agentName', header: 'Agent', render: (r) => <span className="text-xs text-slate-600">{r.agentName}</span> },
+    { key: 'amount', header: 'Collected', align: 'right', render: (r) => <span className="font-semibold text-xs text-slate-900">₹{r.amount}</span> },
+    { key: 'paymentMode', header: 'Mode', render: (r) => <span className="text-xs bg-slate-100 px-2 py-0.5 rounded font-medium">{r.paymentMode}</span> },
     { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} size="sm" /> },
   ];
 
   // Columns for Agent Report
   const agentCols: Column<AgentPerformanceRow>[] = [
-    { key: 'agentName', header: 'Agent Name', render: (r) => <span className="font-semibold text-xs text-gray-900">{r.agentName}</span> },
+    { key: 'agentName', header: 'Agent Name', render: (r) => <span className="font-semibold text-xs text-slate-900">{r.agentName}</span> },
     { key: 'assigned', header: 'Assigned', align: 'center', render: (r) => <span className="text-xs font-medium">{r.assigned}</span> },
     { key: 'completed', header: 'Delivered', align: 'center', render: (r) => <span className="text-xs font-bold text-emerald-600">{r.completed}</span> },
     { key: 'failed', header: 'Failed', align: 'center', render: (r) => <span className="text-xs font-medium text-rose-600">{r.failed}</span> },
     { key: 'successRate', header: 'Success %', align: 'center', render: (r) => <span className="text-xs font-bold text-blue-700">{r.successRate}%</span> },
-    { key: 'collectedAmount', header: 'Collected Cash', align: 'right', render: (r) => <span className="font-bold text-xs text-gray-900">₹{r.collectedAmount.toLocaleString()}</span> },
+    { key: 'collectedAmount', header: 'Collected Cash', align: 'right', render: (r) => <span className="font-bold text-xs text-slate-900">₹{r.collectedAmount.toLocaleString()}</span> },
     {
       key: 'rating',
       header: 'Rating',
@@ -221,12 +221,12 @@ export const Reports: React.FC = () => {
 
   // Columns for Customer Report
   const customerCols: Column<CustomerReportRow>[] = [
-    { key: 'customerName', header: 'Customer', render: (r) => <span className="font-semibold text-xs text-gray-900">{r.customerName}</span> },
-    { key: 'phone', header: 'Phone', render: (r) => <span className="text-xs text-gray-500">{r.phone}</span> },
+    { key: 'customerName', header: 'Customer', render: (r) => <span className="font-semibold text-xs text-slate-900">{r.customerName}</span> },
+    { key: 'phone', header: 'Phone', render: (r) => <span className="text-xs text-slate-500">{r.phone}</span> },
     { key: 'totalOrders', header: 'Orders Placed', align: 'center', render: (r) => <span className="text-xs font-bold">{r.totalOrders}</span> },
     { key: 'deliveredOrders', header: 'Delivered', align: 'center', render: (r) => <span className="text-xs font-medium text-emerald-600">{r.deliveredOrders}</span> },
-    { key: 'totalSpent', header: 'Total Spent', align: 'right', render: (r) => <span className="font-bold text-xs text-gray-900">₹{r.totalSpent.toLocaleString()}</span> },
-    { key: 'lastOrderDate', header: 'Last Order', render: (r) => <span className="text-xs text-gray-500">{r.lastOrderDate}</span> },
+    { key: 'totalSpent', header: 'Total Spent', align: 'right', render: (r) => <span className="font-bold text-xs text-slate-900">₹{r.totalSpent.toLocaleString()}</span> },
+    { key: 'lastOrderDate', header: 'Last Order', render: (r) => <span className="text-xs text-slate-500">{r.lastOrderDate}</span> },
   ];
 
   return (
@@ -262,7 +262,7 @@ export const Reports: React.FC = () => {
       />
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-6">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-6">
         <Tabs
           activeTab={activeTab}
           onChange={(tab) => {
@@ -309,11 +309,11 @@ export const Reports: React.FC = () => {
             </div>
 
             {/* Delivery Volume Chart */}
-            <div className="bg-gray-50/50 p-5 rounded-xl border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-1">
+            <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 mb-1">
                 Daily Delivery Volume & Completion Trend
               </h3>
-              <p className="text-xs text-gray-500 mb-4">Total packages vs successfully delivered</p>
+              <p className="text-xs text-slate-500 mb-4">Total packages vs successfully delivered</p>
               <div className="h-64 w-full">
                 {deliveryReport?.trends ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -325,8 +325,8 @@ export const Reports: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="total"
-                        stroke="#2c5fbf"
-                        fill="#2c5fbf"
+                        stroke="#4f46e5"
+                        fill="#4f46e5"
                         fillOpacity={0.15}
                         name="Total Orders"
                       />
@@ -346,7 +346,7 @@ export const Reports: React.FC = () => {
 
             {/* Table */}
             <div>
-              <h4 className="text-sm font-bold text-gray-900 mb-3">Delivery Transactions</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-3">Delivery Transactions</h4>
               <DataTable data={deliveries} columns={deliveryCols} loading={loading} />
             </div>
           </div>
@@ -383,14 +383,14 @@ export const Reports: React.FC = () => {
             </div>
 
             {/* Payment Method Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gray-50/50 p-5 rounded-xl border border-gray-100">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
               <div className="h-56 w-full flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={[
                         { name: 'Cash', value: collectionReport?.cashPercentage || 60, color: '#f59e0b' },
-                        { name: 'UPI', value: collectionReport?.upiPercentage || 30, color: '#2c5fbf' },
+                        { name: 'UPI', value: collectionReport?.upiPercentage || 30, color: '#4f46e5' },
                         { name: 'Card', value: collectionReport?.cardPercentage || 10, color: '#10b981' },
                       ]}
                       dataKey="value"
@@ -399,7 +399,7 @@ export const Reports: React.FC = () => {
                       paddingAngle={4}
                     >
                       <Cell fill="#f59e0b" />
-                      <Cell fill="#2c5fbf" />
+                      <Cell fill="#4f46e5" />
                       <Cell fill="#10b981" />
                     </Pie>
                     <Tooltip />
@@ -408,25 +408,25 @@ export const Reports: React.FC = () => {
               </div>
 
               <div className="lg:col-span-2 flex flex-col justify-center space-y-3">
-                <h4 className="text-sm font-bold text-gray-900">Payment Channel Breakdown</h4>
+                <h4 className="text-sm font-bold text-slate-900">Payment Channel Breakdown</h4>
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-gray-200">
-                    <span className="font-medium text-gray-700 flex items-center gap-2">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200">
+                    <span className="font-medium text-slate-700 flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Cash Payments
                     </span>
-                    <span className="font-bold text-gray-900">{collectionReport?.cashPercentage || 60}%</span>
+                    <span className="font-bold text-slate-900">{collectionReport?.cashPercentage || 60}%</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-gray-200">
-                    <span className="font-medium text-gray-700 flex items-center gap-2">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200">
+                    <span className="font-medium text-slate-700 flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span> UPI / Digital Wallets
                     </span>
-                    <span className="font-bold text-gray-900">{collectionReport?.upiPercentage || 30}%</span>
+                    <span className="font-bold text-slate-900">{collectionReport?.upiPercentage || 30}%</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-gray-200">
-                    <span className="font-medium text-gray-700 flex items-center gap-2">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200">
+                    <span className="font-medium text-slate-700 flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Card on Delivery
                     </span>
-                    <span className="font-bold text-gray-900">{collectionReport?.cardPercentage || 10}%</span>
+                    <span className="font-bold text-slate-900">{collectionReport?.cardPercentage || 10}%</span>
                   </div>
                 </div>
               </div>
@@ -434,7 +434,7 @@ export const Reports: React.FC = () => {
 
             {/* Collections List */}
             <div>
-              <h4 className="text-sm font-bold text-gray-900 mb-3">Reconciled Collections</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-3">Reconciled Collections</h4>
               <DataTable data={collections} columns={collectionCols} loading={loading} />
             </div>
           </div>
@@ -444,11 +444,11 @@ export const Reports: React.FC = () => {
         {activeTab === 'agent' && (
           <div className="space-y-6">
             {/* Bar Chart */}
-            <div className="bg-gray-50/50 p-5 rounded-xl border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-1">
+            <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 mb-1">
                 Completed Deliveries by Field Agent
               </h3>
-              <p className="text-xs text-gray-500 mb-4">Volume dispatched per delivery executive</p>
+              <p className="text-xs text-slate-500 mb-4">Volume dispatched per delivery executive</p>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={agentReports} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -456,7 +456,7 @@ export const Reports: React.FC = () => {
                     <XAxis dataKey="agentName" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
-                    <Bar dataKey="completed" fill="#2c5fbf" radius={[4, 4, 0, 0]} name="Completed Deliveries" />
+                    <Bar dataKey="completed" fill="#4f46e5" radius={[4, 4, 0, 0]} name="Completed Deliveries" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -464,7 +464,7 @@ export const Reports: React.FC = () => {
 
             {/* Agent Table */}
             <div>
-              <h4 className="text-sm font-bold text-gray-900 mb-3">Agent Performance Scorecard</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-3">Agent Performance Scorecard</h4>
               <DataTable data={agentReports} columns={agentCols} loading={loading} />
             </div>
           </div>
@@ -474,7 +474,7 @@ export const Reports: React.FC = () => {
         {activeTab === 'customer' && (
           <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-bold text-gray-900 mb-3">Customer Order History & Lifetime Value</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-3">Customer Order History & Lifetime Value</h4>
               <DataTable data={customerReports} columns={customerCols} loading={loading} />
             </div>
           </div>

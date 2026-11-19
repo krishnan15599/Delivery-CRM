@@ -65,35 +65,35 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
         onClick={closeOnOverlayClick ? onClose : undefined}
       />
 
       {/* Modal Card */}
       <div
         className={cn(
-          'relative w-full bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col z-10 overflow-hidden transform transition-all max-h-[90vh]',
+          'relative w-full bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col z-10 overflow-hidden transform transition-all max-h-[90vh]',
           sizeClasses[size],
           className
         )}
       >
         {/* Header */}
         {(title || description) && (
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4 bg-white sticky top-0 z-10">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4 bg-white sticky top-0 z-10">
             <div>
               {title && (
-                <h3 className="text-lg font-bold text-gray-900 leading-snug">
+                <h3 className="text-lg font-bold text-slate-900 leading-snug">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
               type="button"
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -106,7 +106,7 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 bg-gray-50/70 border-t border-gray-100 flex items-center justify-end gap-3 sticky bottom-0 z-10">
+          <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-end gap-3 sticky bottom-0 z-10">
             {footer}
           </div>
         )}

@@ -1,92 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Mail,
-  Lock,
-  EyeOff,
-  ArrowRight,
-  Eye,
-  ShieldCheck,
-  UserCheck,
-  Bike,
-  CheckCircle2,
-  Sparkles,
-} from "lucide-react";
+import { Mail, Lock, EyeOff, Eye, ArrowRight, Check } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../components/common";
-import type { BusinessRole, UserRole } from "../../types/auth";
-
-interface RoleConfig {
-  role: BusinessRole;
-  label: string;
-  badge: string;
-  email: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tagline: string;
-  landingPage: string;
-  colorScheme: {
-    badge: string;
-    border: string;
-    activeBg: string;
-    iconBg: string;
-    iconColor: string;
-  };
-  features: string[];
-}
-
-const ROLE_CONFIGS: Record<BusinessRole, RoleConfig> = {
-  Admin: {
-    role: "Admin",
-    label: "Admin Console",
-    badge: "Full Control",
-    email: "admin@deliverycrm.in",
-    icon: ShieldCheck,
-    tagline: "Total control over operations, financial collections, settings & staff",
-    landingPage: "/dashboard",
-    colorScheme: {
-      badge: "bg-neutral-100 text-black border-neutral-300 font-bold",
-      border: "border-black ring-2 ring-[#84cc16]",
-      activeBg: "bg-neutral-50",
-      iconBg: "bg-black text-[#84cc16]",
-      iconColor: "text-black",
-    },
-    features: ["All Dashboards & Reports", "Dispatch & Bulk Assign", "COD & Cash Settlement", "Settings & Users"],
-  },
-  Manager: {
-    role: "Manager",
-    label: "Hub Manager",
-    badge: "Hub Operations",
-    email: "manager@deliverycrm.in",
-    icon: UserCheck,
-    tagline: "Oversee shipments, customer inquiries, field agents & daily reports",
-    landingPage: "/dashboard",
-    colorScheme: {
-      badge: "bg-neutral-100 text-black border-neutral-300 font-bold",
-      border: "border-black ring-2 ring-[#84cc16]",
-      activeBg: "bg-neutral-50",
-      iconBg: "bg-black text-[#84cc16]",
-      iconColor: "text-black",
-    },
-    features: ["Hub Operations Dashboard", "Deliveries & Agents Ops", "Customer Management", "Operational Reports"],
-  },
-  Agent: {
-    role: "Agent",
-    label: "Delivery Agent",
-    badge: "Field App",
-    email: "agent@deliverycrm.in",
-    icon: Bike,
-    tagline: "Deliver assigned shipments, update status, record POD & team chat",
-    landingPage: "/deliveries",
-    colorScheme: {
-      badge: "bg-neutral-100 text-black border-neutral-300 font-bold",
-      border: "border-black ring-2 ring-[#84cc16]",
-      activeBg: "bg-neutral-50",
-      iconBg: "bg-black text-[#84cc16]",
-      iconColor: "text-black",
-    },
-    features: ["Field Deliveries Workspace", "Shipment Status Transitions", "Proof of Delivery (POD)", "Support Chat Inbox"],
-  },
-};
+import type { UserRole } from "../../types/auth";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -94,9 +11,8 @@ export const Login: React.FC = () => {
   const toast = useToast();
   const { login, isLoading, isAuthenticated, getDefaultRoute } = useAuth();
 
-  const [selectedRole, setSelectedRole] = useState<BusinessRole>("Admin");
   const [formData, setFormData] = useState({
-    email: import.meta.env.DEV ? ROLE_CONFIGS.Admin.email : "",
+    email: "",
     password: "",
     rememberMe: true,
   });
@@ -110,33 +26,18 @@ export const Login: React.FC = () => {
     }
   }, [isAuthenticated, getDefaultRoute, navigate]);
 
-  const handleSelectRole = (role: BusinessRole) => {
-    setSelectedRole(role);
-    // Only pre-fill demo emails in dev builds; in production the role cards are informational
-    if (import.meta.env.DEV) {
-      setFormData((prev) => ({
-        ...prev,
-        email: ROLE_CONFIGS[role].email,
-        password: "",
-      }));
-    }
-  };
-
   const handlePostLoginRedirect = (userRole: UserRole) => {
     const origin = (location.state as { from?: { pathname?: string } })?.from?.pathname;
 
     if (userRole === "SuperAdmin") {
-      // Platform owner only manages businesses
       navigate("/platform", { replace: true });
     } else if (userRole === "Agent") {
-      // Agents can only access /deliveries and /chat
       if (origin && (origin.startsWith("/deliveries") || origin.startsWith("/chat"))) {
         navigate(origin, { replace: true });
       } else {
         navigate("/deliveries", { replace: true });
       }
     } else if (userRole === "Manager") {
-      // Managers can access everything except /collections and /components
       if (
         origin &&
         !origin.startsWith("/collections") &&
@@ -147,7 +48,6 @@ export const Login: React.FC = () => {
         navigate("/dashboard", { replace: true });
       }
     } else {
-      // Admin has full access
       navigate(origin || "/dashboard", { replace: true });
     }
   };
@@ -175,268 +75,225 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (role: BusinessRole) => {
-    const config = ROLE_CONFIGS[role];
-    setSelectedRole(role);
-    setFormData((prev) => ({
-      ...prev,
-      email: config.email,
-      password: "",
-    }));
-  };
-
-  const activeConfig = ROLE_CONFIGS[selectedRole];
-
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-sans">
-      {/* Left Feature Showcase Panel */}
-      <div className="hidden lg:flex lg:flex-col w-5/12 bg-black text-white p-12 justify-between relative overflow-hidden select-none">
-        {/* Glow accents */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#84cc16]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#84cc16]/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="h-screen w-screen overflow-hidden bg-[#eef4ff] relative flex items-center justify-center font-sans antialiased selection:bg-blue-600 selection:text-white px-4 py-2 sm:px-8 lg:px-12">
+      {/* Background soft decorative gradient blurs and curves */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-orange-400/20 via-blue-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[-10%] left-[25%] w-[600px] h-[600px] bg-gradient-to-b from-blue-200/40 via-sky-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-gradient-to-tr from-sky-300/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        {/* Brand */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-[#84cc16] text-black shadow-lg shadow-[#84cc16]/20">
-              <ShieldCheck className="w-6 h-6" />
+      {/* Main Single-Screen Viewport Container */}
+      <div className="w-full max-w-[1200px] h-full max-h-[88vh] bg-transparent flex flex-col lg:flex-row items-center justify-between relative z-10 gap-6 lg:gap-10">
+        {/* Left Visual Illustration & Brand Side */}
+        <div className="w-full lg:w-[56%] h-full flex flex-col justify-between self-stretch relative select-none">
+          {/* Top Logo */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#1d68f2] to-[#3b82f6] flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                <path d="M15 18H9" />
+                <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+                <circle cx="17" cy="18.5" r="2.5" />
+                <circle cx="7" cy="18.5" r="2.5" />
+              </svg>
             </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight block">Delivery CRM</span>
-              <span className="text-xs text-[#84cc16] font-semibold tracking-wider uppercase">
-                Enterprise Logistics Platform
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-extrabold tracking-tight text-slate-900">
+                Delivery
+              </span>
+              <span className="text-lg font-extrabold tracking-tight text-[#1d68f2]">
+                CRM
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Center Role Highlights */}
-        <div className="relative z-10 space-y-6 my-auto">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#84cc16]/15 text-[#84cc16] border border-[#84cc16]/30 mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> Role-Based Access Control
+          {/* Headline & Description */}
+          <div className="my-auto space-y-3 max-w-xl shrink-0">
+            <div className="relative">
+              <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-950 tracking-tight leading-[1.12]">
+                Track every <span className="text-[#ff5c00]">delivery</span>
+                <br />
+                from dispatch to
+                <br />
+                doorstep.
+              </h1>
+              {/* Orange swoop under doorstep */}
+              <svg className="w-24 h-2.5 text-[#ff5c00] mt-1" viewBox="0 0 100 12" fill="none">
+                <path d="M2 9C28 2 72 2 98 9" stroke="#ff5c00" strokeWidth="3" strokeLinecap="round" />
+              </svg>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight leading-snug">
-              Unified Platform for Admin, Hub Managers & Field Agents
-            </h1>
-            <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-              Experience seamless workflow segregation tailored for every stakeholder in the delivery chain.
+
+            <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-md pt-0.5">
+              Assign agents, follow status as it changes, and reconcile the cash they collect.
             </p>
+
+            {/* Feature Badges/Chips */}
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/80 backdrop-blur-xs border border-blue-100 shadow-2xs">
+                <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                  </svg>
+                </div>
+                <div className="text-left leading-tight">
+                  <div className="text-[10px] font-bold text-slate-800">Real-time</div>
+                  <div className="text-[9px] text-slate-500">Tracking</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/80 backdrop-blur-xs border border-orange-100 shadow-2xs">
+                <div className="w-5 h-5 rounded-lg bg-orange-500 flex items-center justify-center text-white">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 9.2h3V19H5zM10.6 5h2.8v14.2h-2.8zm5.6 8h2.8v6.2h-2.8z"/>
+                  </svg>
+                </div>
+                <div className="text-left leading-tight">
+                  <div className="text-[10px] font-bold text-slate-800">Live</div>
+                  <div className="text-[9px] text-slate-500">Analytics</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/80 backdrop-blur-xs border border-emerald-100 shadow-2xs">
+                <div className="w-5 h-5 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                </div>
+                <div className="text-left leading-tight">
+                  <div className="text-[10px] font-bold text-slate-800">Secure &</div>
+                  <div className="text-[9px] text-slate-500">Reliable</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3 pt-2">
-            {(Object.keys(ROLE_CONFIGS) as BusinessRole[]).map((r) => {
-              const cfg = ROLE_CONFIGS[r];
-              const Icon = cfg.icon;
-              const isSelected = selectedRole === r;
-              return (
-                <div
-                  key={r}
-                  onClick={() => handleSelectRole(r)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-white/10 border-[#84cc16] shadow-md translate-x-1"
-                      : "bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          r === "Admin"
-                            ? "bg-blue-500/20 text-blue-300"
-                            : r === "Manager"
-                            ? "bg-purple-500/20 text-purple-300"
-                            : "bg-emerald-500/20 text-emerald-300"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white flex items-center gap-2">
-                          {cfg.label}
-                          <span className="text-[10px] font-medium text-slate-400">
-                            ({cfg.landingPage})
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-300 line-clamp-1">{cfg.tagline}</div>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 ml-2" />
-                    )}
+          {/* Delivery Road Illustration from the design */}
+          <div className="relative w-full flex-1 min-h-[160px] max-h-[260px] flex items-end overflow-hidden">
+            <img
+              src="/assets/Login/login-left-panel.png"
+              alt="Delivery Scooter Illustration"
+              className="w-full h-full object-contain object-bottom"
+            />
+          </div>
+
+          {/* Footer note */}
+          <div className="pt-1 text-[11px] text-slate-400 font-medium shrink-0">
+            © 2026 Delivery CRM
+          </div>
+        </div>
+
+        {/* Right Sign-in Form Card */}
+        <div className="w-full lg:w-[44%] max-w-[430px] flex items-center justify-center shrink-0">
+          <div className="w-full bg-white rounded-[24px] shadow-[0_15px_45px_rgba(29,104,242,0.08)] border border-slate-100 p-6 sm:p-9 relative z-20">
+            {/* Header */}
+            <div className="mb-5">
+              <h2 className="text-2xl sm:text-[26px] font-extrabold text-slate-900 tracking-tight">
+                Sign in
+              </h2>
+              <p className="text-xs sm:text-[13px] text-slate-500 mt-1 font-normal">
+                Use the email and password your administrator gave you.
+              </p>
+            </div>
+
+            {/* Form */}
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5">
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Mail className="w-4 h-4" />
                   </div>
+                  <input
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    type="email"
+                    required
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
+                    placeholder="you@company.com"
+                  />
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </div>
 
-        {/* Footer info */}
-        <div className="relative z-10 pt-6 border-t border-white/10 text-xs text-slate-400 flex items-center justify-between">
-          <span>Production Ready v2.4</span>
-          <span>© 2026 Delivery CRM</span>
-        </div>
-      </div>
-
-      {/* Right Login Form Container */}
-      <div className="flex flex-col justify-center items-center w-full lg:w-7/12 p-6 sm:p-12 overflow-y-auto">
-        <div className="w-full max-w-[460px]">
-          {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Sign In</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Select your role profile or enter your account credentials to continue
-            </p>
-          </div>
-
-          {/* Role Selection Tabs */}
-          <div className="mb-6">
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-              Select Role Profile
-            </label>
-            <div className="grid grid-cols-3 gap-2.5">
-              {(Object.keys(ROLE_CONFIGS) as BusinessRole[]).map((r) => {
-                const cfg = ROLE_CONFIGS[r];
-                const Icon = cfg.icon;
-                const isSelected = selectedRole === r;
-
-                return (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => handleSelectRole(r)}
-                    className={`flex flex-col items-center p-3 rounded-xl border text-center transition-all cursor-pointer relative ${
-                      isSelected
-                        ? `bg-white ${cfg.colorScheme.border} shadow-sm`
-                        : "bg-gray-50 border-gray-200 hover:bg-white hover:border-gray-300 text-gray-600"
-                    }`}
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Password
+                  </label>
+                  <a
+                    href="mailto:admin@deliverycrm.in?subject=Password%20Reset%20Request"
+                    className="text-xs font-semibold text-[#1d68f2] hover:text-blue-700 transition-colors"
                   >
-                    <div className={`p-2 rounded-lg mb-1.5 ${cfg.colorScheme.iconBg}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-bold text-gray-900">{r}</span>
-                    <span className="text-[10px] text-gray-500 mt-0.5">{cfg.badge}</span>
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    type={showPassword ? "text" : "password"}
+                    required
+                    className="block w-full pl-10 pr-10 py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-400 hover:text-slate-600 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+              </div>
 
-          {/* Active Role Info Banner */}
-          <div className={`mb-6 p-3.5 rounded-xl border text-xs ${activeConfig.colorScheme.activeBg} border-gray-200/80`}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="font-bold text-gray-900 flex items-center gap-1.5">
-                <activeConfig.icon className={`w-3.5 h-3.5 ${activeConfig.colorScheme.iconColor}`} />
-                {activeConfig.label}
-              </span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${activeConfig.colorScheme.badge}`}>
-                Lands on {activeConfig.landingPage}
-              </span>
-            </div>
-            <p className="text-gray-600 text-[11px] mb-2">{activeConfig.tagline}</p>
+              {/* Remember Me */}
+              <div className="flex items-center pt-0.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                    className="h-4 w-4 rounded border-slate-300 text-[#1d68f2] focus:ring-[#1d68f2] accent-[#1d68f2] cursor-pointer"
+                  />
+                  <span className="text-xs font-medium text-slate-600">
+                    Keep me signed in on this device
+                  </span>
+                </label>
+              </div>
 
-            {/* Quick Demo Fill Email Button */}
-            {import.meta.env.DEV && (
+              {/* Sign in Button */}
               <button
-                type="button"
-                onClick={() => handleQuickLogin(selectedRole)}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-2xs cursor-pointer"
+                type="submit"
+                disabled={submitting || isLoading}
+                className="w-full flex justify-center items-center py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#1d68f2] to-[#0091ff] hover:from-[#1754c5] hover:to-[#007fe3] active:scale-[0.99] transition-all shadow-md shadow-blue-500/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed gap-2 mt-3"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Fill Demo Email for {selectedRole}
+                {submitting ? (
+                  "Signing in..."
+                ) : (
+                  <>
+                    <ArrowRight className="w-4 h-4" /> Sign in
+                  </>
+                )}
               </button>
-            )}
-          </div>
+            </form>
 
-          {/* Form */}
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  type="email"
-                  required
-                  className="block w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-2 focus:ring-[#84cc16]/40 focus:border-black outline-none transition-colors shadow-2xs"
-                  placeholder="name@deliverycrm.in"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-gray-700">Password</label>
-                <span className="text-xs text-neutral-900 hover:text-[#65a30d] cursor-pointer font-medium">
-                  Forgot password?
-                </span>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="block w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-2 focus:ring-[#84cc16]/40 focus:border-black outline-none transition-colors shadow-2xs"
-                  placeholder="Enter account password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+            {/* Bottom Help Link */}
+            <div className="mt-5 text-center">
+              <p className="text-xs text-slate-500">
+                Can&apos;t sign in?{" "}
+                <a
+                  href="mailto:admin@deliverycrm.in?subject=Access%20Assistance%20Request"
+                  className="text-[#1d68f2] hover:underline font-semibold transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+                  Ask your administrator to reset your access.
+                </a>
+              </p>
             </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.rememberMe}
-                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-[#84cc16] accent-black cursor-pointer"
-                />
-                <span className="text-xs text-gray-600">Keep me logged in</span>
-              </label>
-
-              {import.meta.env.DEV && (
-                <span className="text-xs text-gray-400">Dev demo accounts</span>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting || isLoading}
-              className="w-full flex justify-center items-center py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-black hover:bg-neutral-900 active:bg-neutral-800 text-[#84cc16] border border-black transition-colors shadow-sm gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-            >
-              {submitting ? (
-                <>Signing in...</>
-              ) : (
-                <>
-                  Sign In as {selectedRole} <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Role access breakdown note */}
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-            <span className="text-xs text-gray-500">
-              Need access assistance? Contact your system administrator at{" "}
-              <a href="mailto:admin@deliverycrm.in" className="text-black hover:text-[#65a30d] font-semibold hover:underline">
-                admin@deliverycrm.in
-              </a>
-            </span>
           </div>
         </div>
       </div>

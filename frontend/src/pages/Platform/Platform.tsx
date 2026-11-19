@@ -148,10 +148,10 @@ export const Platform: React.FC = () => {
         }
       />
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-gray-600 min-w-[720px]">
-            <thead className="bg-gray-50/80 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+          <table className="w-full text-left text-xs text-slate-600 min-w-[720px]">
+            <thead className="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="px-4 py-3">Business</th>
                 <th className="px-4 py-3">First Admin</th>
@@ -163,10 +163,10 @@ export const Platform: React.FC = () => {
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">Loading businesses...</td>
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">Loading businesses...</td>
                 </tr>
               ) : loadError ? (
                 <tr>
@@ -174,32 +174,32 @@ export const Platform: React.FC = () => {
                 </tr>
               ) : orgs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
                     No businesses yet. Click "Create business" to add the first one.
                   </td>
                 </tr>
               ) : (
                 orgs.map((org) => (
-                  <tr key={org.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-gray-900 text-[#84cc16] flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                           <Building2 className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <span className="font-semibold text-gray-900 block truncate">{org.name}</span>
-                          <span className="text-[11px] text-gray-400 font-mono">{org.code}</span>
+                          <span className="font-semibold text-slate-900 block truncate">{org.name}</span>
+                          <span className="text-[11px] text-slate-400 font-mono">{org.code}</span>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       {org.primaryAdmin ? (
                         <>
-                          <span className="text-gray-900 block">{org.primaryAdmin.name}</span>
-                          <span className="text-[11px] text-gray-400">{org.primaryAdmin.email}</span>
+                          <span className="text-slate-900 block">{org.primaryAdmin.name}</span>
+                          <span className="text-[11px] text-slate-400">{org.primaryAdmin.email}</span>
                         </>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-slate-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{org.counts.users}</td>
@@ -216,7 +216,7 @@ export const Platform: React.FC = () => {
                         {org.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{formatDate(org.created_at)}</td>
+                    <td className="px-4 py-3 text-slate-500">{formatDate(org.created_at)}</td>
                     <td className="px-4 py-3 text-right">
                       <Button
                         variant={org.status === 'Active' ? 'outline' : 'success'}
@@ -282,8 +282,8 @@ export const Platform: React.FC = () => {
             </FormField>
           </div>
 
-          <div className="pt-2 border-t border-gray-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">First Admin</p>
+          <div className="pt-2 border-t border-slate-100">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">First Admin</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Full name" required error={errors.adminName}>
                 <Input
@@ -326,7 +326,7 @@ export const Platform: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

@@ -135,11 +135,11 @@ export const CreateDelivery: React.FC = () => {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer Selection */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+          <div className="border-b border-slate-100 pb-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Recipient Information
             </h3>
-            <p className="text-xs text-gray-500">Select an existing customer or enter details</p>
+            <p className="text-xs text-slate-500">Select an existing customer or enter details</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -178,8 +178,8 @@ export const CreateDelivery: React.FC = () => {
           </div>
 
           {/* Addresses */}
-          <div className="border-b border-gray-100 pt-4 pb-2">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+          <div className="border-b border-slate-100 pt-4 pb-2">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Route & Locations
             </h3>
           </div>
@@ -222,8 +222,8 @@ export const CreateDelivery: React.FC = () => {
           </div>
 
           {/* Package & Payment Details */}
-          <div className="border-b border-gray-100 pt-4 pb-2">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+          <div className="border-b border-slate-100 pt-4 pb-2">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Item Details & COD
             </h3>
           </div>
@@ -290,7 +290,7 @@ export const CreateDelivery: React.FC = () => {
             </FormField>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"

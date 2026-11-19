@@ -126,12 +126,12 @@ export const EditCustomer: React.FC = () => {
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="border-b border-gray-100 pb-4 flex items-center justify-between">
+          <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Profile Details
               </h3>
-              <p className="text-xs text-gray-500">Update basic customer contact records</p>
+              <p className="text-xs text-slate-500">Update basic customer contact records</p>
             </div>
             <div className="w-36">
               <FormField label="Account Status">
@@ -177,8 +177,8 @@ export const EditCustomer: React.FC = () => {
             </FormField>
           </div>
 
-          <div className="border-b border-gray-100 pt-4 pb-2">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+          <div className="border-b border-slate-100 pt-4 pb-2">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Address Information
             </h3>
           </div>
@@ -216,7 +216,7 @@ export const EditCustomer: React.FC = () => {
             </FormField>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"

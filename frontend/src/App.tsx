@@ -53,14 +53,14 @@ const queryClient = new QueryClient({
 
 const PageLoadingFallback = () => (
   <div className="p-6 space-y-4 animate-in fade-in duration-200">
-    <div className="h-8 w-48 bg-gray-200/80 rounded-lg animate-pulse" />
+    <div className="h-8 w-48 bg-slate-200/80 rounded-lg animate-pulse" />
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="h-24 bg-gray-200/70 rounded-xl animate-pulse" />
-      <div className="h-24 bg-gray-200/70 rounded-xl animate-pulse" />
-      <div className="h-24 bg-gray-200/70 rounded-xl animate-pulse" />
-      <div className="h-24 bg-gray-200/70 rounded-xl animate-pulse" />
+      <div className="h-24 bg-slate-200/70 rounded-xl animate-pulse" />
+      <div className="h-24 bg-slate-200/70 rounded-xl animate-pulse" />
+      <div className="h-24 bg-slate-200/70 rounded-xl animate-pulse" />
+      <div className="h-24 bg-slate-200/70 rounded-xl animate-pulse" />
     </div>
-    <div className="h-64 bg-gray-200/60 rounded-xl animate-pulse" />
+    <div className="h-64 bg-slate-200/60 rounded-xl animate-pulse" />
   </div>
 );
 

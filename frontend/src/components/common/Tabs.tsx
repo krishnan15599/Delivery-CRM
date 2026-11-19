@@ -30,7 +30,7 @@ export const Tabs: React.FC<TabsProps> = ({
     return (
       <div
         className={cn(
-          'inline-flex p-1 bg-gray-100 rounded-xl space-x-1 select-none',
+          'inline-flex p-1 bg-slate-100 rounded-xl space-x-1 select-none',
           className
         )}
         role="tablist"
@@ -50,8 +50,8 @@ export const Tabs: React.FC<TabsProps> = ({
                 'flex items-center gap-2 rounded-lg font-medium transition-all cursor-pointer',
                 size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm',
                 isActive
-                  ? 'bg-white text-gray-900 shadow-xs'
-                  : 'text-gray-600 hover:text-gray-900',
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900',
                 tab.disabled ? 'opacity-40 cursor-not-allowed' : ''
               )}
             >
@@ -62,8 +62,8 @@ export const Tabs: React.FC<TabsProps> = ({
                   className={cn(
                     'text-[11px] px-1.5 py-0.2 rounded-full font-semibold',
                     isActive
-                      ? 'bg-blue-50 text-[#1a5bc9]'
-                      : 'bg-gray-200 text-gray-600'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'bg-slate-200 text-slate-600'
                   )}
                 >
                   {tab.count}
@@ -94,8 +94,8 @@ export const Tabs: React.FC<TabsProps> = ({
                 'flex items-center gap-2 rounded-lg font-medium transition-colors cursor-pointer',
                 size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm',
                 isActive
-                  ? 'bg-[#2c5fbf] text-white shadow-xs'
-                  : 'bg-white hover:bg-gray-100 text-gray-600 border border-gray-200',
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200',
                 tab.disabled ? 'opacity-40 cursor-not-allowed' : ''
               )}
             >
@@ -105,7 +105,7 @@ export const Tabs: React.FC<TabsProps> = ({
                 <span
                   className={cn(
                     'text-[11px] px-1.5 py-0.2 rounded-full font-semibold',
-                    isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
                   )}
                 >
                   {tab.count}
@@ -120,7 +120,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   // Default: underline variant
   return (
-    <div className={cn('border-b border-gray-200 select-none overflow-x-auto', className)}>
+    <div className={cn('border-b border-slate-200 select-none overflow-x-auto', className)}>
       <nav className="flex space-x-6" role="tablist">
         {items.map((tab) => {
           const isActive = tab.id === activeTab;
@@ -137,8 +137,8 @@ export const Tabs: React.FC<TabsProps> = ({
                 'flex items-center gap-2 border-b-2 font-medium transition-colors py-3 px-1 cursor-pointer whitespace-nowrap',
                 size === 'sm' ? 'text-xs' : 'text-sm',
                 isActive
-                  ? 'border-[#2c5fbf] text-[#2c5fbf]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300',
                 tab.disabled ? 'opacity-40 cursor-not-allowed' : ''
               )}
             >
@@ -149,8 +149,8 @@ export const Tabs: React.FC<TabsProps> = ({
                   className={cn(
                     'text-[11px] px-2 py-0.5 rounded-full font-semibold',
                     isActive
-                      ? 'bg-blue-50 text-[#1a5bc9]'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'bg-slate-100 text-slate-600'
                   )}
                 >
                   {tab.count}

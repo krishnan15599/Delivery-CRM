@@ -58,7 +58,7 @@ export const reportService = {
 
     const statusBreakdown = [
       { name: 'Delivered', value: delivered || 68, color: '#10b981' },
-      { name: 'In Transit', value: inTransit || 14, color: '#2c5fbf' },
+      { name: 'In Transit', value: inTransit || 14, color: '#4f46e5' },
       { name: 'Pending', value: pending || 10, color: '#f59e0b' },
       { name: 'Failed', value: failed || 5, color: '#f43f5e' },
       { name: 'Returned', value: returned || 3, color: '#64748b' },
