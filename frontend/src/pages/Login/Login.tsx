@@ -21,7 +21,6 @@ interface RoleConfig {
   label: string;
   badge: string;
   email: string;
-  defaultPass: string;
   icon: React.ComponentType<{ className?: string }>;
   tagline: string;
   landingPage: string;
@@ -41,7 +40,6 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     label: "Admin Console",
     badge: "Full Control",
     email: "admin@deliverycrm.in",
-    defaultPass: "password123",
     icon: ShieldCheck,
     tagline: "Total control over operations, financial collections, settings & staff",
     landingPage: "/dashboard",
@@ -59,7 +57,6 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     label: "Hub Manager",
     badge: "Hub Operations",
     email: "manager@deliverycrm.in",
-    defaultPass: "password123",
     icon: UserCheck,
     tagline: "Oversee shipments, customer inquiries, field agents & daily reports",
     landingPage: "/dashboard",
@@ -77,7 +74,6 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     label: "Delivery Agent",
     badge: "Field App",
     email: "agent@deliverycrm.in",
-    defaultPass: "password123",
     icon: Bike,
     tagline: "Deliver assigned shipments, update status, record POD & team chat",
     landingPage: "/deliveries",
@@ -100,8 +96,8 @@ export const Login: React.FC = () => {
 
   const [selectedRole, setSelectedRole] = useState<UserRole>("Admin");
   const [formData, setFormData] = useState({
-    email: ROLE_CONFIGS.Admin.email,
-    password: ROLE_CONFIGS.Admin.defaultPass,
+    email: import.meta.env.DEV ? ROLE_CONFIGS.Admin.email : "",
+    password: "",
     rememberMe: true,
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -116,11 +112,14 @@ export const Login: React.FC = () => {
 
   const handleSelectRole = (role: UserRole) => {
     setSelectedRole(role);
-    setFormData((prev) => ({
-      ...prev,
-      email: ROLE_CONFIGS[role].email,
-      password: ROLE_CONFIGS[role].defaultPass,
-    }));
+    // Only pre-fill demo emails in dev builds; in production the role cards are informational
+    if (import.meta.env.DEV) {
+      setFormData((prev) => ({
+        ...prev,
+        email: ROLE_CONFIGS[role].email,
+        password: "",
+      }));
+    }
   };
 
   const handlePostLoginRedirect = (userRole: UserRole) => {
@@ -166,32 +165,21 @@ export const Login: React.FC = () => {
       const user = await login(formData.email, formData.password);
       toast.success(`Welcome back, ${user.name}! Logged in as ${user.role}.`);
       handlePostLoginRedirect(user.role);
-    } catch {
-      toast.error("Invalid credentials. Please verify your email and password.");
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid email or password.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleQuickLogin = async (role: UserRole) => {
+  const handleQuickLogin = (role: UserRole) => {
     const config = ROLE_CONFIGS[role];
     setSelectedRole(role);
     setFormData((prev) => ({
       ...prev,
       email: config.email,
-      password: config.defaultPass,
+      password: "",
     }));
-
-    try {
-      setSubmitting(true);
-      const user = await login(config.email, config.defaultPass);
-      toast.success(`Signed in as ${user.name} (${user.role})`);
-      handlePostLoginRedirect(user.role);
-    } catch {
-      toast.error(`Could not sign in as ${role}. Please check your connection.`);
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const activeConfig = ROLE_CONFIGS[selectedRole];
@@ -345,16 +333,17 @@ export const Login: React.FC = () => {
             </div>
             <p className="text-gray-600 text-[11px] mb-2">{activeConfig.tagline}</p>
 
-            {/* Quick 1-Click Button */}
-            <button
-              type="button"
-              disabled={submitting || isLoading}
-              onClick={() => handleQuickLogin(selectedRole)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              1-Click Instant Sign In as {selectedRole}
-            </button>
+            {/* Quick Demo Fill Email Button */}
+            {import.meta.env.DEV && (
+              <button
+                type="button"
+                onClick={() => handleQuickLogin(selectedRole)}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-2xs cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                Fill Demo Email for {selectedRole}
+              </button>
+            )}
           </div>
 
           {/* Form */}
@@ -417,7 +406,9 @@ export const Login: React.FC = () => {
                 <span className="text-xs text-gray-600">Keep me logged in</span>
               </label>
 
-              <span className="text-xs text-gray-400">Demo pass: password123</span>
+              {import.meta.env.DEV && (
+                <span className="text-xs text-gray-400">Dev demo accounts</span>
+              )}
             </div>
 
             <button

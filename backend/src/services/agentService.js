@@ -2,6 +2,7 @@ const { supabase } = require('../config/supabase');
 const { generateId } = require('../utils/idGenerator');
 const { sanitizeSearchQuery } = require('../utils/sanitize');
 const { applyPagination } = require('../utils/pagination');
+const profileService = require('./profileService');
 
 const listAgents = async (filters = {}) => {
   const { search, status, hubLocation, vehicleType, page, pageSize, limit } = filters;
@@ -66,42 +67,34 @@ const createAgent = async (input) => {
   const now = new Date().toISOString();
 
   let linkedUserId = null;
+  let newlyCreatedProfileId = null;
 
   // Ensure an account profile exists in Supabase profiles table so the Agent can log in
   if (input.email) {
-    try {
-      const lowerEmail = input.email.toLowerCase().trim();
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', lowerEmail)
-        .maybeSingle();
+    const lowerEmail = input.email.toLowerCase().trim();
+    const existingProfile = await profileService.getProfileByEmail(lowerEmail);
 
-      if (existingProfile) {
-        linkedUserId = existingProfile.id;
-      } else {
-        const { data: newProfile } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: generateId('USR'),
-              name: input.name,
-              email: lowerEmail,
-              role: 'Agent',
-              phone: input.phone || null,
-              created_at: now,
-              updated_at: now,
-            },
-          ])
-          .select()
-          .single();
+    if (existingProfile) {
+      linkedUserId = existingProfile.id;
+    } else {
+      const newProfile = await profileService.createProfile(
+        {
+          name: input.name,
+          email: lowerEmail,
+          temporaryPassword: input.temporaryPassword,
+          role: 'Agent',
+          phone: input.phone || null,
+          vehicleType: input.vehicleType,
+          vehicleNumber: input.vehicleNumber,
+          hubLocation: input.hubLocation,
+        },
+        { createAgentRecord: false }
+      );
 
-        if (newProfile) {
-          linkedUserId = newProfile.id;
-        }
+      if (newProfile) {
+        linkedUserId = newProfile.id;
+        newlyCreatedProfileId = newProfile.id;
       }
-    } catch (_profErr) {
-      console.warn('Could not auto-create linked profile in Supabase for agent:', _profErr.message);
     }
   }
 
@@ -127,14 +120,26 @@ const createAgent = async (input) => {
     updated_at: now,
   };
 
-  const { data, error } = await supabase
-    .from('agents')
-    .insert([record])
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('agents')
+      .insert([record])
+      .select()
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
+  } catch (agentInsertError) {
+    // If the agents insert in createAgent fails after it created a new profile, call deleteProfile
+    if (newlyCreatedProfileId) {
+      try {
+        await profileService.deleteProfile(newlyCreatedProfileId);
+      } catch (_delErr) {
+        console.warn('Failed to rollback newly created profile after agent insert failure:', _delErr.message);
+      }
+    }
+    throw agentInsertError;
+  }
 };
 
 const updateAgent = async (id, input) => {

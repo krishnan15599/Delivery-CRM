@@ -50,6 +50,7 @@ export interface CreateAgentInput {
   name: string;
   phone: string;
   email: string;
+  temporaryPassword?: string;
   vehicleType: VehicleType;
   vehicleNumber: string;
   hubLocation: string;

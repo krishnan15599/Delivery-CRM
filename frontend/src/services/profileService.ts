@@ -9,6 +9,9 @@ export interface ProfileInput {
   phone?: string;
   role?: UserRole;
   avatarUrl?: string;
+  temporaryPassword?: string;
+  vehicleType?: string;
+  hubLocation?: string;
 }
 
 const PROFILES_STORAGE_KEY = 'delivery_crm_profiles';
@@ -109,7 +112,11 @@ export const profileService = {
       const list = getStoredProfiles();
       saveStoredProfiles([...list, created]);
       return created;
-    } catch (error) {
+    } catch (error: any) {
+      // Fall back to mock/local storage ONLY on true network errors (no response from server)
+      if (error?.response) {
+        throw error;
+      }
       console.warn('Backend API unavailable, saving profile locally:', error);
       const newProfile: User = {
         id: `USR-${Date.now().toString().slice(-4)}`,

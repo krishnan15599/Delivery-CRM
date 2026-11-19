@@ -138,7 +138,11 @@ export const agentService = {
         input
       );
       return mapBackendAgent(response.data.data);
-    } catch (error) {
+    } catch (error: any) {
+      // Fall back to mock/local storage ONLY on true network errors (no response from server)
+      if (error?.response) {
+        throw error;
+      }
       console.warn('Backend API unavailable, falling back to mock storage for createAgent:', error);
       await delay(350);
       const agents = mockStorage.getAgents();

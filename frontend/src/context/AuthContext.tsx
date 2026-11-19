@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 
 export interface AuthContextType {
   user: User | null;
-  role: UserRole;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<User>;
@@ -15,14 +15,15 @@ export interface AuthContextType {
   getDefaultRoute: () => string;
 }
 
-export const getDefaultRouteForRole = (role: UserRole): string => {
+export const getDefaultRouteForRole = (role?: UserRole | null): string => {
   switch (role) {
     case 'Agent':
       return '/deliveries';
     case 'Manager':
     case 'Admin':
-    default:
       return '/dashboard';
+    default:
+      return '/login';
   }
 };
 
@@ -65,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
 
   const isAuthenticated = Boolean(user && authService.getStoredToken());
-  const role: UserRole = user?.role || 'Admin';
+  const role: UserRole | null = user?.role || null;
 
   useEffect(() => {
     const token = authService.getStoredToken();

@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   UserCheck,
   Bike,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -25,7 +27,7 @@ import {
   ConfirmDialog,
   useToast,
 } from '../../components/common';
-import { profileService, authService, agentService } from '../../services';
+import { profileService, authService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import type { User, UserRole } from '../../types/auth';
 
@@ -66,11 +68,13 @@ export const Settings: React.FC = () => {
   const [staffFormData, setStaffFormData] = useState({
     name: '',
     email: '',
+    temporaryPassword: '',
     role: (activeUserRole === 'Manager' ? 'Agent' : 'Manager') as UserRole,
     phone: '',
     vehicleType: 'Bike',
     hubLocation: 'Indiranagar Hub',
   });
+  const [showStaffPassword, setShowStaffPassword] = useState(false);
   const [isCreatingStaff, setIsCreatingStaff] = useState(false);
 
   // Delete Staff state
@@ -141,35 +145,25 @@ export const Settings: React.FC = () => {
       toast.error('Please enter a valid email address');
       return;
     }
+    if (!staffFormData.temporaryPassword || staffFormData.temporaryPassword.length < 8) {
+      toast.error('Temporary password is required and must be at least 8 characters');
+      return;
+    }
 
     try {
       setIsCreatingStaff(true);
       const cleanEmail = staffFormData.email.toLowerCase().trim();
 
-      // 1. Create in Supabase profiles table
+      // Create in Supabase profiles table (the backend automatically creates the linked agent row for role Agent)
       await profileService.createProfile({
         name: staffFormData.name.trim(),
         email: cleanEmail,
+        temporaryPassword: staffFormData.temporaryPassword,
         role: staffFormData.role,
         phone: staffFormData.phone.trim(),
+        vehicleType: staffFormData.role === 'Agent' ? staffFormData.vehicleType : undefined,
+        hubLocation: staffFormData.role === 'Agent' ? staffFormData.hubLocation : undefined,
       });
-
-      // 2. If creating an Agent, also register in agents table
-      if (staffFormData.role === 'Agent') {
-        try {
-          await agentService.createAgent({
-            name: staffFormData.name.trim(),
-            email: cleanEmail,
-            phone: staffFormData.phone.trim() || '+91 98765 00000',
-            vehicleType: staffFormData.vehicleType as any,
-            vehicleNumber: `KA-01-EQ-${Math.floor(1000 + Math.random() * 9000)}`,
-            hubLocation: staffFormData.hubLocation,
-            status: 'Active',
-          });
-        } catch (agErr) {
-          console.warn('Agent record sync note:', agErr);
-        }
-      }
 
       toast.success(
         `${staffFormData.role} account for "${staffFormData.name}" created and stored in Supabase database!`
@@ -178,6 +172,7 @@ export const Settings: React.FC = () => {
       setStaffFormData({
         name: '',
         email: '',
+        temporaryPassword: '',
         role: (activeUserRole === 'Manager' ? 'Agent' : 'Manager') as UserRole,
         phone: '',
         vehicleType: 'Bike',
@@ -425,6 +420,7 @@ export const Settings: React.FC = () => {
                     setStaffFormData({
                       name: '',
                       email: '',
+                      temporaryPassword: '',
                       role: activeUserRole === 'Manager' ? 'Agent' : 'Manager',
                       phone: '',
                       vehicleType: 'Bike',
@@ -570,6 +566,27 @@ export const Settings: React.FC = () => {
             />
           </FormField>
 
+          <FormField label="Temporary Password" required>
+            <div className="relative">
+              <Input
+                type={showStaffPassword ? 'text' : 'password'}
+                value={staffFormData.temporaryPassword}
+                onChange={(e) => setStaffFormData({ ...staffFormData, temporaryPassword: e.target.value })}
+                placeholder="Minimum 8 characters"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowStaffPassword(!showStaffPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                aria-label={showStaffPassword ? 'Hide password' : 'Show password'}
+              >
+                {showStaffPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </FormField>
+
           <FormField label="Account Role" required>
             {activeUserRole === 'Manager' ? (
               <Input value="Agent (Field Delivery)" disabled />
@@ -626,14 +643,6 @@ export const Settings: React.FC = () => {
               </FormField>
             </div>
           )}
-
-          <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 text-[11px] text-blue-800">
-            <strong>Note:</strong> Default password for created test accounts is{' '}
-            <code className="bg-white px-1.5 py-0.5 rounded border border-blue-200 font-bold">
-              password123
-            </code>
-            . The user can log in immediately from the login screen.
-          </div>
         </form>
       </Modal>
 
