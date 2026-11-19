@@ -27,7 +27,7 @@ import {
   ConfirmDialog,
   useToast,
 } from '../../components/common';
-import { profileService, authService } from '../../services';
+import { profileService, authService, organizationService, apiErrorMessage } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import type { User, UserRole } from '../../types/auth';
 
@@ -109,14 +109,33 @@ export const Settings: React.FC = () => {
     }
   }, [activeTab, fetchProfiles]);
 
-  // Company Form state
+  // Company (business) settings — loaded from and saved to the backend
   const [company, setCompany] = useState({
-    companyName: 'Express Logistics CRM India Pvt Ltd',
-    hubAddress: '100ft Road, Indiranagar, Bengaluru, KA',
+    companyName: '',
+    hubAddress: '',
     currency: '₹ INR (Indian Rupee)',
-    supportEmail: 'ops-support@deliverycrm.in',
-    supportPhone: '1800-419-8900',
+    supportEmail: '',
+    supportPhone: '',
   });
+  const [isSavingCompany, setIsSavingCompany] = useState(false);
+  // toast.error is a stable useCallback; the toast object itself changes whenever a toast shows
+  const toastError = toast.error;
+
+  useEffect(() => {
+    if (activeTab !== 'company') return;
+    organizationService
+      .getBusiness()
+      .then((biz) =>
+        setCompany((c) => ({
+          ...c,
+          companyName: biz.name,
+          hubAddress: biz.settings?.hubAddress || '',
+          supportEmail: biz.settings?.supportEmail || '',
+          supportPhone: biz.settings?.supportPhone || '',
+        }))
+      )
+      .catch((err) => toastError(apiErrorMessage(err, 'Could not load company settings.')));
+  }, [activeTab, toastError]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,9 +149,28 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleSaveCompany = (e: React.FormEvent) => {
+  const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Company settings saved successfully!');
+    if (company.companyName.trim().length < 2) {
+      toast.error('Company name must be at least 2 characters');
+      return;
+    }
+    try {
+      setIsSavingCompany(true);
+      await organizationService.updateBusiness({
+        name: company.companyName.trim(),
+        settings: {
+          hubAddress: company.hubAddress.trim(),
+          supportEmail: company.supportEmail.trim(),
+          supportPhone: company.supportPhone.trim(),
+        },
+      });
+      toast.success('Company settings saved. Sign in again to see the new name in the header.');
+    } catch (err) {
+      toast.error(apiErrorMessage(err, 'Could not save company settings.'));
+    } finally {
+      setIsSavingCompany(false);
+    }
   };
 
   const handleCreateStaffAccount = async (e: React.FormEvent) => {
@@ -360,9 +398,19 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="pt-2">
-              <Button type="submit" variant="primary" size="sm" leftIcon={<Save className="w-3.5 h-3.5" />}>
-                Save Company Settings
-              </Button>
+              {activeUserRole === 'Admin' ? (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  isLoading={isSavingCompany}
+                  leftIcon={<Save className="w-3.5 h-3.5" />}
+                >
+                  Save Company Settings
+                </Button>
+              ) : (
+                <p className="text-xs text-gray-500">Only an Admin can change company settings.</p>
+              )}
             </div>
           </form>
         )}

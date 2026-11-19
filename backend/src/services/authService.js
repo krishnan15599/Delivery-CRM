@@ -1,5 +1,8 @@
-const { supabase, createAuthClient, isDbConfigured } = require('../config/supabase');
+const { createAuthClient, isDbConfigured } = require('../config/supabase');
 const { signJWT } = require('../middlewares/auth');
+const { loadUserContext, getProfileForContext } = require('./userContextService');
+
+const TOKEN_TTL_SECONDS = 24 * 60 * 60;
 
 const login = async ({ email, password }) => {
   const lowerEmail = email ? email.toLowerCase().trim() : '';
@@ -51,48 +54,27 @@ const login = async ({ email, password }) => {
     }
 
     // Load profile with auth_user_id = <auth user id>
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_user_id', authData.user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      const msg = profileError.message || '';
-      if (
-        msg.includes('fetch failed') ||
-        msg.includes('ENOTFOUND') ||
-        msg.includes('ECONNREFUSED') ||
-        msg.includes('network')
-      ) {
-        const err = new Error('Database service is temporarily unreachable. Please try again later.');
-        err.status = 503;
-        throw err;
-      }
-      throw profileError;
-    }
-
+    const profile = await getProfileForContext('auth_user_id', authData.user.id);
     if (!profile) {
       const err = new Error('Invalid email or password');
       err.status = 401;
       throw err;
     }
 
-    const userProfile = {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      role: profile.role,
-      phone: profile.phone,
-      authUserId: profile.auth_user_id,
-    };
+    // Business, teams and blocks (inactive user / suspended business)
+    const ctx = await loadUserContext(profile);
+    if (ctx.error) {
+      const err = new Error(ctx.error.message);
+      err.status = ctx.error.status;
+      throw err;
+    }
 
-    const token = authData.session?.access_token || signJWT(userProfile);
-
+    // Our own token carries only the profile id; everything else is
+    // re-loaded on each request. (Supabase access tokens expire after 1 hour.)
     return {
-      user: userProfile,
-      token,
-      expiresIn: authData.session?.expires_in || 86400,
+      user: ctx.user,
+      token: signJWT({ sub: profile.id }, TOKEN_TTL_SECONDS),
+      expiresIn: TOKEN_TTL_SECONDS,
     };
   } catch (err) {
     if (err.status) throw err;

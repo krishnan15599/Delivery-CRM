@@ -1,37 +1,9 @@
 import api from './api';
-import type { User, UserRole, LoginResponse } from '../types/auth';
+import type { User, LoginResponse } from '../types/auth';
 import { API_ENDPOINTS } from '../constants/endpoints';
 
 const TOKEN_KEY = 'delivery_crm_auth_token';
 const USER_KEY = 'delivery_crm_auth_user';
-
-// ---------------------------------------------------------------------------
-// DEMO_USERS is only used by switchRole(), which the UI exposes in dev builds
-// only. login() never uses it — it always goes through the backend.
-// ---------------------------------------------------------------------------
-export const DEMO_USERS: Record<UserRole, User> = {
-  Admin: {
-    id: 'USR-001',
-    name: 'Krishnan K.',
-    email: 'admin@deliverycrm.in',
-    role: 'Admin',
-    phone: '+91 98450 12345',
-  },
-  Manager: {
-    id: 'USR-002',
-    name: 'Sarah Jenkins',
-    email: 'manager@deliverycrm.in',
-    role: 'Manager',
-    phone: '+91 98765 43210',
-  },
-  Agent: {
-    id: 'USR-003',
-    name: 'Rahul Sharma',
-    email: 'agent@deliverycrm.in',
-    role: 'Agent',
-    phone: '+91 98111 22334',
-  },
-};
 
 export const authService = {
   getStoredToken(): string | null {
@@ -138,26 +110,5 @@ export const authService = {
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-  },
-
-  /**
-   * Updates the locally-stored user record and token so the UI reflects
-   * the new role immediately.
-   */
-  switchRole(role: UserRole): User {
-    const baseUser = DEMO_USERS[role];
-    const user: User = {
-      ...baseUser,
-    };
-
-    const tokenHeader = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const tokenPayload = btoa(
-      JSON.stringify({ ...user, exp: Math.floor(Date.now() / 1000) + 86400 })
-    );
-    const demoToken = `${tokenHeader}.${tokenPayload}.demo_${role.toLowerCase()}_token`;
-
-    localStorage.setItem(TOKEN_KEY, demoToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    return user;
   },
 };

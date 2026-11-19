@@ -2,17 +2,31 @@ const { supabase } = require('../config/supabase');
 const { generateId, generateTrackingNumber } = require('../utils/idGenerator');
 const { sanitizeSearchQuery, normalizeEndDate } = require('../utils/sanitize');
 const { applyPagination } = require('../utils/pagination');
+const { emptyListResult } = require('../utils/emptyResult');
+const {
+  applyDeliveryScope,
+  isAgent,
+  canAgentSetStatus,
+  resolveTeamId,
+  httpError,
+} = require('../utils/access');
+const agentService = require('./agentService');
+const teamService = require('./teamService');
+
+// Admin: all deliveries of the business. Manager: their teams. Agent: assigned to them.
+// Writes go through SQL functions that also check the business (05_tenant_scoped_functions.sql).
 
 // ────────────────────────────────────────────────────────────────────────────
 // List
 // ────────────────────────────────────────────────────────────────────────────
-const listDeliveries = async (filters = {}) => {
+const listDeliveries = async (user, filters = {}) => {
   const {
-    search, status, agentId, customerId,
+    search, status, agentId, customerId, teamId,
     startDate, endDate, page, pageSize, limit,
   } = filters;
 
-  let query = supabase.from('deliveries').select('*', { count: 'exact' });
+  let query = applyDeliveryScope(supabase.from('deliveries').select('*', { count: 'exact' }), user);
+  if (!query) return emptyListResult({ page, pageSize, limit });
 
   const statusStr = typeof status === 'string' ? status : (Array.isArray(status) ? String(status[status.length - 1]) : '');
   if (statusStr && statusStr !== 'all') {
@@ -25,6 +39,7 @@ const listDeliveries = async (filters = {}) => {
 
   if (agentId) query = query.eq('agent_id', agentId);
   if (customerId) query = query.eq('customer_id', customerId);
+  if (typeof teamId === 'string' && teamId && teamId !== 'all') query = query.eq('team_id', teamId);
   if (startDate) query = query.gte('date', startDate);
   if (endDate)   query = query.lte('date', normalizeEndDate(endDate));
 
@@ -51,34 +66,58 @@ const listDeliveries = async (filters = {}) => {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Get by ID / Tracking Number
+// Get by ID / Tracking Number (scoped)
 // ────────────────────────────────────────────────────────────────────────────
-const getDeliveryById = async (id) => {
-  const { data, error } = await supabase
-    .from('deliveries').select('*').eq('id', id).maybeSingle();
+const getDeliveryById = async (user, id) => {
+  const query = applyDeliveryScope(supabase.from('deliveries').select('*'), user);
+  if (!query) return null;
+  const { data, error } = await query.eq('id', id).maybeSingle();
   if (error) throw error;
   return data;
 };
 
-const getDeliveryByTrackingNumber = async (trk) => {
-  const { data, error } = await supabase
-    .from('deliveries').select('*').eq('tracking_number', trk).maybeSingle();
+const getDeliveryByTrackingNumber = async (user, trk) => {
+  const query = applyDeliveryScope(supabase.from('deliveries').select('*'), user);
+  if (!query) return null;
+  const { data, error } = await query.eq('tracking_number', trk).maybeSingle();
   if (error) throw error;
   return data;
 };
 
+const mapRpcError = (rpcError, notFoundMessage) => {
+  if (rpcError.code === 'P0002') return httpError(404, notFoundMessage || rpcError.message);
+  if (rpcError.code === '22000' || rpcError.code === '22023') return httpError(400, rpcError.message);
+  return rpcError;
+};
+
 // ────────────────────────────────────────────────────────────────────────────
-// Create Delivery  — delegates to the create_delivery SQL function so
-// the insert, collection record, and all counter updates happen in one transaction.
+// Create Delivery — team = the agent's team when an agent is given,
+// otherwise teamId / the business's default team / the Manager's only team.
 // ────────────────────────────────────────────────────────────────────────────
-const createDelivery = async (input, user = null) => {
+const createDelivery = async (user, input) => {
   const deliveryId      = input.id || generateId('DEL');
   const trackingNumber  = input.trackingNumber || generateTrackingNumber();
+
+  let teamId;
+  if (input.agentId) {
+    const agent = await agentService.getAgentById(user, input.agentId);
+    if (!agent) throw httpError(404, `Agent with ID '${input.agentId}' not found.`);
+    if (input.teamId && input.teamId !== agent.team_id) {
+      throw httpError(400, 'The selected agent is not in the selected team.');
+    }
+    teamId = agent.team_id;
+  } else {
+    const orgTeams = await teamService.listOrgTeams(user.organizationId);
+    const resolved = resolveTeamId(user, input.teamId, orgTeams);
+    if (resolved.error) throw httpError(resolved.error.status, resolved.error.message);
+    teamId = resolved.teamId;
+  }
 
   // Build the JSONB payload the SQL function expects
   const payload = {
     id:             deliveryId,
     trackingNumber,
+    teamId,
     customerId:     input.customerId || null,
     customerName:   input.customerName,
     customerPhone:  input.customerPhone || null,
@@ -97,37 +136,25 @@ const createDelivery = async (input, user = null) => {
   };
 
   const { data: rpcData, error: rpcError } = await supabase.rpc('create_delivery', {
+    p_organization_id: user.organizationId,
     p_delivery: payload,
-    p_user_name: user?.name || user?.role || 'Admin',
+    p_user_id: user.id,
+    p_user_name: user.name || user.role || 'Admin',
   });
 
-  if (rpcError) {
-    // Surface explicit business errors (P0002 = not found, 22000 = constraint)
-    if (rpcError.code === 'P0002') {
-      const err = new Error(rpcError.message);
-      err.status = 404;
-      throw err;
-    }
-    throw rpcError;
-  }
-
+  if (rpcError) throw mapRpcError(rpcError);
   return rpcData;
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Generic Delivery Update  — metadata only, never status.
-// Fixes: blocks reassigning Delivered/Returned deliveries;
-//        verifies new agent exists before adjusting any counters.
+// Generic Delivery Update — metadata only, never status.
 // ────────────────────────────────────────────────────────────────────────────
-const updateDelivery = async (id, input) => {
-  const existing = await getDeliveryById(id);
+const updateDelivery = async (user, id, input) => {
+  const existing = await getDeliveryById(user, id);
   if (!existing) return null;
 
-  // Do not allow changing agent or metadata on terminal deliveries
   if (['Delivered', 'Returned'].includes(existing.status) && input.agentId !== undefined) {
-    const err = new Error(`Cannot reassign a delivery that is already ${existing.status}.`);
-    err.status = 400;
-    throw err;
+    throw httpError(400, `Cannot reassign a delivery that is already ${existing.status}.`);
   }
 
   const now = new Date().toISOString();
@@ -147,30 +174,28 @@ const updateDelivery = async (id, input) => {
   if (input.notes         !== undefined) updatePayload.notes           = input.notes;
   if (input.scheduledDate !== undefined) updatePayload.scheduled_date  = input.scheduledDate;
 
-  // Handle agent reassignment atomically via PostgreSQL function
+  // Agent (re)assignment — the new agent must be one this user may manage
   const newAgentId = input.agentId;
   if (newAgentId !== undefined && newAgentId !== existing.agent_id) {
+    if (newAgentId) {
+      const agent = await agentService.getAgentById(user, newAgentId);
+      if (!agent) throw httpError(404, `Agent with ID '${newAgentId}' not found.`);
+    }
+
     const { error: rpcErr } = await supabase.rpc('reassign_delivery_agent', {
+      p_organization_id: user.organizationId,
       p_delivery_id: id,
       p_new_agent_id: newAgentId || null,
-      p_updated_by: 'Dispatcher',
+      p_updated_by: user.name || 'Dispatcher',
     });
-
-    if (rpcErr) {
-      if (rpcErr.code === 'P0002') {
-        const err = new Error(`Agent with ID '${newAgentId}' not found.`);
-        err.status = 404;
-        throw err;
-      }
-      throw rpcErr;
-    }
+    if (rpcErr) throw mapRpcError(rpcErr, `Agent with ID '${newAgentId}' not found.`);
   }
 
-  // If other non-agent fields were updated, apply them
   if (Object.keys(updatePayload).length > 1) { // more than just updated_at
     const { data, error } = await supabase
       .from('deliveries')
       .update(updatePayload)
+      .eq('organization_id', user.organizationId)
       .eq('id', id)
       .select()
       .single();
@@ -181,6 +206,7 @@ const updateDelivery = async (id, input) => {
   const { data, error } = await supabase
     .from('deliveries')
     .select()
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -188,10 +214,18 @@ const updateDelivery = async (id, input) => {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Status Transition  — SQL function only; no JS fallback.
+// Status Transition — Agents: only their own deliveries, only field statuses.
 // ────────────────────────────────────────────────────────────────────────────
-const updateDeliveryStatus = async (id, status, note = null, updatedBy = 'System') => {
+const updateDeliveryStatus = async (user, id, status, note = null, updatedBy = 'System') => {
+  const existing = await getDeliveryById(user, id);
+  if (!existing) return null;
+
+  if (isAgent(user) && !canAgentSetStatus(status)) {
+    throw httpError(403, `Agents can only set these statuses: Picked Up, In Transit, Delivered, Failed.`);
+  }
+
   const { data: rpcData, error: rpcError } = await supabase.rpc('update_delivery_status', {
+    p_organization_id: user.organizationId,
     p_delivery_id: id,
     p_new_status:  status,
     p_note:        note,
@@ -199,49 +233,58 @@ const updateDeliveryStatus = async (id, status, note = null, updatedBy = 'System
   });
 
   if (rpcError) {
-    // P0002 = delivery not found; 22000 / 22023 = business rule violation
-    if (rpcError.code === 'P0002') {
-      return null;
-    }
-    if (rpcError.code === '22000' || rpcError.code === '22023') {
-      const err = new Error(rpcError.message);
-      err.status = 400;
-      throw err;
-    }
-    throw rpcError;
+    if (rpcError.code === 'P0002') return null;
+    throw mapRpcError(rpcError);
   }
 
   return rpcData;
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Bulk Assign  — SQL function only; no JS fallback.
+// Bulk Assign — deliveries the user cannot see are skipped (returned in skippedIds)
 // ────────────────────────────────────────────────────────────────────────────
-const bulkAssignDeliveries = async (deliveryIds, agentId, updatedBy = 'Dispatcher') => {
+const bulkAssignDeliveries = async (user, deliveryIds, agentId, updatedBy = 'Dispatcher') => {
+  const agent = await agentService.getAgentById(user, agentId);
+  if (!agent) throw httpError(404, `Agent with ID '${agentId}' not found.`);
+
+  const scoped = applyDeliveryScope(supabase.from('deliveries').select('id'), user);
+  let visibleIds = [];
+  if (scoped) {
+    const { data, error } = await scoped.in('id', deliveryIds);
+    if (error) throw error;
+    visibleIds = (data || []).map((row) => row.id);
+  }
+  const notVisible = deliveryIds.filter((id) => !visibleIds.includes(id));
+
+  if (visibleIds.length === 0) {
+    return { success: true, assignedCount: 0, skippedIds: notVisible, agentId, agentName: agent.name };
+  }
+
   const { data: rpcData, error: rpcError } = await supabase.rpc('bulk_assign_deliveries', {
-    p_delivery_ids: deliveryIds,
+    p_organization_id: user.organizationId,
+    p_delivery_ids: visibleIds,
     p_agent_id:     agentId,
     p_updated_by:   updatedBy,
   });
 
-  if (rpcError) {
-    if (rpcError.code === 'P0002') {
-      const err = new Error(rpcError.message);
-      err.status = 404;
-      throw err;
-    }
-    throw rpcError;
-  }
+  if (rpcError) throw mapRpcError(rpcError);
 
-  return rpcData;
+  return {
+    ...rpcData,
+    skippedIds: [...notVisible, ...((rpcData && rpcData.skippedIds) || [])],
+  };
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Delete
+// Delete (Admin only — enforced by the route)
 // ────────────────────────────────────────────────────────────────────────────
-const deleteDelivery = async (id) => {
+const deleteDelivery = async (user, id) => {
   const { data, error } = await supabase
-    .from('deliveries').delete().eq('id', id).select();
+    .from('deliveries')
+    .delete()
+    .eq('organization_id', user.organizationId)
+    .eq('id', id)
+    .select();
   if (error) throw error;
   return data && data.length > 0;
 };

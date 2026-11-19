@@ -161,16 +161,25 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
               <span className="text-xs font-bold text-gray-900 leading-none">
                 {user?.name || (role === 'Agent' ? 'Rahul Sharma' : role === 'Manager' ? 'Sarah Jenkins' : 'Krishnan K.')}
               </span>
-              <span
-                className={`text-[10px] mt-1 font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded w-fit ${
-                  role === 'Admin'
-                    ? 'bg-blue-50 text-blue-700'
-                    : role === 'Manager'
-                    ? 'bg-purple-50 text-purple-700'
-                    : 'bg-emerald-50 text-emerald-700'
-                }`}
-              >
-                {role}
+              <span className="flex items-center gap-1.5 mt-1">
+                <span
+                  className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded w-fit ${
+                    role === 'SuperAdmin'
+                      ? 'bg-gray-900 text-[#84cc16]'
+                      : role === 'Admin'
+                      ? 'bg-blue-50 text-blue-700'
+                      : role === 'Manager'
+                      ? 'bg-purple-50 text-purple-700'
+                      : 'bg-emerald-50 text-emerald-700'
+                  }`}
+                >
+                  {role === 'SuperAdmin' ? 'Platform Owner' : role}
+                </span>
+                {user?.organization?.name && (
+                  <span className="text-[10px] text-gray-500 truncate max-w-[140px]" title={user.organization.name}>
+                    {user.organization.name}
+                  </span>
+                )}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
@@ -185,6 +194,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
                 <span className="text-[11px] text-gray-400 truncate block">
                   {user?.email || 'user@deliverycrm.in'}
                 </span>
+                {user?.organization?.name && (
+                  <span className="text-[11px] text-gray-600 truncate block mt-0.5">
+                    {user.organization.name}
+                  </span>
+                )}
               </div>
 
               <div className="py-1">

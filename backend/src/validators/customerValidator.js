@@ -31,7 +31,6 @@ const validateCreateCustomer = (body = {}) => {
 
   return {
     value: {
-      id: safeTrim(body.id),
       name,
       email: email ? email.toLowerCase() : null,
       phone,

@@ -17,7 +17,9 @@ const { requireAuth, requireRole } = require('../middlewares/auth');
 
 router.use(requireAuth);
 
-// All authenticated users can read
+// Customers are business-wide data for Admins and Managers (Agents get 403)
+router.use(requireRole('Admin', 'Manager'));
+
 router.route('/')
   .get(getCustomers)
   .post(requireRole('Admin', 'Manager'), validateBody(validateCreateCustomer), createCustomer);

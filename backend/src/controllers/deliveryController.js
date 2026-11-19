@@ -2,7 +2,7 @@ const deliveryService = require('../services/deliveryService');
 const { sendSuccess, sendPaginated, sendError } = require('../utils/apiResponse');
 
 const getDeliveries = async (req, res) => {
-  const result = await deliveryService.listDeliveries(req.query);
+  const result = await deliveryService.listDeliveries(req.user, req.query);
   if (result.isPaginated) {
     return sendPaginated(res, result.data, {
       page: result.page,
@@ -16,7 +16,7 @@ const getDeliveries = async (req, res) => {
 };
 
 const getDeliveryById = async (req, res) => {
-  const delivery = await deliveryService.getDeliveryById(req.params.id);
+  const delivery = await deliveryService.getDeliveryById(req.user, req.params.id);
   if (!delivery) {
     return sendError(res, 404, `Delivery with ID '${req.params.id}' not found`);
   }
@@ -24,7 +24,7 @@ const getDeliveryById = async (req, res) => {
 };
 
 const getDeliveryByTracking = async (req, res) => {
-  const delivery = await deliveryService.getDeliveryByTrackingNumber(req.params.trackingNumber);
+  const delivery = await deliveryService.getDeliveryByTrackingNumber(req.user, req.params.trackingNumber);
   if (!delivery) {
     return sendError(
       res,
@@ -36,12 +36,12 @@ const getDeliveryByTracking = async (req, res) => {
 };
 
 const createDelivery = async (req, res) => {
-  const delivery = await deliveryService.createDelivery(req.body, req.user);
+  const delivery = await deliveryService.createDelivery(req.user, req.body);
   return sendSuccess(res, 201, 'Delivery created successfully', delivery);
 };
 
 const updateDelivery = async (req, res) => {
-  const delivery = await deliveryService.updateDelivery(req.params.id, req.body);
+  const delivery = await deliveryService.updateDelivery(req.user, req.params.id, req.body);
   if (!delivery) {
     return sendError(res, 404, `Delivery with ID '${req.params.id}' not found`);
   }
@@ -53,6 +53,7 @@ const updateDeliveryStatus = async (req, res) => {
   const updatedBy = req.user?.name || req.user?.role || 'System';
 
   const delivery = await deliveryService.updateDeliveryStatus(
+    req.user,
     req.params.id,
     status,
     note,
@@ -75,7 +76,7 @@ const bulkAssignDeliveries = async (req, res) => {
   const { deliveryIds, agentId } = req.body;
   const updatedBy = req.user?.name || req.user?.role || 'Dispatcher';
 
-  const result = await deliveryService.bulkAssignDeliveries(deliveryIds, agentId, updatedBy);
+  const result = await deliveryService.bulkAssignDeliveries(req.user, deliveryIds, agentId, updatedBy);
   return sendSuccess(
     res,
     200,
@@ -85,7 +86,7 @@ const bulkAssignDeliveries = async (req, res) => {
 };
 
 const deleteDelivery = async (req, res) => {
-  const success = await deliveryService.deleteDelivery(req.params.id);
+  const success = await deliveryService.deleteDelivery(req.user, req.params.id);
   if (!success) {
     return sendError(res, 404, `Delivery with ID '${req.params.id}' not found or already deleted.`);
   }

@@ -9,7 +9,6 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<User>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
   hasRole: (allowedRoles: UserRole[]) => boolean;
   canAccessRoute: (pathname: string) => boolean;
   getDefaultRoute: () => string;
@@ -17,6 +16,8 @@ export interface AuthContextType {
 
 export const getDefaultRouteForRole = (role?: UserRole | null): string => {
   switch (role) {
+    case 'SuperAdmin':
+      return '/platform';
     case 'Agent':
       return '/deliveries';
     case 'Manager':
@@ -31,6 +32,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Route access matrix by role
 export const ROLE_ROUTE_PERMISSIONS: Record<UserRole, string[]> = {
+  SuperAdmin: ['/platform'],
   Admin: [
     '/dashboard',
     '/customers',
@@ -93,10 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   }, []);
 
-  const switchRole = useCallback((newRole: UserRole) => {
-    const updatedUser = authService.switchRole(newRole);
-    setUser(updatedUser);
-  }, []);
 
   const hasRole = useCallback(
     (allowedRoles: UserRole[]): boolean => {
@@ -128,7 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
-        switchRole,
         hasRole,
         canAccessRoute,
         getDefaultRoute,

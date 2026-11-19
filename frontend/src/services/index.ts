@@ -7,4 +7,6 @@ export * from './chatService';
 export * from './reportService';
 export * from './authService';
 export * from './profileService';
+export * from './platformService';
+export * from './organizationService';
 
