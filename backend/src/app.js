@@ -8,15 +8,36 @@ const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHand
 
 const app = express();
 
-// Security & Parsing Middlewares
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:5000',
-      'https://delivery-crm-7fl4.onrender.com',
-    ];
+// Websites allowed to call this API from a browser (CORS).
+// Always allowed: local development + the production frontend.
+// CORS_ORIGIN (comma-separated) ADDS more, e.g. a custom domain.
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'https://delivery-crm-7fl4.onrender.com',
+  'https://delivery-crm-eight.vercel.app',
+];
+
+// A browser origin never has a path: "https://site.vercel.app/login/" -> "https://site.vercel.app"
+const toOrigin = (value) => {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value.replace(/\/+$/, ''); // e.g. '*'
+  }
+};
+
+const allowedOrigins = [
+  ...new Set([
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.CORS_ORIGIN || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
+      .map(toOrigin),
+  ]),
+];
 
 app.use(
   cors({
@@ -30,7 +51,11 @@ app.use(
       ) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      const err = new Error(
+        `CORS blocked for origin: ${origin}. Add it to CORS_ORIGIN on the backend.`
+      );
+      err.status = 403;
+      return callback(err);
     },
     credentials: true,
   })
