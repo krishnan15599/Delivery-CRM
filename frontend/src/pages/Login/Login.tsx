@@ -14,10 +14,10 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../components/common";
-import type { UserRole } from "../../types/auth";
+import type { BusinessRole, UserRole } from "../../types/auth";
 
 interface RoleConfig {
-  role: UserRole;
+  role: BusinessRole;
   label: string;
   badge: string;
   email: string;
@@ -34,7 +34,7 @@ interface RoleConfig {
   features: string[];
 }
 
-const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
+const ROLE_CONFIGS: Record<BusinessRole, RoleConfig> = {
   Admin: {
     role: "Admin",
     label: "Admin Console",
@@ -94,7 +94,7 @@ export const Login: React.FC = () => {
   const toast = useToast();
   const { login, isLoading, isAuthenticated, getDefaultRoute } = useAuth();
 
-  const [selectedRole, setSelectedRole] = useState<UserRole>("Admin");
+  const [selectedRole, setSelectedRole] = useState<BusinessRole>("Admin");
   const [formData, setFormData] = useState({
     email: import.meta.env.DEV ? ROLE_CONFIGS.Admin.email : "",
     password: "",
@@ -110,7 +110,7 @@ export const Login: React.FC = () => {
     }
   }, [isAuthenticated, getDefaultRoute, navigate]);
 
-  const handleSelectRole = (role: UserRole) => {
+  const handleSelectRole = (role: BusinessRole) => {
     setSelectedRole(role);
     // Only pre-fill demo emails in dev builds; in production the role cards are informational
     if (import.meta.env.DEV) {
@@ -125,7 +125,10 @@ export const Login: React.FC = () => {
   const handlePostLoginRedirect = (userRole: UserRole) => {
     const origin = (location.state as { from?: { pathname?: string } })?.from?.pathname;
 
-    if (userRole === "Agent") {
+    if (userRole === "SuperAdmin") {
+      // Platform owner only manages businesses
+      navigate("/platform", { replace: true });
+    } else if (userRole === "Agent") {
       // Agents can only access /deliveries and /chat
       if (origin && (origin.startsWith("/deliveries") || origin.startsWith("/chat"))) {
         navigate(origin, { replace: true });
@@ -172,7 +175,7 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (role: UserRole) => {
+  const handleQuickLogin = (role: BusinessRole) => {
     const config = ROLE_CONFIGS[role];
     setSelectedRole(role);
     setFormData((prev) => ({
@@ -222,7 +225,7 @@ export const Login: React.FC = () => {
           </div>
 
           <div className="space-y-3 pt-2">
-            {(Object.keys(ROLE_CONFIGS) as UserRole[]).map((r) => {
+            {(Object.keys(ROLE_CONFIGS) as BusinessRole[]).map((r) => {
               const cfg = ROLE_CONFIGS[r];
               const Icon = cfg.icon;
               const isSelected = selectedRole === r;
@@ -293,7 +296,7 @@ export const Login: React.FC = () => {
               Select Role Profile
             </label>
             <div className="grid grid-cols-3 gap-2.5">
-              {(Object.keys(ROLE_CONFIGS) as UserRole[]).map((r) => {
+              {(Object.keys(ROLE_CONFIGS) as BusinessRole[]).map((r) => {
                 const cfg = ROLE_CONFIGS[r];
                 const Icon = cfg.icon;
                 const isSelected = selectedRole === r;

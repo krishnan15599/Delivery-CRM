@@ -1,17 +1,26 @@
 const { supabase } = require('../config/supabase');
-const { generateId } = require('../utils/idGenerator');
 const { sanitizeSearchQuery } = require('../utils/sanitize');
 const { applyPagination } = require('../utils/pagination');
+const { emptyListResult } = require('../utils/emptyResult');
+const { applyAgentScope, canManageTeam, resolveTeamId, httpError } = require('../utils/access');
 const profileService = require('./profileService');
+const teamService = require('./teamService');
 
-const listAgents = async (filters = {}) => {
-  const { search, status, hubLocation, vehicleType, page, pageSize, limit } = filters;
+// Admin: every agent in the business. Manager: agents in their teams. Agent: only themselves.
 
-  let query = supabase.from('agents').select('*', { count: 'exact' });
+const listAgents = async (user, filters = {}) => {
+  const { search, status, hubLocation, vehicleType, teamId, page, pageSize, limit } = filters;
+
+  let query = applyAgentScope(supabase.from('agents').select('*', { count: 'exact' }), user);
+  if (!query) return emptyListResult({ page, pageSize, limit });
 
   const statusStr = typeof status === 'string' ? status : (Array.isArray(status) ? String(status[status.length - 1]) : '');
   if (statusStr && statusStr !== 'all') {
     query = query.eq('status', statusStr);
+  }
+
+  if (typeof teamId === 'string' && teamId && teamId !== 'all') {
+    query = query.eq('team_id', teamId);
   }
 
   const hubStr = typeof hubLocation === 'string' ? hubLocation : (Array.isArray(hubLocation) ? String(hubLocation[hubLocation.length - 1]) : '');
@@ -51,104 +60,71 @@ const listAgents = async (filters = {}) => {
   };
 };
 
-const getAgentById = async (id) => {
-  const { data, error } = await supabase
-    .from('agents')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+const getAgentById = async (user, id) => {
+  const query = applyAgentScope(supabase.from('agents').select('*'), user);
+  if (!query) return null;
 
+  const { data, error } = await query.eq('id', id).maybeSingle();
   if (error) throw error;
   return data;
 };
 
-const createAgent = async (input) => {
-  const agentId = input.id || generateId('AG');
-  const now = new Date().toISOString();
+/**
+ * Create a field agent in a team the user may manage.
+ * With an email, a login is created too (temporaryPassword required).
+ */
+const createAgent = async (user, input) => {
+  const orgTeams = await teamService.listOrgTeams(user.organizationId);
+  const resolved = resolveTeamId(user, input.teamId, orgTeams);
+  if (resolved.error) throw httpError(resolved.error.status, resolved.error.message);
 
-  let linkedUserId = null;
-  let newlyCreatedProfileId = null;
-
-  // Ensure an account profile exists in Supabase profiles table so the Agent can log in
+  let account = null;
   if (input.email) {
-    const lowerEmail = input.email.toLowerCase().trim();
-    const existingProfile = await profileService.getProfileByEmail(lowerEmail);
-
-    if (existingProfile) {
-      linkedUserId = existingProfile.id;
-    } else {
-      const newProfile = await profileService.createProfile(
-        {
-          name: input.name,
-          email: lowerEmail,
-          temporaryPassword: input.temporaryPassword,
-          role: 'Agent',
-          phone: input.phone || null,
-          vehicleType: input.vehicleType,
-          vehicleNumber: input.vehicleNumber,
-          hubLocation: input.hubLocation,
-        },
-        { createAgentRecord: false }
-      );
-
-      if (newProfile) {
-        linkedUserId = newProfile.id;
-        newlyCreatedProfileId = newProfile.id;
-      }
-    }
+    account = await profileService.createUserAccount({
+      organizationId: user.organizationId,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      role: 'Agent',
+      temporaryPassword: input.temporaryPassword,
+    });
   }
 
-  const record = {
-    id: agentId,
-    user_id: linkedUserId,
-    name: input.name,
-    phone: input.phone,
-    email: input.email || null,
-    vehicle_type: input.vehicleType || 'Bike',
-    vehicle_number: input.vehicleNumber || '',
-    status: input.status || 'Active',
-    hub_location: input.hubLocation || 'Indiranagar Hub',
-    assigned_deliveries_count: 0,
-    completed_deliveries_count: 0,
-    failed_deliveries_count: 0,
-    pending_cash_amount: 0.0,
-    settled_cash_amount: 0.0,
-    rating: input.rating || 5.0,
-    joining_date: input.joiningDate || now.split('T')[0],
-    avatar_url: input.avatarUrl || null,
-    created_at: now,
-    updated_at: now,
-  };
-
   try {
-    const { data, error } = await supabase
-      .from('agents')
-      .insert([record])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (agentInsertError) {
-    // If the agents insert in createAgent fails after it created a new profile, call deleteProfile
-    if (newlyCreatedProfileId) {
+    return await profileService.insertAgentRecord({
+      organizationId: user.organizationId,
+      teamId: resolved.teamId,
+      userId: account ? account.id : null,
+      input: { ...input, agentId: input.id },
+    });
+  } catch (err) {
+    if (account) {
       try {
-        await profileService.deleteProfile(newlyCreatedProfileId);
-      } catch (_delErr) {
-        console.warn('Failed to rollback newly created profile after agent insert failure:', _delErr.message);
+        await profileService.removeUserAccount(account);
+      } catch (rollbackErr) {
+        console.warn('Failed to roll back agent login after insert failure:', rollbackErr.message);
       }
     }
-    throw agentInsertError;
+    throw err;
   }
 };
 
-const updateAgent = async (id, input) => {
-  const existing = await getAgentById(id);
+const updateAgent = async (user, id, input) => {
+  const existing = await getAgentById(user, id);
   if (!existing) return null;
 
   const updatePayload = {
     updated_at: new Date().toISOString(),
   };
+
+  if (input.teamId !== undefined && input.teamId !== existing.team_id) {
+    const orgTeams = await teamService.listOrgTeams(user.organizationId);
+    const target = orgTeams.find((t) => t.id === input.teamId && t.status !== 'Inactive');
+    if (!target || !canManageTeam(user, input.teamId)) {
+      throw httpError(400, 'Team not found, inactive, or not one of your teams.');
+    }
+    updatePayload.team_id = input.teamId;
+  }
 
   if (input.name !== undefined) updatePayload.name = input.name;
   if (input.phone !== undefined) updatePayload.phone = input.phone;
@@ -163,6 +139,7 @@ const updateAgent = async (id, input) => {
   const { data, error } = await supabase
     .from('agents')
     .update(updatePayload)
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .select()
     .single();
@@ -172,11 +149,11 @@ const updateAgent = async (id, input) => {
 };
 
 /**
- * Update agent status specifically
- * Fixes: Uses maybeSingle() and verifies existence so 404 is returned if agent does not exist
+ * Availability status. Agents can only reach their own row (scope), so another
+ * agent's id simply returns null -> 404.
  */
-const updateAgentStatus = async (id, status) => {
-  const existing = await getAgentById(id);
+const updateAgentStatus = async (user, id, status) => {
+  const existing = await getAgentById(user, id);
   if (!existing) return null;
 
   const { data, error } = await supabase
@@ -185,6 +162,7 @@ const updateAgentStatus = async (id, status) => {
       status,
       updated_at: new Date().toISOString(),
     })
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .select()
     .maybeSingle();
@@ -193,10 +171,12 @@ const updateAgentStatus = async (id, status) => {
   return data;
 };
 
-const deleteAgent = async (id) => {
+/** Admin only (enforced by the route). */
+const deleteAgent = async (user, id) => {
   const { data, error } = await supabase
     .from('agents')
     .delete()
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .select();
 
@@ -212,4 +192,3 @@ module.exports = {
   updateAgentStatus,
   deleteAgent,
 };
-

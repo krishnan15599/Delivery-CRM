@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ChevronDown,
   X,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types/auth';
@@ -45,6 +46,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const navItems: NavItem[] = [
+    {
+      name: 'Businesses',
+      icon: Building2,
+      path: '/platform',
+      subItems: [{ name: 'All Businesses', path: '/platform' }],
+    },
     {
       name: 'Dashboard',
       icon: Home,
@@ -134,6 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
   };
 
   const roleAllowedMap: Record<string, UserRole[]> = {
+    Businesses: ['SuperAdmin'],
     Dashboard: ['Admin', 'Manager'],
     Customers: ['Admin', 'Manager'],
     Deliveries: ['Admin', 'Manager', 'Agent'],

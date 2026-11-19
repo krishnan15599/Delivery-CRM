@@ -71,14 +71,17 @@ const runTests = async () => {
   console.log('🧪 Running Backend Integration Test Suite (In-Process)');
   console.log('==================================================\n');
 
-  // Tokens
-  const adminToken   = signJWT({ id: 'USR-001', name: 'Krishnan K.', email: 'admin@deliverycrm.in',   role: 'Admin' });
-  const agentToken   = signJWT({ id: 'USR-003', name: 'Rahul Sharma', email: 'agent@deliverycrm.in', role: 'Agent' });
-  const managerToken = signJWT({ id: 'USR-002', name: 'Sarah Jenkins', email: 'manager@deliverycrm.in', role: 'Manager' });
+  // Tokens (NODE_ENV=test: the auth middleware trusts these payloads as the user context)
+  const ORG = 'ORG-TEST-ONLY';
+  const adminToken   = signJWT({ id: 'USR-001', name: 'Krishnan K.', email: 'admin@deliverycrm.in',   role: 'Admin', organizationId: ORG });
+  const agentToken   = signJWT({ id: 'USR-003', name: 'Rahul Sharma', email: 'agent@deliverycrm.in', role: 'Agent', organizationId: ORG, teamIds: ['TEAM-TEST'], agentId: 'AG-TEST' });
+  const managerToken = signJWT({ id: 'USR-002', name: 'Sarah Jenkins', email: 'manager@deliverycrm.in', role: 'Manager', organizationId: ORG, teamIds: ['TEAM-TEST'] });
+  const superToken   = signJWT({ id: 'SA-TEST', name: 'Platform Owner', email: 'owner@deliverycrm.in', role: 'SuperAdmin' });
 
   const adminHdr   = { Authorization: `Bearer ${adminToken}` };
   const agentHdr   = { Authorization: `Bearer ${agentToken}` };
   const managerHdr = { Authorization: `Bearer ${managerToken}` };
+  const superHdr   = { Authorization: `Bearer ${superToken}` };
 
   // ── 1. Health check ────────────────────────────────────────────────────────
   console.log('1. Health check:');
@@ -242,7 +245,62 @@ const runTests = async () => {
     assert.notStrictEqual(r.status, 400, 'Must not return 400 for a missing agent');
   });
 
-  // ── 10. End-of-suite cleanup ──────────────────────────────────────────────
+  // ── 10. Business (tenant) isolation ────────────────────────────────────────
+  console.log('\n10. Business isolation:');
+  await test('organizationId in the body is rejected → 400', async () => {
+    const r = await dispatchRequest(app, {
+      method: 'POST', url: '/api/customers', headers: adminHdr,
+      body: { name: 'X', phone: '1', address: 'a', organizationId: 'ORG-SOMEONE-ELSE' },
+    });
+    assert.strictEqual(r.status, 400, `Expected 400, got ${r.status}`);
+  });
+
+  await test('organization_id in the query string is rejected → 400', async () => {
+    const r = await dispatchRequest(app, { url: '/api/deliveries?organization_id=ORG-SOMEONE-ELSE', headers: adminHdr });
+    assert.strictEqual(r.status, 400, `Expected 400, got ${r.status}`);
+  });
+
+  await test('SuperAdmin cannot read business data → 403', async () => {
+    for (const url of ['/api/customers', '/api/deliveries', '/api/agents', '/api/profiles', '/api/organization']) {
+      const r = await dispatchRequest(app, { url, headers: superHdr });
+      assert.strictEqual(r.status, 403, `${url}: expected 403, got ${r.status}`);
+    }
+  });
+
+  await test('Business Admin cannot use platform routes → 403', async () => {
+    const r = await dispatchRequest(app, { url: '/api/platform/organizations', headers: adminHdr });
+    assert.strictEqual(r.status, 403, `Expected 403, got ${r.status}`);
+  });
+
+  await test('Agent cannot read customers → 403', async () => {
+    const r = await dispatchRequest(app, { url: '/api/customers', headers: agentHdr });
+    assert.strictEqual(r.status, 403, `Expected 403, got ${r.status}`);
+  });
+
+  await test('GET /api/auth/me returns business context', async () => {
+    const r = await dispatchRequest(app, { url: '/api/auth/me', headers: managerHdr });
+    assert.strictEqual(r.status, 200, `Expected 200, got ${r.status}`);
+    assert.strictEqual(r.json.data.organizationId, ORG);
+    assert.deepStrictEqual(r.json.data.teamIds, ['TEAM-TEST']);
+  });
+
+  await test('Platform: invalid business code → 400 (or 503 without DB)', async () => {
+    const r = await dispatchRequest(app, {
+      method: 'POST', url: '/api/platform/organizations', headers: superHdr,
+      body: { name: 'Bad', code: 'x', admin: { name: 'A', email: 'a@b.test', temporaryPassword: 'longenough' } },
+    });
+    assert.ok([400, 503].includes(r.status), `Expected 400 or 503, got ${r.status}`);
+  });
+
+  await test('Manager cannot create an Admin → 403 (or 503 without DB)', async () => {
+    const r = await dispatchRequest(app, {
+      method: 'POST', url: '/api/profiles', headers: managerHdr,
+      body: { name: 'Sneaky', email: 'sneaky@b.test', role: 'Admin', temporaryPassword: 'longenough' },
+    });
+    assert.ok([403, 503].includes(r.status), `Expected 403 or 503, got ${r.status}`);
+  });
+
+  // ── 11. End-of-suite cleanup ──────────────────────────────────────────────
   if (created.length > 0 && app) {
     console.log('\n10. Cleanup:');
     for (const { resource, id } of created) {

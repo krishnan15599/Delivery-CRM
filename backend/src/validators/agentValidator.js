@@ -53,11 +53,11 @@ const validateCreateAgent = (body = {}) => {
 
   return {
     value: {
-      id: safeTrim(body.id),
       name,
       phone,
       email: email ? email.toLowerCase() : null,
       temporaryPassword,
+      teamId: safeTrim(body.teamId || body.team_id),
       vehicleType,
       vehicleNumber,
       status,
@@ -101,6 +101,13 @@ const validateUpdateAgent = (body = {}) => {
 
   const hub = body.hubLocation || body.hub_location;
   if (hub !== undefined) updates.hubLocation = safeTrim(hub);
+
+  const team = body.teamId || body.team_id;
+  if (team !== undefined) {
+    const teamId = safeTrim(team);
+    if (!teamId) return { error: { message: 'teamId cannot be empty.' } };
+    updates.teamId = teamId;
+  }
 
   const status = body.status;
   if (status !== undefined) {

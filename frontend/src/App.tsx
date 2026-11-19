@@ -18,6 +18,7 @@ const Chat = lazy(() => import('./pages/Chat/Chat'));
 const Reports = lazy(() => import('./pages/Reports/Reports'));
 const Settings = lazy(() => import('./pages/Settings/Settings'));
 const Login = lazy(() => import('./pages/Login/Login'));
+const Platform = lazy(() => import('./pages/Platform/Platform'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const ComponentShowcase = lazy(() =>
   import('./pages/ComponentShowcase/ComponentShowcase').then((m) => ({
@@ -35,6 +36,7 @@ import { ToastProvider, ErrorBoundary, ProtectedRoute } from './components/commo
 const RootRedirect = () => {
   const { role, isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (role === 'SuperAdmin') return <Navigate to="/platform" replace />;
   if (role === 'Agent') return <Navigate to="/deliveries" replace />;
   return <Navigate to="/dashboard" replace />;
 };
@@ -85,6 +87,16 @@ function App() {
                         }
                       >
                         <Route path="/" element={<RootRedirect />} />
+
+                        {/* Platform owner: businesses */}
+                        <Route
+                          path="/platform"
+                          element={
+                            <ProtectedRoute allowedRoles={['SuperAdmin']}>
+                              <Platform />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         {/* Dashboard: Admin & Manager */}
                         <Route
@@ -172,8 +184,15 @@ function App() {
                           }
                         />
 
-                        {/* Chat Module: All roles */}
-                        <Route path="/chat" element={<Chat />} />
+                        {/* Chat Module: all business roles */}
+                        <Route
+                          path="/chat"
+                          element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Agent']}>
+                              <Chat />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         {/* Reports Module: Admin & Manager */}
                         <Route

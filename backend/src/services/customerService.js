@@ -2,11 +2,18 @@ const { supabase } = require('../config/supabase');
 const { generateId } = require('../utils/idGenerator');
 const { sanitizeSearchQuery } = require('../utils/sanitize');
 const { applyPagination } = require('../utils/pagination');
+const { applyDeliveryScope } = require('../utils/access');
 
-const listCustomers = async (filters = {}) => {
+// Customers are shared by the whole business (Admin + Manager).
+// Every query is limited to the signed-in user's business.
+
+const listCustomers = async (user, filters = {}) => {
   const { search, status, city, page, pageSize, limit } = filters;
 
-  let query = supabase.from('customers').select('*', { count: 'exact' });
+  let query = supabase
+    .from('customers')
+    .select('*', { count: 'exact' })
+    .eq('organization_id', user.organizationId);
 
   const statusStr = typeof status === 'string' ? status : (Array.isArray(status) ? String(status[status.length - 1]) : '');
   if (statusStr && statusStr !== 'all') {
@@ -45,10 +52,11 @@ const listCustomers = async (filters = {}) => {
   };
 };
 
-const getCustomerById = async (id) => {
+const getCustomerById = async (user, id) => {
   const { data, error } = await supabase
     .from('customers')
     .select('*')
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .maybeSingle();
 
@@ -56,12 +64,13 @@ const getCustomerById = async (id) => {
   return data;
 };
 
-const createCustomer = async (input) => {
+const createCustomer = async (user, input) => {
   const customerId = input.id || generateId('CUST');
   const now = new Date().toISOString();
 
   const record = {
     id: customerId,
+    organization_id: user.organizationId,
     name: input.name,
     email: input.email || null,
     phone: input.phone,
@@ -86,9 +95,8 @@ const createCustomer = async (input) => {
   return data;
 };
 
-const updateCustomer = async (id, input) => {
-  // Verify existence
-  const existing = await getCustomerById(id);
+const updateCustomer = async (user, id, input) => {
+  const existing = await getCustomerById(user, id);
   if (!existing) return null;
 
   const updatePayload = {
@@ -109,6 +117,7 @@ const updateCustomer = async (id, input) => {
   const { data, error } = await supabase
     .from('customers')
     .update(updatePayload)
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .select()
     .single();
@@ -117,10 +126,11 @@ const updateCustomer = async (id, input) => {
   return data;
 };
 
-const deleteCustomer = async (id) => {
+const deleteCustomer = async (user, id) => {
   const { data, error } = await supabase
     .from('customers')
     .delete()
+    .eq('organization_id', user.organizationId)
     .eq('id', id)
     .select();
 
@@ -128,10 +138,12 @@ const deleteCustomer = async (id) => {
   return data && data.length > 0;
 };
 
-const getCustomerDeliveries = async (customerId) => {
-  const { data, error } = await supabase
-    .from('deliveries')
-    .select('*')
+/** Deliveries of one customer that this user may see (Manager: their teams only). */
+const getCustomerDeliveries = async (user, customerId) => {
+  const query = applyDeliveryScope(supabase.from('deliveries').select('*'), user);
+  if (!query) return [];
+
+  const { data, error } = await query
     .eq('customer_id', customerId)
     .order('date', { ascending: false });
 
@@ -147,4 +159,3 @@ module.exports = {
   deleteCustomer,
   getCustomerDeliveries,
 };
-

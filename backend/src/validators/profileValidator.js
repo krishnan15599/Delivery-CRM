@@ -35,17 +35,32 @@ const validateCreateProfile = (body = {}) => {
     };
   }
 
+  const teamIdsResult = parseTeamIds(body.teamIds);
+  if (teamIdsResult.error) return teamIdsResult;
+
   return {
     value: {
-      id: safeTrim(body.id),
       name,
       email: email.toLowerCase(),
       temporaryPassword,
       role,
       phone,
       avatarUrl,
+      // Agent: which team (default team if omitted) + the agents-table details
+      teamId: safeTrim(body.teamId || body.team_id),
+      vehicleType: safeTrim(body.vehicleType || body.vehicle_type),
+      vehicleNumber: safeTrim(body.vehicleNumber || body.vehicle_number),
+      hubLocation: safeTrim(body.hubLocation || body.hub_location),
+      // Manager: which teams they manage (default team if omitted)
+      teamIds: teamIdsResult.value,
     },
   };
+};
+
+const parseTeamIds = (raw) => {
+  if (raw === undefined || raw === null) return { value: undefined };
+  if (!Array.isArray(raw)) return { error: { message: 'teamIds must be an array of team IDs.' } };
+  return { value: raw.map((id) => safeTrim(id)).filter(Boolean) };
 };
 
 const validateUpdateProfile = (body = {}) => {
@@ -74,6 +89,18 @@ const validateUpdateProfile = (body = {}) => {
   if (body.phone !== undefined) updates.phone = safeTrim(body.phone);
   if (body.avatarUrl !== undefined || body.avatar_url !== undefined) {
     updates.avatarUrl = safeTrim(body.avatarUrl || body.avatar_url);
+  }
+  if (body.status !== undefined) {
+    const status = safeTrim(body.status);
+    if (!['Active', 'Inactive'].includes(status)) {
+      return { error: { message: "status must be 'Active' or 'Inactive'." } };
+    }
+    updates.status = status;
+  }
+  if (body.teamIds !== undefined) {
+    const teamIdsResult = parseTeamIds(body.teamIds);
+    if (teamIdsResult.error) return teamIdsResult;
+    updates.teamIds = teamIdsResult.value;
   }
 
   return { value: updates };

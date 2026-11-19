@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, getDefaultRouteForRole } from '../../context/AuthContext';
 import type { UserRole } from '../../types/auth';
 import { Button } from './Button';
 
@@ -14,7 +14,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,
 }) => {
-  const { isAuthenticated, role, switchRole } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,18 +37,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <Button
             variant="outline"
             leftIcon={<ArrowLeft className="w-4 h-4" />}
-            onClick={() => navigate(role === 'Agent' ? '/deliveries' : '/dashboard')}
+            onClick={() => navigate(getDefaultRouteForRole(role))}
           >
             Go to Allowed Workspace
           </Button>
-          {import.meta.env.DEV && (
-            <Button
-              variant="primary"
-              onClick={() => switchRole('Admin')}
-            >
-              Switch to Admin (Demo)
-            </Button>
-          )}
         </div>
       </div>
     );

@@ -29,6 +29,14 @@ export const API_ENDPOINTS = {
     ME: '/profiles/me',
     BY_ID: (id: string) => `/profiles/${id}`,
   },
+  ORGANIZATION: {
+    BASE: '/organization',
+    TEAMS: '/organization/teams',
+  },
+  PLATFORM: {
+    ORGANIZATIONS: '/platform/organizations',
+    ORGANIZATION_BY_ID: (id: string) => `/platform/organizations/${id}`,
+  },
 } as const;
 
 export default API_ENDPOINTS;

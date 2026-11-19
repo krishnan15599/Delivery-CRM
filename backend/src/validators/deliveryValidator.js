@@ -59,8 +59,6 @@ const validateCreateDelivery = (body = {}) => {
 
   return {
     value: {
-      id: safeTrim(body.id),
-      trackingNumber: safeTrim(body.trackingNumber || body.tracking_number),
       customerId: safeTrim(body.customerId || body.customer_id),
       customerName,
       customerPhone: safeTrim(body.customerPhone || body.customer_phone),
@@ -73,6 +71,7 @@ const validateCreateDelivery = (body = {}) => {
       amount,
       codAmount,
       agentId: safeTrim(body.agentId || body.agent_id),
+      teamId: safeTrim(body.teamId || body.team_id),
       paymentStatus,
       notes: safeTrim(body.notes),
       scheduledDate: safeTrim(body.scheduledDate || body.scheduled_date),

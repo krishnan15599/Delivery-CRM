@@ -59,36 +59,24 @@ app.get('/', (_req, res) => {
   });
 });
 
-// System Health Check
-// Fix: Checks Supabase result.error correctly since supabase-js returns error objects instead of throwing
+// System Health Check (public)
+// Only says whether the database answers. No record counts or error details:
+// this endpoint needs no login and the database is shared by all businesses.
 app.get('/api/health', async (_req, res) => {
   let dbStatus = 'Not Configured';
-  let stats = {};
 
   if (isDbConfigured()) {
     try {
-      const [custRes, profRes, agentRes, delRes] = await Promise.all([
-        supabase.from('customers').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('agents').select('*', { count: 'exact', head: true }),
-        supabase.from('deliveries').select('*', { count: 'exact', head: true }),
-      ]);
-
-      const firstError = custRes.error || profRes.error || agentRes.error || delRes.error;
-
-      if (firstError) {
-        dbStatus = `Error: ${firstError.message}`;
+      const { error } = await supabase.from('profiles').select('id', { head: true }).limit(1);
+      if (error) {
+        console.error('[health] Database check failed:', error.message);
+        dbStatus = 'Error';
       } else {
         dbStatus = 'Connected';
-        stats = {
-          customers: custRes.count || 0,
-          profiles: profRes.count || 0,
-          agents: agentRes.count || 0,
-          deliveries: delRes.count || 0,
-        };
       }
     } catch (err) {
-      dbStatus = `Error: ${err.message}`;
+      console.error('[health] Database check failed:', err.message);
+      dbStatus = 'Error';
     }
   }
 
@@ -99,7 +87,6 @@ app.get('/api/health', async (_req, res) => {
     database: {
       status: dbStatus,
       configured: isDbConfigured(),
-      counts: stats,
     },
   });
 });

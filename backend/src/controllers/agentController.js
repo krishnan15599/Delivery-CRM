@@ -2,7 +2,7 @@ const agentService = require('../services/agentService');
 const { sendSuccess, sendPaginated, sendError } = require('../utils/apiResponse');
 
 const getAgents = async (req, res) => {
-  const result = await agentService.listAgents(req.query);
+  const result = await agentService.listAgents(req.user, req.query);
   if (result.isPaginated) {
     return sendPaginated(res, result.data, {
       page: result.page,
@@ -16,7 +16,7 @@ const getAgents = async (req, res) => {
 };
 
 const getAgentById = async (req, res) => {
-  const agent = await agentService.getAgentById(req.params.id);
+  const agent = await agentService.getAgentById(req.user, req.params.id);
   if (!agent) {
     return sendError(res, 404, `Agent with ID '${req.params.id}' not found`);
   }
@@ -24,12 +24,12 @@ const getAgentById = async (req, res) => {
 };
 
 const createAgent = async (req, res) => {
-  const agent = await agentService.createAgent(req.body);
+  const agent = await agentService.createAgent(req.user, req.body);
   return sendSuccess(res, 201, 'Agent created successfully', agent);
 };
 
 const updateAgent = async (req, res) => {
-  const agent = await agentService.updateAgent(req.params.id, req.body);
+  const agent = await agentService.updateAgent(req.user, req.params.id, req.body);
   if (!agent) {
     return sendError(res, 404, `Agent with ID '${req.params.id}' not found`);
   }
@@ -37,33 +37,20 @@ const updateAgent = async (req, res) => {
 };
 
 /**
- * Update Agent Status specifically
- * Fix: Properly returns 404 if agent not found
- * Fix: Restricts Agents to only updating their own status; Admins and Managers can update any agent.
+ * Update Agent availability status.
+ * Scoped: Agents can only reach their own row (others -> 404); Managers their teams; Admins all.
  */
 const updateAgentStatus = async (req, res) => {
   const agentId = req.params.id;
-  const targetAgent = await agentService.getAgentById(agentId);
-  if (!targetAgent) {
+  const agent = await agentService.updateAgentStatus(req.user, agentId, req.body.status);
+  if (!agent) {
     return sendError(res, 404, `Agent with ID '${agentId}' not found`);
   }
-
-  if (req.user && req.user.role === 'Agent') {
-    const isOwner =
-      (targetAgent.user_id && targetAgent.user_id === req.user.id) ||
-      (targetAgent.email && targetAgent.email.toLowerCase() === req.user.email?.toLowerCase());
-
-    if (!isOwner) {
-      return sendError(res, 403, 'Forbidden: Agents may only update their own status.');
-    }
-  }
-
-  const agent = await agentService.updateAgentStatus(agentId, req.body.status);
   return sendSuccess(res, 200, `Agent status updated to '${req.body.status}' successfully`, agent);
 };
 
 const deleteAgent = async (req, res) => {
-  const success = await agentService.deleteAgent(req.params.id);
+  const success = await agentService.deleteAgent(req.user, req.params.id);
   if (!success) {
     return sendError(res, 404, `Agent with ID '${req.params.id}' not found or already deleted.`);
   }

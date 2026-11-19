@@ -3,6 +3,19 @@
 -- Consistent capitalized Payment Status & ISO-8601 Timestamps
 -- ====================================================================
 
+-- All seed rows belong to the default business + team created by
+-- 04_multi_tenancy.sql. Temporary column defaults stamp them; they are
+-- removed again at the end of this file.
+ALTER TABLE profiles      ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+ALTER TABLE customers     ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+ALTER TABLE agents        ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+ALTER TABLE agents        ALTER COLUMN team_id         SET DEFAULT 'TEAM-DEFAULT';
+ALTER TABLE deliveries    ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+ALTER TABLE deliveries    ALTER COLUMN team_id         SET DEFAULT 'TEAM-DEFAULT';
+ALTER TABLE collections   ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+ALTER TABLE collections   ALTER COLUMN team_id         SET DEFAULT 'TEAM-DEFAULT';
+ALTER TABLE conversations ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT';
+
 -- Profiles / Admin Users
 INSERT INTO profiles (id, name, email, role, phone, avatar_url)
 VALUES
@@ -119,4 +132,20 @@ VALUES
   ('CONV-001', 'CUST-001', 'Krishnan K.', 'customer', '+91 98450 12345', 'Will the package arrive before 2 PM?', NOW(), 1, true, 'TRK-9001'),
   ('CONV-002', 'AG-101', 'Ramesh Kumar (Agent)', 'agent', '+91 98765 11001', 'Reached Indiranagar 100ft road. Customer notified.', NOW(), 0, true, 'TRK-9001')
 ON CONFLICT (id) DO NOTHING;
+
+-- The demo Manager manages the default team
+INSERT INTO team_managers (organization_id, team_id, manager_id)
+VALUES ('ORG-DEFAULT', 'TEAM-DEFAULT', 'USR-002')
+ON CONFLICT DO NOTHING;
+
+-- Remove the temporary defaults again
+ALTER TABLE profiles      ALTER COLUMN organization_id DROP DEFAULT;
+ALTER TABLE customers     ALTER COLUMN organization_id DROP DEFAULT;
+ALTER TABLE agents        ALTER COLUMN organization_id DROP DEFAULT;
+ALTER TABLE agents        ALTER COLUMN team_id         DROP DEFAULT;
+ALTER TABLE deliveries    ALTER COLUMN organization_id DROP DEFAULT;
+ALTER TABLE deliveries    ALTER COLUMN team_id         DROP DEFAULT;
+ALTER TABLE collections   ALTER COLUMN organization_id DROP DEFAULT;
+ALTER TABLE collections   ALTER COLUMN team_id         DROP DEFAULT;
+ALTER TABLE conversations ALTER COLUMN organization_id DROP DEFAULT;
 

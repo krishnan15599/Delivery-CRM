@@ -1,5 +1,18 @@
 # Prompt: Make Delivery CRM multi-company (multi-tenant) with teams
 
+> **Status (2026-11-19):** Phase 0 is merged. Branch `feat/business-onboarding` implements
+> **Phase 1, Phase 2, the Platform part of Phase 3, and the Platform page + business name of Phase 4**
+> (migrations `04_multi_tenancy.sql` and `05_tenant_scoped_functions.sql`).
+> Decisions that differ from the text below:
+> - Existing data goes into **one** team ("Main Team", `TEAM-DEFAULT`), not one team per `hub_location`.
+> - A delivery **follows its agent's team** when assigned (instead of "agent must already be in the delivery's team").
+> - Every business has a **default team** (`teams.is_default`); new agents/deliveries/managers use it when no team is given.
+> - Login returns the backend's own 24h token (`{ sub: profileId }`), because Supabase tokens expire after 1 hour.
+>
+> **Still to do:** Teams management (create teams, assign managers: API + Settings tab), team dropdowns
+> and team columns/filters in the agent and delivery forms/lists, and removing the frontend's
+> fake/mock fallbacks (services fall back to local mock data whenever a request fails).
+
 > **How to use:** paste everything below the line into your AI coding assistant, opened in the `delivery-crm` repo.
 > Then say "Do Phase 0". When it finishes and you have checked it, say "Do Phase 1", and so on.
 

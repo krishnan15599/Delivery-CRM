@@ -2,63 +2,37 @@ const profileService = require('../services/profileService');
 const { sendSuccess, sendError } = require('../utils/apiResponse');
 
 const getProfiles = async (req, res) => {
-  const profiles = await profileService.listProfiles(req.query);
+  const profiles = await profileService.listProfiles(req.user, req.query);
   return sendSuccess(res, 200, 'Profiles retrieved successfully', profiles);
 };
 
 /**
- * Get current authenticated user profile
- * Fix: Uses authenticated req.user (from token). No hardcoded Admin fallback!
+ * Current signed-in user: the context loaded by the auth middleware
+ * (profile + business + teams), so it is always fresh.
  */
 const getCurrentProfile = async (req, res) => {
   if (!req.user) {
     return sendError(res, 401, 'Authentication required to access current profile.');
   }
-
-  let profile = null;
-  try {
-    if (req.user.id) {
-      profile = await profileService.getProfileById(req.user.id);
-    }
-    if (!profile && req.user.email) {
-      profile = await profileService.getProfileByEmail(req.user.email);
-    }
-  } catch (_dbErr) {
-    // If database query fails, fall back to authenticated token identity
-  }
-
-  if (!profile) {
-    // If not in database table or DB offline, return the authenticated token user object
-    return sendSuccess(res, 200, 'Current profile retrieved from session', req.user);
-  }
-
-  return sendSuccess(res, 200, 'Current profile retrieved successfully', profile);
+  return sendSuccess(res, 200, 'Current profile retrieved successfully', req.user);
 };
 
 const getProfileById = async (req, res) => {
-  const profile = await profileService.getProfileById(req.params.id);
+  const profile = await profileService.getProfileById(req.user, req.params.id);
   if (!profile) {
     return sendError(res, 404, `Profile with ID '${req.params.id}' not found`);
   }
   return sendSuccess(res, 200, 'Profile retrieved successfully', profile);
 };
 
+/** Admin: Admin/Manager/Agent. Manager: Agent only (checked in the service). */
 const createProfile = async (req, res) => {
-  // Manager can only create Agent accounts; Admin can create Manager or Agent accounts
-  if (req.user && req.user.role === 'Manager' && req.body.role && req.body.role !== 'Agent') {
-    return sendError(
-      res,
-      403,
-      "Forbidden: Managers are only permitted to create Agent accounts."
-    );
-  }
-
-  const profile = await profileService.createProfile(req.body);
-  return sendSuccess(res, 201, 'Profile created successfully in Supabase', profile);
+  const profile = await profileService.createProfile(req.user, req.body);
+  return sendSuccess(res, 201, 'User created successfully', profile);
 };
 
 const updateProfile = async (req, res) => {
-  const profile = await profileService.updateProfile(req.params.id, req.body);
+  const profile = await profileService.updateProfile(req.user, req.params.id, req.body);
   if (!profile) {
     return sendError(res, 404, `Profile with ID '${req.params.id}' not found`);
   }
@@ -66,7 +40,7 @@ const updateProfile = async (req, res) => {
 };
 
 const deleteProfile = async (req, res) => {
-  const success = await profileService.deleteProfile(req.params.id);
+  const success = await profileService.deleteProfile(req.user, req.params.id);
   if (!success) {
     return sendError(res, 404, `Profile with ID '${req.params.id}' not found or already deleted.`);
   }
