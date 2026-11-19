@@ -34,16 +34,16 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({ delive
   const agentName = delivery.agentName || 'Assigned Courier';
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Map Header */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-blue-100 text-[#2c5fbf]">
+          <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-600">
             <Navigation className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-900">Live Courier Dispatch Route</h3>
-            <p className="text-[11px] text-gray-500">Real-time GPS telemetry & waypoint simulation</p>
+            <h3 className="text-sm font-bold text-slate-900">Live Courier Dispatch Route</h3>
+            <p className="text-[11px] text-slate-500">Real-time GPS telemetry & waypoint simulation</p>
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({ delive
               Live Telemetry
             </span>
           )}
-          <span className="text-xs font-mono font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+          <span className="text-xs font-mono font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
             ETA: ~18 mins
           </span>
         </div>
@@ -154,19 +154,19 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({ delive
       </div>
 
       {/* Route Details Bar */}
-      <div className="p-3 bg-gray-50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-        <div className="flex items-start gap-2 text-gray-700">
+      <div className="p-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <div className="flex items-start gap-2 text-slate-700">
           <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
           <div className="truncate">
-            <span className="text-gray-400 font-medium block text-[10px]">PICKUP LOCATION</span>
+            <span className="text-slate-400 font-medium block text-[10px]">PICKUP LOCATION</span>
             <span className="font-semibold truncate">{origin}</span>
           </div>
         </div>
 
-        <div className="flex items-start gap-2 text-gray-700">
+        <div className="flex items-start gap-2 text-slate-700">
           <div className="w-2 h-2 rounded-full bg-rose-600 mt-1.5 shrink-0" />
           <div className="truncate">
-            <span className="text-gray-400 font-medium block text-[10px]">DELIVERY DESTINATION</span>
+            <span className="text-slate-400 font-medium block text-[10px]">DELIVERY DESTINATION</span>
             <span className="font-semibold truncate">{destination}</span>
           </div>
         </div>

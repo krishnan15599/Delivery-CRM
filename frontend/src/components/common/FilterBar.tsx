@@ -34,7 +34,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Left side: Search and filters */}
         <div className="flex flex-wrap items-center gap-2.5 flex-1">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mr-1 shrink-0">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
             <Filter className="w-3.5 h-3.5" />
             <span>Filters:</span>
           </div>
@@ -44,8 +44,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         {/* Right side: Actions / Total count */}
         <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
           {totalResults !== undefined && (
-            <span className="text-xs text-gray-500 hidden md:inline-block">
-              Total: <strong className="font-semibold text-gray-800">{totalResults}</strong>
+            <span className="text-xs text-slate-500 hidden md:inline-block">
+              Total: <strong className="font-semibold text-slate-800">{totalResults}</strong>
             </span>
           )}
           {actions}
@@ -54,12 +54,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {/* Active filter badges / chips */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
-          <span className="text-xs text-gray-500">Active filters:</span>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <span className="text-xs text-slate-500">Active filters:</span>
           {activeFilters.map((filter) => (
             <span
               key={filter.id}
-              className="inline-flex items-center gap-1.5 bg-blue-50 text-[#1a5bc9] border border-blue-100 text-xs px-2.5 py-1 rounded-md"
+              className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs px-2.5 py-1 rounded-md"
             >
               <span className="font-medium text-blue-900">{filter.label}:</span>
               <span>{filter.value}</span>
@@ -80,7 +80,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <button
               type="button"
               onClick={onClearAll}
-              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors ml-2"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 transition-colors ml-2"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>

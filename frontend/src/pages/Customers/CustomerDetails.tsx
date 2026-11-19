@@ -84,7 +84,7 @@ export const CustomerDetails: React.FC = () => {
       key: 'trackingNumber',
       header: 'Tracking No',
       render: (row) => (
-        <span className="font-semibold text-gray-900 font-mono text-xs">
+        <span className="font-semibold text-slate-900 font-mono text-xs">
           {row.trackingNumber}
         </span>
       ),
@@ -94,9 +94,9 @@ export const CustomerDetails: React.FC = () => {
       header: 'Item Type',
       render: (row) => (
         <div>
-          <span className="text-xs font-medium text-gray-800">{row.packageType}</span>
+          <span className="text-xs font-medium text-slate-800">{row.packageType}</span>
           {row.itemDescription && (
-            <p className="text-[11px] text-gray-400 truncate max-w-xs">
+            <p className="text-[11px] text-slate-400 truncate max-w-xs">
               {row.itemDescription}
             </p>
           )}
@@ -107,22 +107,22 @@ export const CustomerDetails: React.FC = () => {
       key: 'agentName',
       header: 'Agent',
       render: (row) => (
-        <span className="text-xs text-gray-600">
-          {row.agentName || <span className="italic text-gray-400">Unassigned</span>}
+        <span className="text-xs text-slate-600">
+          {row.agentName || <span className="italic text-slate-400">Unassigned</span>}
         </span>
       ),
     },
     {
       key: 'date',
       header: 'Date',
-      render: (row) => <span className="text-xs text-gray-500">{String(row.date)}</span>,
+      render: (row) => <span className="text-xs text-slate-500">{String(row.date)}</span>,
     },
     {
       key: 'amount',
       header: 'Amount',
       align: 'right',
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           ₹{row.amount.toLocaleString()}
         </span>
       ),
@@ -217,27 +217,27 @@ export const CustomerDetails: React.FC = () => {
         {/* Contact Info Card */}
         <Card title="Contact Information" className="md:col-span-1">
           <div className="space-y-3.5 text-xs">
-            <div className="flex items-center gap-3 text-gray-700">
-              <Mail className="w-4 h-4 text-[#2c5fbf] shrink-0" />
+            <div className="flex items-center gap-3 text-slate-700">
+              <Mail className="w-4 h-4 text-indigo-600 shrink-0" />
               <div>
-                <span className="text-[11px] text-gray-400 block">Email Address</span>
-                <span className="font-medium text-gray-900">{customer.email}</span>
+                <span className="text-[11px] text-slate-400 block">Email Address</span>
+                <span className="font-medium text-slate-900">{customer.email}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-gray-700">
-              <Phone className="w-4 h-4 text-[#2c5fbf] shrink-0" />
+            <div className="flex items-center gap-3 text-slate-700">
+              <Phone className="w-4 h-4 text-indigo-600 shrink-0" />
               <div>
-                <span className="text-[11px] text-gray-400 block">Phone Number</span>
-                <span className="font-medium text-gray-900">{customer.phone}</span>
+                <span className="text-[11px] text-slate-400 block">Phone Number</span>
+                <span className="font-medium text-slate-900">{customer.phone}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-gray-700">
-              <Calendar className="w-4 h-4 text-[#2c5fbf] shrink-0" />
+            <div className="flex items-center gap-3 text-slate-700">
+              <Calendar className="w-4 h-4 text-indigo-600 shrink-0" />
               <div>
-                <span className="text-[11px] text-gray-400 block">Member Since</span>
-                <span className="font-medium text-gray-900">{String(customer.createdAt)}</span>
+                <span className="text-[11px] text-slate-400 block">Member Since</span>
+                <span className="font-medium text-slate-900">{String(customer.createdAt)}</span>
               </div>
             </div>
           </div>
@@ -246,18 +246,18 @@ export const CustomerDetails: React.FC = () => {
         {/* Address Card */}
         <Card title="Default Delivery Address" className="md:col-span-2">
           <div className="flex items-start gap-3.5">
-            <div className="p-2.5 rounded-xl bg-blue-50 text-[#2c5fbf] shrink-0 mt-0.5">
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 shrink-0 mt-0.5">
               <MapPin className="w-5 h-5" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-gray-900">
+              <h4 className="text-sm font-semibold text-slate-900">
                 {customer.city || 'Bengaluru'}, {customer.state || 'Karnataka'}
               </h4>
-              <p className="text-xs text-gray-600 leading-relaxed max-w-lg">
+              <p className="text-xs text-slate-600 leading-relaxed max-w-lg">
                 {customer.address}
               </p>
               {customer.pincode && (
-                <span className="inline-block text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded mt-2">
+                <span className="inline-block text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded mt-2">
                   PIN: {customer.pincode}
                 </span>
               )}
@@ -270,12 +270,12 @@ export const CustomerDetails: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Delivery History</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-base font-bold text-slate-900">Delivery History</h3>
+            <p className="text-xs text-slate-500">
               All package dispatches and shipments associated with this customer
             </p>
           </div>
-          <span className="text-xs font-semibold text-gray-500">
+          <span className="text-xs font-semibold text-slate-500">
             Total Deliveries: {deliveries.length}
           </span>
         </div>

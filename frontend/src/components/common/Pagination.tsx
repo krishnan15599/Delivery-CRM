@@ -55,21 +55,21 @@ export const Pagination: React.FC<PaginationProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border-t border-gray-100 text-xs text-gray-600',
+        'flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border-t border-slate-100 text-xs text-slate-600',
         className
       )}
     >
       <div className="flex items-center gap-3">
         {totalItems !== undefined ? (
           <span>
-            Showing <strong className="font-semibold text-gray-800">{startItem}</strong> to{' '}
-            <strong className="font-semibold text-gray-800">{endItem}</strong> of{' '}
-            <strong className="font-semibold text-gray-800">{totalItems}</strong> entries
+            Showing <strong className="font-semibold text-slate-800">{startItem}</strong> to{' '}
+            <strong className="font-semibold text-slate-800">{endItem}</strong> of{' '}
+            <strong className="font-semibold text-slate-800">{totalItems}</strong> entries
           </span>
         ) : (
           <span>
-            Page <strong className="font-semibold text-gray-800">{currentPage}</strong> of{' '}
-            <strong className="font-semibold text-gray-800">{totalPages}</strong>
+            Page <strong className="font-semibold text-slate-800">{currentPage}</strong> of{' '}
+            <strong className="font-semibold text-slate-800">{totalPages}</strong>
           </span>
         )}
 
@@ -79,7 +79,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-white border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2c5fbf]"
+              className="bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-600"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -95,7 +95,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           title="First page"
           type="button"
         >
@@ -105,7 +105,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           title="Previous page"
           type="button"
         >
@@ -122,14 +122,14 @@ export const Pagination: React.FC<PaginationProps> = ({
                 className={cn(
                   'w-7 h-7 text-xs rounded font-medium transition-colors flex items-center justify-center',
                   p === currentPage
-                    ? 'bg-[#2c5fbf] text-white'
-                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
                 )}
               >
                 {p}
               </button>
             ) : (
-              <span key={idx} className="px-1 text-gray-400">
+              <span key={idx} className="px-1 text-slate-400">
                 {p}
               </span>
             )
@@ -139,7 +139,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           title="Next page"
           type="button"
         >
@@ -149,7 +149,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           title="Last page"
           type="button"
         >

@@ -226,28 +226,28 @@ export const DeliveryDetails: React.FC = () => {
       />
 
       {/* Status banner */}
-      <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-50 text-[#2c5fbf] rounded-xl shrink-0">
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-xs text-gray-400 uppercase font-semibold">Current Lifecycle Status</div>
-            <div className="text-lg font-bold text-gray-900 mt-0.5 flex items-center gap-2">
+            <div className="text-xs text-slate-400 uppercase font-semibold">Current Lifecycle Status</div>
+            <div className="text-lg font-bold text-slate-900 mt-0.5 flex items-center gap-2">
               <span>{delivery.status}</span>
               <StatusBadge status={delivery.status} size="sm" />
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-6 border-t sm:border-t-0 sm:border-l border-gray-100 pt-3 sm:pt-0 sm:pl-6 text-xs text-gray-600">
+        <div className="flex items-center gap-6 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-0 sm:pl-6 text-xs text-slate-600">
           <div>
-            <span className="text-gray-400 block text-[11px]">Payment Mode</span>
-            <span className="font-semibold text-gray-900 uppercase">{delivery.paymentStatus}</span>
+            <span className="text-slate-400 block text-[11px]">Payment Mode</span>
+            <span className="font-semibold text-slate-900 uppercase">{delivery.paymentStatus}</span>
           </div>
           <div>
-            <span className="text-gray-400 block text-[11px]">COD Amount</span>
-            <span className="font-semibold text-gray-900 text-sm">₹{delivery.codAmount || delivery.amount}</span>
+            <span className="text-slate-400 block text-[11px]">COD Amount</span>
+            <span className="font-semibold text-slate-900 text-sm">₹{delivery.codAmount || delivery.amount}</span>
           </div>
         </div>
       </div>
@@ -267,34 +267,34 @@ export const DeliveryDetails: React.FC = () => {
           <Card title="Pickup & Destination Route">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-[#2c5fbf] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
                   A
                 </div>
                 <div>
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
                     Pickup Hub / Warehouse
                   </span>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">
+                  <p className="text-sm font-medium text-slate-900 mt-0.5">
                     {delivery.pickupAddress}
                   </p>
                 </div>
               </div>
 
-              <div className="ml-3.5 border-l-2 border-dashed border-gray-200 h-6"></div>
+              <div className="ml-3.5 border-l-2 border-dashed border-slate-200 h-6"></div>
 
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
                   B
                 </div>
                 <div>
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
                     Final Delivery Destination
                   </span>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">
+                  <p className="text-sm font-medium text-slate-900 mt-0.5">
                     {delivery.deliveryAddress}
                   </p>
                   {(delivery.city || delivery.pincode) && (
-                    <span className="text-xs text-gray-500 mt-1 block">
+                    <span className="text-xs text-slate-500 mt-1 block">
                       {delivery.city} {delivery.pincode && `- ${delivery.pincode}`}
                     </span>
                   )}
@@ -310,27 +310,27 @@ export const DeliveryDetails: React.FC = () => {
           <Card title="Recipient Customer">
             <div className="space-y-3 text-xs">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-[#2c5fbf] font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center shrink-0">
                   {delivery.customerName.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">{delivery.customerName}</h4>
+                  <h4 className="font-semibold text-slate-900 text-sm">{delivery.customerName}</h4>
                   {delivery.customerId && (
-                    <span className="text-[11px] text-gray-400 font-mono">{delivery.customerId}</span>
+                    <span className="text-[11px] text-slate-400 font-mono">{delivery.customerId}</span>
                   )}
                 </div>
               </div>
 
               {delivery.customerPhone && (
-                <div className="flex items-center gap-2 text-gray-700 pt-1">
-                  <Phone className="w-3.5 h-3.5 text-gray-400" />
+                <div className="flex items-center gap-2 text-slate-700 pt-1">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
                   <span>{delivery.customerPhone}</span>
                 </div>
               )}
 
-              <div className="flex items-start gap-2 text-gray-700">
-                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
-                <span className="text-gray-500">{delivery.deliveryAddress}</span>
+              <div className="flex items-start gap-2 text-slate-700">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                <span className="text-slate-500">{delivery.deliveryAddress}</span>
               </div>
             </div>
           </Card>
@@ -344,21 +344,21 @@ export const DeliveryDetails: React.FC = () => {
                     <User className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">{delivery.agentName}</h4>
-                    <span className="text-[11px] text-gray-400 font-mono">{delivery.agentId}</span>
+                    <h4 className="font-semibold text-slate-900 text-sm">{delivery.agentName}</h4>
+                    <span className="text-[11px] text-slate-400 font-mono">{delivery.agentId}</span>
                   </div>
                 </div>
 
                 {delivery.agentPhone && (
-                  <div className="flex items-center gap-2 text-gray-700 pt-1">
-                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2 text-slate-700 pt-1">
+                    <Phone className="w-3.5 h-3.5 text-slate-400" />
                     <span>{delivery.agentPhone}</span>
                   </div>
                 )}
               </div>
             ) : (
               <div className="text-center py-4">
-                <p className="text-xs text-gray-400 mb-3">No agent assigned yet</p>
+                <p className="text-xs text-slate-400 mb-3">No agent assigned yet</p>
                 <Button
                   variant="outline"
                   size="xs"
@@ -373,22 +373,22 @@ export const DeliveryDetails: React.FC = () => {
           {/* Item & Package Details */}
           <Card title="Package Summary">
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-gray-500">Category:</span>
-                <span className="font-semibold text-gray-900">{delivery.packageType}</span>
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Category:</span>
+                <span className="font-semibold text-slate-900">{delivery.packageType}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-gray-500">Item Description:</span>
-                <span className="font-medium text-gray-900 truncate max-w-[140px]">
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Item Description:</span>
+                <span className="font-medium text-slate-900 truncate max-w-[140px]">
                   {delivery.itemDescription || 'Standard Package'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-gray-500">Order Value:</span>
-                <span className="font-bold text-gray-900">₹{delivery.amount.toLocaleString()}</span>
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Order Value:</span>
+                <span className="font-bold text-slate-900">₹{delivery.amount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-gray-500">COD Due:</span>
+                <span className="text-slate-500">COD Due:</span>
                 <span className="font-bold text-emerald-600">
                   ₹{(delivery.codAmount || delivery.amount).toLocaleString()}
                 </span>

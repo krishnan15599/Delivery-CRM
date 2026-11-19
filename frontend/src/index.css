@@ -1,46 +1,61 @@
 @import 'tailwindcss';
 
+/*
+ * Design tokens
+ * -------------
+ * Brand / primary actions : indigo  (indigo-600 #4f46e5, hover indigo-700)
+ * Neutrals                : slate   (text 900/600/500, borders 200, surfaces 50)
+ * Sidebar                 : slate-900
+ * Status (semantic only)  : emerald = success, blue = info/in transit,
+ *                           amber = pending/warning, red = failed/danger
+ *
+ * Use Tailwind's indigo-* / slate-* classes directly; avoid one-off hex values.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+}
+
 :root {
-  --primary: #10b981;
-  --primary-hover: #059669;
-  --lime: #84cc16;
-  --sidebar-bg: #000000;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --sidebar-bg: #0f172a;
 }
 
-#root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #000000;
-  background: #fcfcfc;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
+/*
+ * Base styles live in the `base` layer so Tailwind utilities (text-lg, mb-4, …)
+ * can override them. Unlayered rules would beat every utility class.
+ */
+@layer base {
+  body {
+    margin: 0;
+    background-color: #f8fafc; /* slate-50 */
+    color: #0f172a; /* slate-900 */
+    font-family: var(--font-sans);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-body {
-  margin: 0;
-  background-color: #fafafa;
-}
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
 
-h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-}
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
 
-h2 {
-  margin: 1rem 0 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
 
-h3 {
-  margin: 0.75rem 0 0.25rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-h4 {
-  margin: 0.75rem 0 0.25rem;
-  font-size: 1rem;
-  font-weight: 600;
+  h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
 }

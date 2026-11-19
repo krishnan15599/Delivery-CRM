@@ -88,12 +88,12 @@ export const Customers: React.FC = () => {
       sortable: true,
       render: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-50 text-[#2c5fbf] font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 font-bold text-xs flex items-center justify-center shrink-0">
             {row.name.charAt(0)}
           </div>
           <div>
-            <div className="font-semibold text-gray-900 text-xs">{row.name}</div>
-            {/* <div className="text-[11px] text-gray-400 font-mono">{row.id}</div> */}
+            <div className="font-semibold text-slate-900 text-xs">{row.name}</div>
+            {/* <div className="text-[11px] text-slate-400 font-mono">{row.id}</div> */}
           </div>
         </div>
       ),
@@ -102,13 +102,13 @@ export const Customers: React.FC = () => {
       key: 'contact',
       header: 'Contact Info',
       render: (row) => (
-        <div className="space-y-0.5 text-xs text-gray-600">
+        <div className="space-y-0.5 text-xs text-slate-600">
           <div className="flex items-center gap-1.5">
-            <Mail className="w-3 h-3 text-gray-400" />
+            <Mail className="w-3 h-3 text-slate-400" />
             <span>{row.email}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Phone className="w-3 h-3 text-gray-400" />
+            <Phone className="w-3 h-3 text-slate-400" />
             <span>{row.phone}</span>
           </div>
         </div>
@@ -118,12 +118,12 @@ export const Customers: React.FC = () => {
       key: 'address',
       header: 'City & Address',
       render: (row) => (
-        <div className="text-xs text-gray-600 max-w-xs truncate">
-          <div className="flex items-center gap-1 font-medium text-gray-800">
-            <MapPin className="w-3 h-3 text-gray-400" />
+        <div className="text-xs text-slate-600 max-w-xs truncate">
+          <div className="flex items-center gap-1 font-medium text-slate-800">
+            <MapPin className="w-3 h-3 text-slate-400" />
             <span>{row.city || 'Bengaluru'}</span>
           </div>
-          <span className="text-[11px] text-gray-400">{row.address}</span>
+          <span className="text-[11px] text-slate-400">{row.address}</span>
         </div>
       ),
     },
@@ -133,7 +133,7 @@ export const Customers: React.FC = () => {
       align: 'center',
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           {row.totalOrders || 0}
         </span>
       ),
@@ -144,7 +144,7 @@ export const Customers: React.FC = () => {
       align: 'right',
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           ₹{(row.totalSpent || 0).toLocaleString()}
         </span>
       ),
@@ -164,7 +164,7 @@ export const Customers: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/customers/${row.id}`)}
-            className="p-1 text-gray-400 hover:text-[#2c5fbf] hover:bg-blue-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -172,7 +172,7 @@ export const Customers: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/customers/edit/${row.id}`)}
-            className="p-1 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
             title="Edit Customer"
           >
             <Edit2 className="w-4 h-4" />
@@ -180,7 +180,7 @@ export const Customers: React.FC = () => {
           <button
             type="button"
             onClick={() => setCustomerToDelete(row)}
-            className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
             title="Delete Customer"
           >
             <Trash2 className="w-4 h-4" />
@@ -211,7 +211,7 @@ export const Customers: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
         <FilterBar
           totalResults={totalItems}
           onClearAll={() => {

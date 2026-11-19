@@ -28,9 +28,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 shadow-sm border border-amber-200">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
-        <p className="text-sm text-gray-600 max-w-md mb-6">
-          Your current account role is <span className="font-semibold text-gray-900">"{role}"</span>.
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Access Restricted</h2>
+        <p className="text-sm text-slate-600 max-w-md mb-6">
+          Your current account role is <span className="font-semibold text-slate-900">"{role}"</span>.
           This section requires {allowedRoles.join(' or ')} privileges.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">

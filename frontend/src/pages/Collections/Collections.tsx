@@ -186,7 +186,7 @@ export const Collections: React.FC = () => {
       header: 'Tracking No',
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-gray-900 font-mono text-xs">
+        <span className="font-semibold text-slate-900 font-mono text-xs">
           {row.trackingNumber}
         </span>
       ),
@@ -194,13 +194,13 @@ export const Collections: React.FC = () => {
     {
       key: 'customerName',
       header: 'Customer',
-      render: (row) => <span className="text-xs text-gray-800 font-medium">{row.customerName}</span>,
+      render: (row) => <span className="text-xs text-slate-800 font-medium">{row.customerName}</span>,
     },
     {
       key: 'agentName',
       header: 'Field Agent',
       render: (row) => (
-        <span className="text-xs text-gray-700 inline-flex items-center gap-1.5">
+        <span className="text-xs text-slate-700 inline-flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
           {row.agentName}
         </span>
@@ -212,7 +212,7 @@ export const Collections: React.FC = () => {
       align: 'right',
       sortable: true,
       render: (row) => (
-        <span className="font-bold text-gray-900 text-xs">
+        <span className="font-bold text-slate-900 text-xs">
           ₹{row.amount.toLocaleString()}
         </span>
       ),
@@ -222,7 +222,7 @@ export const Collections: React.FC = () => {
       header: 'Mode',
       align: 'center',
       render: (row) => (
-        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
           {row.paymentMode}
         </span>
       ),
@@ -237,7 +237,7 @@ export const Collections: React.FC = () => {
       key: 'createdAt',
       header: 'Date',
       render: (row) => (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-slate-500">
           {String(row.collectedAt || row.createdAt).split('T')[0]}
         </span>
       ),
@@ -251,7 +251,7 @@ export const Collections: React.FC = () => {
           <Button
             variant="ghost"
             size="xs"
-            className="text-[#2c5fbf] hover:text-[#1a3d82]"
+            className="text-indigo-600 hover:text-indigo-800"
             onClick={(e) => {
               e.stopPropagation();
               setCollectionToSettle(row);
@@ -314,7 +314,7 @@ export const Collections: React.FC = () => {
       </div>
 
       {/* Main Container */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-4">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-4">
         {/* Navigation Tabs */}
         <Tabs
           activeTab={activeTab}
@@ -482,7 +482,7 @@ export const Collections: React.FC = () => {
             <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg text-xs text-amber-900 leading-relaxed">
               Agent <strong>{agents.find((a) => a.id === settleAgentId)?.name}</strong> currently
               has an outstanding cash balance of{' '}
-              <strong className="text-base text-gray-900 block mt-1">
+              <strong className="text-base text-slate-900 block mt-1">
                 ₹{agents.find((a) => a.id === settleAgentId)?.pendingCashAmount.toLocaleString()}
               </strong>
             </div>

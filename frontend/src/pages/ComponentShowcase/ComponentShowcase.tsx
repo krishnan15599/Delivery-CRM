@@ -163,7 +163,7 @@ export const ComponentShowcase = () => {
       header: 'Tracking No',
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-gray-900 font-mono text-xs">
+        <span className="font-semibold text-slate-900 font-mono text-xs">
           {row.trackingNo}
         </span>
       ),
@@ -174,8 +174,8 @@ export const ComponentShowcase = () => {
       sortable: true,
       render: (row) => (
         <div>
-          <div className="font-medium text-gray-900">{row.customer}</div>
-          <div className="text-[11px] text-gray-400">{row.destination}</div>
+          <div className="font-medium text-slate-900">{row.customer}</div>
+          <div className="text-[11px] text-slate-400">{row.destination}</div>
         </div>
       ),
     },
@@ -185,7 +185,7 @@ export const ComponentShowcase = () => {
       sortable: true,
       align: 'right',
       render: (row) => (
-        <span className="font-semibold text-gray-900">₹{row.amount.toLocaleString()}</span>
+        <span className="font-semibold text-slate-900">₹{row.amount.toLocaleString()}</span>
       ),
     },
     {
@@ -199,7 +199,7 @@ export const ComponentShowcase = () => {
       header: 'Date',
       sortable: true,
       align: 'right',
-      render: (row) => <span className="text-xs text-gray-500">{row.date}</span>,
+      render: (row) => <span className="text-xs text-slate-500">{row.date}</span>,
     },
   ];
 
@@ -240,7 +240,7 @@ export const ComponentShowcase = () => {
 
       {/* 2. StatCards */}
       <section className="space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           1. StatCards with Trends & Colors
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -277,11 +277,11 @@ export const ComponentShowcase = () => {
       </section>
 
       {/* 3. Toast Notifications */}
-      <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+      <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-3">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           2. Toast Notifications
         </h3>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-500">
           Trigger rich toasts with auto-dismiss, custom titles, and icons.
         </p>
         <div className="flex flex-wrap gap-2.5">
@@ -323,13 +323,13 @@ export const ComponentShowcase = () => {
       </section>
 
       {/* 4. Badges & StatusBadges */}
-      <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+      <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           3. Badges & StatusBadges
         </h3>
         <div className="space-y-3">
           <div>
-            <div className="text-xs font-semibold text-gray-700 mb-2">Delivery & CRM StatusBadges:</div>
+            <div className="text-xs font-semibold text-slate-700 mb-2">Delivery & CRM StatusBadges:</div>
             <div className="flex flex-wrap gap-2">
               <StatusBadge status="Pending" />
               <StatusBadge status="Assigned" />
@@ -343,7 +343,7 @@ export const ComponentShowcase = () => {
             </div>
           </div>
           <div>
-            <div className="text-xs font-semibold text-gray-700 mb-2">General Semantic Badges:</div>
+            <div className="text-xs font-semibold text-slate-700 mb-2">General Semantic Badges:</div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="primary" dot>Primary</Badge>
               <Badge variant="success" dot>Success</Badge>
@@ -359,10 +359,10 @@ export const ComponentShowcase = () => {
 
       {/* 5. Tabs & FilterBar */}
       <section className="space-y-4">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           4. Tabs & FilterBar
         </h3>
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
           <Tabs
             activeTab={activeTab}
             onChange={setActiveTab}
@@ -420,7 +420,7 @@ export const ComponentShowcase = () => {
       {/* 6. DataTable with Selection, Sorting, Loading, Empty State */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
             5. DataTable (Sortable, Selectable, Paginated)
           </h3>
           <div className="flex items-center gap-2">
@@ -483,8 +483,8 @@ export const ComponentShowcase = () => {
       </section>
 
       {/* 7. Modals, Dialogs, Drawers & Forms */}
-      <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+      <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           6. Modal, ConfirmDialog & Drawer
         </h3>
         <div className="flex flex-wrap gap-3">
@@ -503,16 +503,16 @@ export const ComponentShowcase = () => {
       {/* 8. StatusTimeline & FormField Demo */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* StatusTimeline */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
             7. StatusTimeline
           </h3>
           <StatusTimeline events={timelineEvents} />
         </div>
 
         {/* FormField & Controls */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">
             8. FormField & Inputs
           </h3>
           <FormField
@@ -546,8 +546,8 @@ export const ComponentShowcase = () => {
 
       {/* 9. EmptyState & Skeleton Samples */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
             9. EmptyState Component
           </h3>
           <EmptyState
@@ -575,8 +575,8 @@ export const ComponentShowcase = () => {
           />
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">
             10. Skeleton Loaders
           </h3>
           <div className="space-y-4">
@@ -680,7 +680,7 @@ export const ComponentShowcase = () => {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
               Delivery Progress
             </h4>
             <StatusTimeline events={timelineEvents} />

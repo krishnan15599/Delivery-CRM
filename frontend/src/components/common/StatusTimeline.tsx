@@ -42,13 +42,13 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
         let defaultIcon = <CheckCircle2 className="w-4 h-4" />;
 
         if (status === 'current') {
-          iconColor = 'text-[#2c5fbf] bg-blue-50 ring-4 ring-blue-50';
+          iconColor = 'text-indigo-600 bg-indigo-50 ring-4 ring-indigo-50';
           defaultIcon = <Clock className="w-4 h-4" />;
         } else if (status === 'failed') {
           iconColor = 'text-rose-600 bg-rose-50 ring-4 ring-rose-50';
           defaultIcon = <AlertCircle className="w-4 h-4" />;
         } else if (status === 'upcoming') {
-          iconColor = 'text-gray-400 bg-gray-50 ring-4 ring-gray-50';
+          iconColor = 'text-slate-400 bg-slate-50 ring-4 ring-slate-50';
           defaultIcon = <Circle className="w-4 h-4" />;
         }
 
@@ -59,7 +59,7 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
               <span
                 className={cn(
                   'absolute left-3.5 top-6 bottom-[-24px] w-0.5',
-                  status === 'completed' ? 'bg-emerald-200' : 'bg-gray-200'
+                  status === 'completed' ? 'bg-emerald-200' : 'bg-slate-200'
                 )}
                 aria-hidden="true"
               />
@@ -78,20 +78,20 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
             {/* Content Details */}
             <div className="flex-1 pt-0.5">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                <h4 className="text-xs font-semibold text-gray-900">{event.title}</h4>
-                <time className="text-[11px] text-gray-400 font-mono">
+                <h4 className="text-xs font-semibold text-slate-900">{event.title}</h4>
+                <time className="text-[11px] text-slate-400 font-mono">
                   {formatEventDate(event.timestamp)}
                 </time>
               </div>
 
               {event.description && (
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                   {event.description}
                 </p>
               )}
 
               {event.actor && (
-                <span className="inline-block mt-1 text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                <span className="inline-block mt-1 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
                   {event.actor}
                 </span>
               )}

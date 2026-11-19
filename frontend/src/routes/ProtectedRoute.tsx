@@ -25,13 +25,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (allowedRoles && !allowedRoles.includes(role)) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-6 text-center">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-md w-full">
           <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Access Restricted</h2>
-          <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-            Your role (<strong className="text-gray-800">{role}</strong>) does not have
+          <h2 className="text-xl font-bold text-slate-900 mb-1">Access Restricted</h2>
+          <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+            Your role (<strong className="text-slate-800">{role}</strong>) does not have
             permission to access this section ({allowedRoles.join(' or ')} required).
           </p>
           <div className="flex flex-col gap-2">

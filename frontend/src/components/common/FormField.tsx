@@ -32,13 +32,13 @@ export const FormField: React.FC<FormFieldProps> = ({
         <div className="flex items-center justify-between">
           <label
             htmlFor={htmlFor}
-            className="flex items-center gap-1 text-xs font-semibold text-gray-700 select-none"
+            className="flex items-center gap-1 text-xs font-semibold text-slate-700 select-none"
           >
             <span>{label}</span>
             {required && <span className="text-rose-500 font-bold">*</span>}
             {tooltip && (
               <span
-                className="text-gray-400 hover:text-gray-600 cursor-help"
+                className="text-slate-400 hover:text-slate-600 cursor-help"
                 title={tooltip}
               >
                 <HelpCircle className="w-3.5 h-3.5" />
@@ -56,7 +56,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           <span>{errorMessage}</span>
         </div>
       ) : helperText ? (
-        <p className="text-xs text-gray-500 mt-0.5">{helperText}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{helperText}</p>
       ) : null}
     </div>
   );

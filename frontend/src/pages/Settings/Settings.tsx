@@ -271,7 +271,7 @@ export const Settings: React.FC = () => {
         ]}
       />
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-6">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-6">
         <Tabs
           activeTab={activeTab}
           onChange={(tab) => {
@@ -288,7 +288,7 @@ export const Settings: React.FC = () => {
         {/* 1. Profile Tab */}
         {activeTab === 'profile' && (
           <form onSubmit={handleSaveProfile} className="space-y-6 max-w-2xl">
-            <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
               <div
                 className={`w-14 h-14 rounded-2xl text-white text-lg font-bold flex items-center justify-center shadow-xs ${
                   profile.role === 'Admin'
@@ -301,7 +301,7 @@ export const Settings: React.FC = () => {
                 {profile.name.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900">{profile.name}</h3>
+                <h3 className="text-base font-bold text-slate-900">{profile.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge
                     variant={
@@ -315,7 +315,7 @@ export const Settings: React.FC = () => {
                   >
                     {profile.role}
                   </Badge>
-                  <span className="text-xs text-gray-400">Head Office Hub</span>
+                  <span className="text-xs text-slate-400">Head Office Hub</span>
                 </div>
               </div>
             </div>
@@ -409,7 +409,7 @@ export const Settings: React.FC = () => {
                   Save Company Settings
                 </Button>
               ) : (
-                <p className="text-xs text-gray-500">Only an Admin can change company settings.</p>
+                <p className="text-xs text-slate-500">Only an Admin can change company settings.</p>
               )}
             </div>
           </form>
@@ -429,15 +429,15 @@ export const Settings: React.FC = () => {
                         <div className={`p-1.5 rounded-lg border ${r.color}`}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-xs font-bold text-gray-800">{r.role} Privilege Level</span>
+                        <span className="text-xs font-bold text-slate-800">{r.role} Privilege Level</span>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">{r.description}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">{r.description}</p>
                       <div className="space-y-1.5 pt-2">
-                        <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
+                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                           Module Capabilities:
                         </span>
                         {r.permissions.map((p, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-600">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                             <span>{p}</span>
                           </div>
@@ -450,11 +450,11 @@ export const Settings: React.FC = () => {
             </div>
 
             {/* Team Accounts Section */}
-            <div className="space-y-4 pt-2 border-t border-gray-100">
+            <div className="space-y-4 pt-2 border-t border-slate-100">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">Team & Staff Accounts (Supabase DB)</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <h3 className="text-base font-bold text-slate-900">Team & Staff Accounts (Supabase DB)</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {activeUserRole === 'Admin'
                       ? 'Admins can create Manager and Agent accounts stored directly in Supabase database.'
                       : 'Managers can create Agent accounts stored directly in Supabase database.'}
@@ -482,9 +482,9 @@ export const Settings: React.FC = () => {
               </div>
 
               {/* Profiles Table */}
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-2xs">
-                <table className="w-full text-left text-xs text-gray-600">
-                  <thead className="bg-gray-50/80 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3">User & Contact</th>
                       <th className="px-4 py-3">Assigned Role</th>
@@ -493,16 +493,16 @@ export const Settings: React.FC = () => {
                       {activeUserRole === 'Admin' && <th className="px-4 py-3 text-right">Actions</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-slate-100">
                     {loadingProfiles ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                        <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
                           Loading team accounts from Supabase...
                         </td>
                       </tr>
                     ) : profilesList.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                        <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
                           No accounts found. Click "Add Staff Account" to create one.
                         </td>
                       </tr>
@@ -510,7 +510,7 @@ export const Settings: React.FC = () => {
                       profilesList.map((p) => {
                         const isMainAdmin = p.email === 'admin@deliverycrm.in';
                         return (
-                          <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
+                          <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2.5">
                                 <div
@@ -525,8 +525,8 @@ export const Settings: React.FC = () => {
                                   {p.name.slice(0, 2).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="font-semibold text-gray-900 block truncate">{p.name}</span>
-                                  <span className="text-[11px] text-gray-400 block truncate">{p.email}</span>
+                                  <span className="font-semibold text-slate-900 block truncate">{p.name}</span>
+                                  <span className="text-[11px] text-slate-400 block truncate">{p.email}</span>
                                 </div>
                               </div>
                             </td>
@@ -543,15 +543,15 @@ export const Settings: React.FC = () => {
                                 {p.role}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-gray-600">{p.phone || '—'}</td>
-                            <td className="px-4 py-3 text-gray-400 text-[11px]">Active in DB</td>
+                            <td className="px-4 py-3 text-slate-600">{p.phone || '—'}</td>
+                            <td className="px-4 py-3 text-slate-400 text-[11px]">Active in DB</td>
                             {activeUserRole === 'Admin' && (
                               <td className="px-4 py-3 text-right">
                                 {!isMainAdmin && (
                                   <button
                                     type="button"
                                     onClick={() => setStaffToDelete(p)}
-                                    className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                     title="Delete Account"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -627,7 +627,7 @@ export const Settings: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowStaffPassword(!showStaffPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                 aria-label={showStaffPassword ? 'Hide password' : 'Show password'}
               >
                 {showStaffPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -664,7 +664,7 @@ export const Settings: React.FC = () => {
 
           {/* Additional fields if role is Agent */}
           {staffFormData.role === 'Agent' && (
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <FormField label="Vehicle Type">
                 <Select
                   value={staffFormData.vehicleType}

@@ -133,7 +133,7 @@ export const AgentDetails: React.FC = () => {
       key: 'trackingNumber',
       header: 'Tracking No',
       render: (row) => (
-        <span className="font-semibold text-gray-900 font-mono text-xs">
+        <span className="font-semibold text-slate-900 font-mono text-xs">
           {row.trackingNumber}
         </span>
       ),
@@ -143,8 +143,8 @@ export const AgentDetails: React.FC = () => {
       header: 'Customer',
       render: (row) => (
         <div>
-          <span className="font-medium text-gray-900 text-xs">{row.customerName}</span>
-          <p className="text-[11px] text-gray-400 truncate max-w-xs">{row.deliveryAddress}</p>
+          <span className="font-medium text-slate-900 text-xs">{row.customerName}</span>
+          <p className="text-[11px] text-slate-400 truncate max-w-xs">{row.deliveryAddress}</p>
         </div>
       ),
     },
@@ -153,7 +153,7 @@ export const AgentDetails: React.FC = () => {
       header: 'COD Amount',
       align: 'right',
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           ₹{row.amount.toLocaleString()}
         </span>
       ),
@@ -185,7 +185,7 @@ export const AgentDetails: React.FC = () => {
       key: 'trackingNumber',
       header: 'Tracking #',
       render: (row) => (
-        <span className="font-mono text-xs font-semibold text-gray-900">
+        <span className="font-mono text-xs font-semibold text-slate-900">
           {row.trackingNumber}
         </span>
       ),
@@ -193,14 +193,14 @@ export const AgentDetails: React.FC = () => {
     {
       key: 'customerName',
       header: 'Customer',
-      render: (row) => <span className="text-xs text-gray-700">{row.customerName}</span>,
+      render: (row) => <span className="text-xs text-slate-700">{row.customerName}</span>,
     },
     {
       key: 'amount',
       header: 'Amount',
       align: 'right',
       render: (row) => (
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-slate-900 text-xs">
           ₹{row.amount.toLocaleString()}
         </span>
       ),
@@ -209,7 +209,7 @@ export const AgentDetails: React.FC = () => {
       key: 'paymentMode',
       header: 'Mode',
       render: (row) => (
-        <span className="text-xs font-medium text-gray-600 px-2 py-0.5 bg-gray-100 rounded">
+        <span className="text-xs font-medium text-slate-600 px-2 py-0.5 bg-slate-100 rounded">
           {row.paymentMode}
         </span>
       ),
@@ -289,25 +289,25 @@ export const AgentDetails: React.FC = () => {
         <Card title="Agent Information" className="md:col-span-1">
           <div className="space-y-3.5 text-xs">
             <div className="flex items-center gap-2.5">
-              <Phone className="w-4 h-4 text-[#2c5fbf]" />
-              <span className="font-medium text-gray-900">{agent.phone}</span>
+              <Phone className="w-4 h-4 text-indigo-600" />
+              <span className="font-medium text-slate-900">{agent.phone}</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Mail className="w-4 h-4 text-[#2c5fbf]" />
-              <span className="font-medium text-gray-900">{agent.email}</span>
+              <Mail className="w-4 h-4 text-indigo-600" />
+              <span className="font-medium text-slate-900">{agent.email}</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Truck className="w-4 h-4 text-[#2c5fbf]" />
-              <span className="font-medium text-gray-900">
+              <Truck className="w-4 h-4 text-indigo-600" />
+              <span className="font-medium text-slate-900">
                 {agent.vehicleType} ({agent.vehicleNumber})
               </span>
             </div>
             <div className="flex items-center gap-2.5">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span className="font-bold text-gray-900">{agent.rating} / 5.0 Rating</span>
+              <span className="font-bold text-slate-900">{agent.rating} / 5.0 Rating</span>
             </div>
-            <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-              <span className="text-gray-400">Current Status:</span>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-slate-400">Current Status:</span>
               <StatusBadge status={agent.status} size="sm" />
             </div>
           </div>
@@ -316,8 +316,8 @@ export const AgentDetails: React.FC = () => {
         {/* Assigned Deliveries */}
         <div className="md:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-gray-900">Assigned Active Deliveries</h3>
-            <span className="text-xs text-gray-500 font-semibold">
+            <h3 className="text-base font-bold text-slate-900">Assigned Active Deliveries</h3>
+            <span className="text-xs text-slate-500 font-semibold">
               Total: {deliveries.length}
             </span>
           </div>
@@ -334,8 +334,8 @@ export const AgentDetails: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-gray-900">COD Cash Collections</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-base font-bold text-slate-900">COD Cash Collections</h3>
+            <p className="text-xs text-slate-500">
               Audit log of cash and online receipts collected by {agent.name}
             </p>
           </div>

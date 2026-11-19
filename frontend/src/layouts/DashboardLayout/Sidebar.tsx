@@ -43,7 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
   const location = useLocation();
   const { user, role, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+  // undefined = user hasn't toggled anything yet, so the current route's section is open
+  const [expandedMenu, setExpandedMenu] = useState<string | null | undefined>(undefined);
 
   const navItems: NavItem[] = [
     {
@@ -135,9 +136,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
     }
   };
 
-  const toggleSubmenu = (menuName: string) => {
+  const isItemActive = (path: string) =>
+    location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
+
+  const isMenuOpen = (item: NavItem) =>
+    expandedMenu === undefined ? isItemActive(item.path) : expandedMenu === item.name;
+
+  const toggleSubmenu = (item: NavItem) => {
     if (isCollapsed) setIsCollapsed(false);
-    setExpandedMenu(expandedMenu === menuName ? null : menuName);
+    setExpandedMenu(isMenuOpen(item) ? null : item.name);
   };
 
   const roleAllowedMap: Record<string, UserRole[]> = {
@@ -156,45 +163,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
     role && roleAllowedMap[item.name]?.includes(role)
   );
 
+  const collapsed = isCollapsed && !isMobile;
+  const initials = user?.name?.slice(0, 2).toUpperCase() || 'US';
+
   return (
     <aside
-      className={`bg-black text-neutral-400 border-r border-neutral-800 flex flex-col h-full font-sans transition-all duration-300 relative select-none shrink-0 ${
-        isCollapsed && !isMobile ? 'w-18' : 'w-64'
+      className={`bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col h-full font-sans transition-[width] duration-300 relative select-none shrink-0 ${
+        collapsed ? 'w-18' : 'w-64'
       }`}
     >
       {/* Brand Header */}
-      <div className="p-4 sm:p-5 flex items-center justify-between text-white border-b border-neutral-800">
+      <div
+        className={`h-16 px-4 flex items-center border-b border-slate-800 shrink-0 ${
+          collapsed ? 'justify-center' : 'justify-between'
+        }`}
+      >
         <div
           onClick={() => {
-            navigate(role === 'Agent' ? '/deliveries' : '/dashboard');
+            navigate(role === 'Agent' ? '/deliveries' : role === 'SuperAdmin' ? '/platform' : '/dashboard');
             handleLinkClick();
           }}
-          className="flex items-center space-x-3 cursor-pointer overflow-hidden"
+          className="flex items-center gap-3 cursor-pointer overflow-hidden"
         >
-          <div className="p-2 rounded-xl bg-[#84cc16] text-black shadow-md shadow-[#84cc16]/20 shrink-0">
-            <Truck className="w-5 h-5 text-black" />
+          <div className="h-9 w-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-950/40 ring-1 ring-white/10 shrink-0">
+            <Truck className="w-[18px] h-[18px]" />
           </div>
-          {(!isCollapsed || isMobile) && (
-            <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight whitespace-nowrap leading-tight">
+          {!collapsed && (
+            <div className="flex flex-col min-w-0">
+              <span className="text-[15px] font-semibold text-white tracking-tight whitespace-nowrap leading-tight">
                 Delivery CRM
               </span>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
-                {role} Console
+              <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                {role === 'SuperAdmin' ? 'Platform' : role} workspace
               </span>
             </div>
           )}
         </div>
 
         {/* Desktop Collapse Button */}
-        {!isMobile && (
+        {!isMobile && !collapsed && (
           <button
             type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer hidden md:flex items-center justify-center shrink-0"
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => setIsCollapsed(true)}
+            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer hidden md:flex items-center justify-center shrink-0"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
           >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            <ChevronLeft className="w-4 h-4" />
           </button>
         )}
 
@@ -203,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
           <button
             type="button"
             onClick={onCloseMobile}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer md:hidden"
+            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer md:hidden"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -211,65 +226,100 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
         )}
       </div>
 
+      {/* Expand button when collapsed */}
+      {collapsed && (
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(false)}
+          className="mx-auto mt-3 p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+          title="Expand sidebar"
+          aria-label="Expand sidebar"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
+
       {/* Nav Menu */}
-      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {!collapsed && (
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            Menu
+          </p>
+        )}
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
-          const isCurrentActive =
-            location.pathname === item.path ||
-            (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-          const isSubOpen = expandedMenu === item.name;
+          const isCurrentActive = isItemActive(item.path);
+          const hasSubmenu = !!item.subItems && item.subItems.length > 1;
+          const isSubOpen = hasSubmenu && isMenuOpen(item);
 
           return (
-            <div key={item.name} className="space-y-1">
+            <div key={item.name}>
               <div
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
-                  isCollapsed && !isMobile ? 'justify-center' : ''
-                } ${
+                className={`group flex items-center rounded-lg transition-colors ${
                   isCurrentActive
-                    ? 'bg-[#84cc16] text-black shadow-sm font-bold'
-                    : 'hover:bg-slate-800 hover:text-white text-[#aebbd0]'
+                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-950/40'
+                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
                 }`}
               >
                 <NavLink
                   to={item.path}
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-3 flex-1 min-w-0"
-                  title={isCollapsed && !isMobile ? item.name : undefined}
+                  onClick={() => {
+                    if (hasSubmenu) setExpandedMenu(item.name);
+                    handleLinkClick();
+                  }}
+                  className={`flex items-center gap-3 flex-1 min-w-0 py-2 ${
+                    collapsed ? 'justify-center px-0' : 'px-3'
+                  }`}
+                  title={collapsed ? item.name : undefined}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  {(!isCollapsed || isMobile) && (
-                    <span className="font-medium text-xs truncate">{item.name}</span>
-                  )}
-                  {item.badge !== undefined && (
-                    <span className="ml-auto bg-[#84cc16]/20 text-[#84cc16] border border-[#84cc16]/40 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                  <span className="relative shrink-0">
+                    <Icon
+                      className={`w-[18px] h-[18px] ${
+                        isCurrentActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                      }`}
+                    />
+                    {collapsed && item.badge !== undefined && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-indigo-400 ring-2 ring-slate-900" />
+                    )}
+                  </span>
+                  {!collapsed && <span className="text-sm font-medium truncate">{item.name}</span>}
+                  {!collapsed && item.badge !== undefined && (
+                    <span
+                      className={`ml-auto min-w-5 text-center text-[11px] font-semibold px-1.5 py-px rounded-full ${
+                        isCurrentActive ? 'bg-white/20 text-white' : 'bg-indigo-500/20 text-indigo-300'
+                      }`}
+                    >
                       {item.badge}
                     </span>
                   )}
                 </NavLink>
 
                 {/* Submenu expand toggle */}
-                {(!isCollapsed || isMobile) && item.subItems && item.subItems.length > 1 && (
+                {!collapsed && hasSubmenu && (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleSubmenu(item.name);
+                      toggleSubmenu(item);
                     }}
-                    className="p-1 text-gray-400 hover:text-white rounded transition-colors ml-1"
+                    className={`p-1.5 mr-1.5 rounded-md transition-colors cursor-pointer ${
+                      isCurrentActive
+                        ? 'text-indigo-100 hover:bg-white/10'
+                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                    }`}
+                    aria-label={`${isSubOpen ? 'Collapse' : 'Expand'} ${item.name} menu`}
+                    aria-expanded={isSubOpen}
                   >
                     <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                        isSubOpen ? 'rotate-180' : ''
-                      }`}
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${isSubOpen ? 'rotate-180' : ''}`}
                     />
                   </button>
                 )}
               </div>
 
               {/* Sub-items accordion */}
-              {(!isCollapsed || isMobile) && isSubOpen && item.subItems && (
-                <div className="pl-9 pr-2 py-1 space-y-1 animate-in fade-in duration-200">
+              {!collapsed && isSubOpen && item.subItems && (
+                <div className="ml-[21px] mt-1 mb-2 pl-3 border-l border-slate-700/70 space-y-0.5">
                   {item.subItems.map((sub) => {
                     const isSubActive = location.pathname + location.search === sub.path;
                     return (
@@ -277,10 +327,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
                         key={sub.name}
                         to={sub.path}
                         onClick={handleLinkClick}
-                        className={`block py-1.5 px-2.5 rounded-lg text-[11px] font-medium transition-colors ${
+                        className={`block py-1.5 px-3 rounded-md text-[13px] transition-colors ${
                           isSubActive
-                            ? 'text-white bg-indigo-600/25 text-indigo-300 font-medium'
-                            : 'text-gray-400 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-white bg-white/10 font-medium'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
                         }`}
                       >
                         {sub.name}
@@ -295,30 +345,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
       </nav>
 
       {/* User Info & Sign Out Footer */}
-      <div className="p-3 border-t border-neutral-800 space-y-2">
-        {(!isCollapsed || isMobile) && user && (
-          <div className="flex items-center gap-2.5 px-2 py-1.5 bg-neutral-950 rounded-xl border border-neutral-800">
-            <div
-              className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-bold shrink-0 ${
-                'bg-[#84cc16] text-black'
-              }`}
-            >
-              {user.name?.slice(0, 2).toUpperCase() || 'US'}
+      <div className="p-3 border-t border-slate-800 space-y-1">
+        {!collapsed && user && (
+          <div className="flex items-center gap-3 px-2.5 py-2 rounded-lg bg-white/5 border border-white/5">
+            <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-semibold shrink-0">
+              {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-xs font-semibold text-white block truncate leading-tight">
+              <span className="text-[13px] font-medium text-white block truncate leading-tight">
                 {user.name}
               </span>
-              <span
-                className={`text-[10px] font-semibold uppercase tracking-wider block ${
-                  role === 'Admin'
-                    ? 'text-[#84cc16]'
-                    : role === 'Manager'
-                    ? 'text-purple-400'
-                    : 'text-emerald-400'
-                }`}
-              >
-                {role}
+              <span className="text-[11px] text-slate-400 block truncate">
+                {role === 'SuperAdmin' ? 'Platform Owner' : role}
               </span>
             </div>
           </div>
@@ -331,13 +369,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
             navigate('/login');
             handleLinkClick();
           }}
-          title={isCollapsed && !isMobile ? 'Logout' : undefined}
-          className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl hover:bg-neutral-900 hover:text-[#84cc16] text-neutral-400 transition-colors cursor-pointer ${
-            isCollapsed && !isMobile ? 'justify-center' : 'justify-start'
+          title={collapsed ? 'Sign out' : undefined}
+          className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer ${
+            collapsed ? 'justify-center' : 'justify-start'
           }`}
         >
-          <LogOut className="w-5 h-5 shrink-0" />
-          {(!isCollapsed || isMobile) && <span className="font-medium text-xs">Sign Out</span>}
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Sign out</span>}
         </button>
       </div>
     </aside>

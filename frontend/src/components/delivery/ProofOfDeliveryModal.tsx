@@ -105,12 +105,12 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
         {/* OTP Verification Pill */}
         <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#2c5fbf] text-white">
+            <div className="p-2.5 rounded-xl bg-indigo-600 text-white">
               <KeyRound className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-gray-900">Delivery Security OTP</h4>
-              <p className="text-xs text-gray-500">Sent via SMS to {delivery.customerPhone || 'customer mobile'}</p>
+              <h4 className="text-sm font-bold text-slate-900">Delivery Security OTP</h4>
+              <p className="text-xs text-slate-500">Sent via SMS to {delivery.customerPhone || 'customer mobile'}</p>
             </div>
           </div>
 
@@ -162,7 +162,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
               className={`border-2 border-dashed rounded-xl p-2.5 flex items-center justify-center gap-2 text-xs font-medium cursor-pointer transition-colors ${
                 photoSelected
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                  : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  : 'border-slate-200 hover:border-slate-300 text-slate-600'
               }`}
             >
               {photoSelected ? (
@@ -172,7 +172,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
                 </>
               ) : (
                 <>
-                  <Camera className="w-4 h-4 text-gray-400" />
+                  <Camera className="w-4 h-4 text-slate-400" />
                   <span>Click to attach parcel photo</span>
                 </>
               )}
@@ -183,8 +183,8 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
         {/* Signature Pad */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-              <PenTool className="w-3.5 h-3.5 text-gray-500" />
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <PenTool className="w-3.5 h-3.5 text-slate-500" />
               Recipient Digital Signature
             </label>
             {hasSignature && (
@@ -198,7 +198,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
             )}
           </div>
 
-          <div className="border border-gray-200 rounded-xl bg-gray-50/50 p-2 relative">
+          <div className="border border-slate-200 rounded-xl bg-slate-50/50 p-2 relative">
             <canvas
               ref={canvasRef}
               width={460}
@@ -207,10 +207,10 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
-              className="w-full h-24 bg-white rounded-lg border border-gray-200 cursor-crosshair shadow-inner"
+              className="w-full h-24 bg-white rounded-lg border border-slate-200 cursor-crosshair shadow-inner"
             />
             {!hasSignature && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-gray-400 italic">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-slate-400 italic">
                 Sign inside the box using mouse or finger touch
               </div>
             )}
@@ -226,7 +226,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
         </FormField>
 
         {/* Modal Actions */}
-        <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+        <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
