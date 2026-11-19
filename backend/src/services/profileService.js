@@ -78,6 +78,38 @@ const createProfile = async (input) => {
     .single();
 
   if (error) throw error;
+
+  // If role is Agent, ensure a corresponding agent roster record exists in Supabase agents table
+  if (record.role === 'Agent') {
+    try {
+      const { data: existingAgent } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('email', record.email)
+        .maybeSingle();
+
+      if (!existingAgent) {
+        await supabase.from('agents').insert([
+          {
+            id: generateId('AG'),
+            user_id: data.id,
+            name: record.name,
+            email: record.email,
+            phone: record.phone || '',
+            vehicle_type: input.vehicleType || 'Bike',
+            vehicle_number: input.vehicleNumber || '',
+            hub_location: input.hubLocation || 'Indiranagar Hub',
+            status: 'Active',
+            created_at: now,
+            updated_at: now,
+          },
+        ]);
+      }
+    } catch (_agentErr) {
+      console.warn('Could not auto-create linked agent record in Supabase:', _agentErr.message);
+    }
+  }
+
   return data;
 };
 

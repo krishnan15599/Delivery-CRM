@@ -40,7 +40,7 @@ interface NavItem {
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, logout, switchRole } = useAuth();
+  const { user, role, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
       path: '/deliveries',
       subItems: [
         { name: 'All Deliveries', path: '/deliveries' },
-        { name: 'Create Delivery', path: '/deliveries/new' },
+        ...(role !== 'Agent' ? [{ name: 'Create Delivery', path: '/deliveries/new' }] : []),
         { name: 'Unassigned', path: '/deliveries?status=Unassigned' },
         { name: 'In Transit', path: '/deliveries?status=In%20Transit' },
         { name: 'Delivered', path: '/deliveries?status=Delivered' },
@@ -141,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
     Collections: ['Admin'],
     Chat: ['Admin', 'Manager', 'Agent'],
     Reports: ['Admin', 'Manager'],
-    Settings: ['Admin'],
+    Settings: ['Admin', 'Manager'],
   };
 
   const visibleNavItems = navItems.filter((item) =>
@@ -150,28 +150,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
 
   return (
     <aside
-      className={`bg-[#263141] text-[#aebbd0] flex flex-col h-full font-sans transition-all duration-300 relative select-none shrink-0 ${
+      className={`bg-black text-neutral-400 border-r border-neutral-800 flex flex-col h-full font-sans transition-all duration-300 relative select-none shrink-0 ${
         isCollapsed && !isMobile ? 'w-18' : 'w-64'
       }`}
     >
       {/* Brand Header */}
-      <div className="p-4 sm:p-5 flex items-center justify-between text-white border-b border-[#374558]/50">
+      <div className="p-4 sm:p-5 flex items-center justify-between text-white border-b border-neutral-800">
         <div
           onClick={() => {
-            navigate('/dashboard');
+            navigate(role === 'Agent' ? '/deliveries' : '/dashboard');
             handleLinkClick();
           }}
           className="flex items-center space-x-3 cursor-pointer overflow-hidden"
         >
-          <div className="p-2 rounded-xl bg-[#2c5fbf]/20 text-[#5b89e8] shrink-0">
-            <Truck className="w-5 h-5 text-[#5b89e8]" />
+          <div className="p-2 rounded-xl bg-[#84cc16] text-black shadow-md shadow-[#84cc16]/20 shrink-0">
+            <Truck className="w-5 h-5 text-black" />
           </div>
           {(!isCollapsed || isMobile) && (
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight whitespace-nowrap leading-tight">
                 Delivery CRM
               </span>
-              <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase">
+              <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
                 {role} Console
               </span>
             </div>
@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2e3b4e] transition-colors cursor-pointer hidden md:flex items-center justify-center shrink-0"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer hidden md:flex items-center justify-center shrink-0"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -195,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
           <button
             type="button"
             onClick={onCloseMobile}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2e3b4e] transition-colors cursor-pointer md:hidden"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer md:hidden"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -219,8 +219,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
                   isCollapsed && !isMobile ? 'justify-center' : ''
                 } ${
                   isCurrentActive
-                    ? 'bg-[#2c5fbf] text-white shadow-sm font-semibold'
-                    : 'hover:bg-[#2e3b4e] hover:text-white text-[#aebbd0]'
+                    ? 'bg-[#84cc16] text-black shadow-sm font-bold'
+                    : 'hover:bg-slate-800 hover:text-white text-[#aebbd0]'
                 }`}
               >
                 <NavLink
@@ -234,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
                     <span className="font-medium text-xs truncate">{item.name}</span>
                   )}
                   {item.badge !== undefined && (
-                    <span className="ml-auto bg-[#5b89e8] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                    <span className="ml-auto bg-[#84cc16]/20 text-[#84cc16] border border-[#84cc16]/40 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
                       {item.badge}
                     </span>
                   )}
@@ -271,8 +271,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
                         onClick={handleLinkClick}
                         className={`block py-1.5 px-2.5 rounded-lg text-[11px] font-medium transition-colors ${
                           isSubActive
-                            ? 'text-white bg-[#2c5fbf]/40'
-                            : 'text-gray-400 hover:text-white hover:bg-[#2e3b4e]/60'
+                            ? 'text-white bg-indigo-600/25 text-indigo-300 font-medium'
+                            : 'text-gray-400 hover:text-white hover:bg-slate-800/60'
                         }`}
                       >
                         {sub.name}
@@ -286,41 +286,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
         })}
       </nav>
 
-      {/* Role Switcher & User Profile in Footer */}
-      <div className="p-3 border-t border-[#374558]/50 space-y-2">
-        {(!isCollapsed || isMobile) && (
-          <div className="bg-[#1e2736] p-2.5 rounded-xl border border-white/5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                Active Role
+      {/* User Info & Sign Out Footer */}
+      <div className="p-3 border-t border-neutral-800 space-y-2">
+        {(!isCollapsed || isMobile) && user && (
+          <div className="flex items-center gap-2.5 px-2 py-1.5 bg-neutral-950 rounded-xl border border-neutral-800">
+            <div
+              className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-bold shrink-0 ${
+                'bg-[#84cc16] text-black'
+              }`}
+            >
+              {user.name?.slice(0, 2).toUpperCase() || 'US'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-semibold text-white block truncate leading-tight">
+                {user.name}
               </span>
               <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                className={`text-[10px] font-semibold uppercase tracking-wider block ${
                   role === 'Admin'
-                    ? 'bg-blue-500/20 text-blue-300'
+                    ? 'text-[#84cc16]'
                     : role === 'Manager'
-                    ? 'bg-purple-500/20 text-purple-300'
-                    : 'bg-emerald-500/20 text-emerald-300'
+                    ? 'text-purple-400'
+                    : 'text-emerald-400'
                 }`}
               >
                 {role}
               </span>
-            </div>
-            <div className="flex gap-1 pt-0.5">
-              {(['Admin', 'Manager', 'Agent'] as UserRole[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => switchRole(r)}
-                  className={`flex-1 text-[10px] py-1 rounded font-medium transition-colors ${
-                    role === r
-                      ? 'bg-[#2c5fbf] text-white shadow-xs'
-                      : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
             </div>
           </div>
         )}
@@ -333,7 +324,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
             handleLinkClick();
           }}
           title={isCollapsed && !isMobile ? 'Logout' : undefined}
-          className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl hover:bg-rose-500/20 hover:text-rose-300 text-[#aebbd0] transition-colors cursor-pointer ${
+          className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl hover:bg-neutral-900 hover:text-[#84cc16] text-neutral-400 transition-colors cursor-pointer ${
             isCollapsed && !isMobile ? 'justify-center' : 'justify-start'
           }`}
         >

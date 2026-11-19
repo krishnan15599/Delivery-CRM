@@ -7,12 +7,24 @@ export interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string) => Promise<User>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
   hasRole: (allowedRoles: UserRole[]) => boolean;
   canAccessRoute: (pathname: string) => boolean;
+  getDefaultRoute: () => string;
 }
+
+export const getDefaultRouteForRole = (role: UserRole): string => {
+  switch (role) {
+    case 'Agent':
+      return '/deliveries';
+    case 'Manager':
+    case 'Admin':
+    default:
+      return '/dashboard';
+  }
+};
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -36,6 +48,7 @@ export const ROLE_ROUTE_PERMISSIONS: Record<UserRole, string[]> = {
     '/agents',
     '/chat',
     '/reports',
+    '/settings',
   ],
   Agent: [
     '/deliveries',
@@ -63,11 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = useCallback(async (email: string, password?: string) => {
+  const login = useCallback(async (email: string, password?: string): Promise<User> => {
     setIsLoading(true);
     try {
       const res = await authService.login(email, password);
       setUser(res.user);
+      return res.user;
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +114,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [user]
   );
 
+  const getDefaultRoute = useCallback((): string => {
+    return getDefaultRouteForRole(role);
+  }, [role]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -112,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         switchRole,
         hasRole,
         canAccessRoute,
+        getDefaultRoute,
       }}
     >
       {children}

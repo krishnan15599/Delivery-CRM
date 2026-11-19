@@ -1,9 +1,9 @@
 import React from 'react';
-import { Navigate, Outlet, Link } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/common/Button';
-
-export type UserRole = 'Admin' | 'Manager' | 'Agent';
+import { useAuth } from '../context/AuthContext';
+import type { UserRole } from '../types/auth';
 
 export interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
@@ -14,18 +14,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   children,
 }) => {
-  // In a real app, read from AuthContext / Zustand
-  // Default logged-in mock user is Admin
-  const currentUser: { name: string; role: UserRole } | null = {
-    name: 'Krishnan',
-    role: 'Admin',
-  };
+  const { isAuthenticated, role, switchRole } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  if (!currentUser) {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
+  if (allowedRoles && !allowedRoles.includes(role)) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-6 text-center">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-md w-full">
@@ -34,19 +31,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-1">Access Restricted</h2>
           <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-            Your role (<strong className="text-gray-800">{currentUser.role}</strong>) does not have
-            permission to access this section.
+            Your role (<strong className="text-gray-800">{role}</strong>) does not have
+            permission to access this section ({allowedRoles.join(' or ')} required).
           </p>
-          <Link to="/dashboard">
+          <div className="flex flex-col gap-2">
             <Button
               variant="primary"
               size="sm"
               leftIcon={<ArrowLeft className="w-4 h-4" />}
+              onClick={() => navigate(role === 'Agent' ? '/deliveries' : '/dashboard')}
               className="w-full"
             >
-              Back to Dashboard
+              Go to Allowed Workspace
             </Button>
-          </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => switchRole('Admin')}
+              className="w-full"
+            >
+              Switch to Admin (Demo)
+            </Button>
+          </div>
         </div>
       </div>
     );

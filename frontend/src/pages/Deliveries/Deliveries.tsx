@@ -26,6 +26,7 @@ import {
 } from '../../components/common';
 import { deliveryService } from '../../services/deliveryService';
 import { agentService } from '../../services/agentService';
+import { useAuth } from '../../context/AuthContext';
 import type { Delivery, DeliveryStatus } from '../../types/delivery';
 import type { Agent } from '../../types/agent';
 
@@ -33,6 +34,7 @@ export const Deliveries: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();
+  const { role } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
@@ -220,14 +222,16 @@ export const Deliveries: React.FC = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => setDeliveryToDelete(row)}
-            className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-            title="Delete Delivery"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {role === 'Admin' && (
+            <button
+              type="button"
+              onClick={() => setDeliveryToDelete(row)}
+              className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+              title="Delete Delivery"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -236,21 +240,31 @@ export const Deliveries: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Deliveries"
-        subtitle="Manage end-to-end shipment lifecycles, route dispatch, and field assignments."
-        breadcrumbs={[
-          { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Deliveries' },
-        ]}
+        title={role === 'Agent' ? 'Field Deliveries' : 'Deliveries'}
+        subtitle={
+          role === 'Agent'
+            ? 'View assigned shipments, update live delivery progress and record proof of delivery.'
+            : 'Manage end-to-end shipment lifecycles, route dispatch, and field assignments.'
+        }
+        breadcrumbs={
+          role === 'Agent'
+            ? [{ label: 'Deliveries' }]
+            : [
+                { label: 'Dashboard', path: '/dashboard' },
+                { label: 'Deliveries' },
+              ]
+        }
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() => navigate('/deliveries/new')}
-          >
-            Create Delivery
-          </Button>
+          role !== 'Agent' ? (
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => navigate('/deliveries/new')}
+            >
+              Create Delivery
+            </Button>
+          ) : undefined
         }
       />
 
@@ -345,20 +359,22 @@ export const Deliveries: React.FC = () => {
           data={deliveries}
           columns={columns}
           loading={loading}
-          selectable
+          selectable={role !== 'Agent'}
           selectedKeys={selectedKeys}
           onSelectionChange={(keys) => setSelectedKeys(keys)}
           emptyText="No deliveries found matching current filters."
           onRowClick={(row) => navigate(`/deliveries/${row.id}`)}
           bulkActions={
-            <Button
-              variant="primary"
-              size="xs"
-              leftIcon={<Send className="w-3 h-3" />}
-              onClick={() => setIsBulkModalOpen(true)}
-            >
-              Bulk Assign Agent ({selectedKeys.length})
-            </Button>
+            role !== 'Agent' ? (
+              <Button
+                variant="primary"
+                size="xs"
+                leftIcon={<Send className="w-3 h-3" />}
+                onClick={() => setIsBulkModalOpen(true)}
+              >
+                Bulk Assign Agent ({selectedKeys.length})
+              </Button>
+            ) : undefined
           }
           pagination={{
             currentPage: page,

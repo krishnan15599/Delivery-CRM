@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   ];
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 font-sans relative z-30 shrink-0">
+    <header className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-4 sm:px-6 font-sans relative z-30 shrink-0">
       <div className="flex items-center flex-1 max-w-xl">
         <button
           type="button"
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search tracking #, customer or agent..."
-            className="w-full bg-[#f4f6f8] text-xs text-gray-800 rounded-lg pl-9 pr-4 py-2 border border-transparent focus:bg-white focus:border-[#2c5fbf] focus:outline-none focus:ring-2 focus:ring-[#2c5fbf]/15 transition-all"
+            className="w-full bg-slate-100/80 text-xs text-gray-800 rounded-lg pl-9 pr-4 py-2 border border-transparent focus:bg-white focus:border-black focus:outline-none focus:ring-2 focus:ring-[#84cc16]/40 focus:bg-white transition-all"
           />
         </form>
       </div>
@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
             <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-2xl p-4 z-50 text-xs">
               <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                 <h4 className="font-bold text-gray-900">Notifications</h4>
-                <span className="text-[10px] font-semibold text-[#2c5fbf] bg-blue-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold text-black bg-[#84cc16] font-bold px-2 py-0.5 rounded-full">
                   3 New
                 </span>
               </div>
@@ -135,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
                     setIsNotificationsOpen(false);
                     navigate('/deliveries');
                   }}
-                  className="text-xs font-semibold text-[#2c5fbf] hover:underline"
+                  className="text-xs font-semibold text-black hover:text-[#65a30d] font-bold hover:underline"
                 >
                   View all activity
                 </button>
@@ -150,15 +150,27 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center space-x-2 sm:space-x-3 cursor-pointer p-1.5 rounded-xl hover:bg-gray-50 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-[#5b89e8] text-white flex items-center justify-center text-xs font-bold shadow-xs">
-              {user?.name?.slice(0, 2).toUpperCase() || 'AD'}
+            <div
+              className={`w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold shadow-xs ${
+                'bg-[#84cc16] text-black font-bold'
+              }`}
+            >
+              {user?.name?.slice(0, 2).toUpperCase() || (role === 'Agent' ? 'AG' : role === 'Manager' ? 'MG' : 'AD')}
             </div>
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-bold text-gray-900 leading-none">
-                {user?.name || 'Administrator'}
+                {user?.name || (role === 'Agent' ? 'Rahul Sharma' : role === 'Manager' ? 'Sarah Jenkins' : 'Krishnan K.')}
               </span>
-              <span className="text-[10px] text-gray-500 mt-1 capitalize font-medium">
-                {role} Account
+              <span
+                className={`text-[10px] mt-1 font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded w-fit ${
+                  role === 'Admin'
+                    ? 'bg-blue-50 text-blue-700'
+                    : role === 'Manager'
+                    ? 'bg-purple-50 text-purple-700'
+                    : 'bg-emerald-50 text-emerald-700'
+                }`}
+              >
+                {role}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
@@ -176,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
               </div>
 
               <div className="py-1">
-                {role === 'Admin' && (
+                {(role === 'Admin' || role === 'Manager') && (
                   <button
                     type="button"
                     onClick={() => {

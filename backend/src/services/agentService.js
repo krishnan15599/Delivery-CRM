@@ -65,15 +65,56 @@ const createAgent = async (input) => {
   const agentId = input.id || generateId('AG');
   const now = new Date().toISOString();
 
+  let linkedUserId = null;
+
+  // Ensure an account profile exists in Supabase profiles table so the Agent can log in
+  if (input.email) {
+    try {
+      const lowerEmail = input.email.toLowerCase().trim();
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', lowerEmail)
+        .maybeSingle();
+
+      if (existingProfile) {
+        linkedUserId = existingProfile.id;
+      } else {
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: generateId('USR'),
+              name: input.name,
+              email: lowerEmail,
+              role: 'Agent',
+              phone: input.phone || null,
+              created_at: now,
+              updated_at: now,
+            },
+          ])
+          .select()
+          .single();
+
+        if (newProfile) {
+          linkedUserId = newProfile.id;
+        }
+      }
+    } catch (_profErr) {
+      console.warn('Could not auto-create linked profile in Supabase for agent:', _profErr.message);
+    }
+  }
+
   const record = {
     id: agentId,
+    user_id: linkedUserId,
     name: input.name,
     phone: input.phone,
     email: input.email || null,
     vehicle_type: input.vehicleType || 'Bike',
     vehicle_number: input.vehicleNumber || '',
     status: input.status || 'Active',
-    hub_location: input.hubLocation || 'Chennai Central Hub',
+    hub_location: input.hubLocation || 'Indiranagar Hub',
     assigned_deliveries_count: 0,
     completed_deliveries_count: 0,
     failed_deliveries_count: 0,

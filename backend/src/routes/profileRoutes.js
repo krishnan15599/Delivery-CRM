@@ -23,8 +23,8 @@ router.get('/me', getCurrentProfile);
 
 router.route('/')
   .get(requireRole('Admin', 'Manager'), getProfiles)
-  // Only Admin can create new user profiles
-  .post(requireRole('Admin'), validateBody(validateCreateProfile), createProfile);
+  // Admins can create Manager/Agent/Admin profiles; Managers can create Agent profiles
+  .post(requireRole('Admin', 'Manager'), validateBody(validateCreateProfile), createProfile);
 
 router.get('/:id', getProfileById);
 

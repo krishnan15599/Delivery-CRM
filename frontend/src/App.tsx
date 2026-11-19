@@ -27,10 +27,17 @@ const ComponentShowcase = lazy(() =>
 
 // Contexts & Providers
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CustomerProvider } from './context/CustomerContext';
 import { DeliveryProvider } from './context/DeliveryContext';
 import { ToastProvider, ErrorBoundary, ProtectedRoute } from './components/common';
+
+const RootRedirect = () => {
+  const { role, isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (role === 'Agent') return <Navigate to="/deliveries" replace />;
+  return <Navigate to="/dashboard" replace />;
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,7 +84,7 @@ function App() {
                           </ProtectedRoute>
                         }
                       >
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        <Route path="/" element={<RootRedirect />} />
 
                         {/* Dashboard: Admin & Manager */}
                         <Route
@@ -123,10 +130,17 @@ function App() {
                           }
                         />
 
-                        {/* Deliveries Module: Accessible by All (Admin, Manager, Agent) */}
+                        {/* Deliveries Module: Accessible by All, Creation restricted to Admin/Manager */}
                         <Route path="/deliveries">
                           <Route index element={<Deliveries />} />
-                          <Route path="new" element={<CreateDelivery />} />
+                          <Route
+                            path="new"
+                            element={
+                              <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                                <CreateDelivery />
+                              </ProtectedRoute>
+                            }
+                          />
                           <Route path=":id" element={<DeliveryDetails />} />
                         </Route>
 
@@ -171,11 +185,11 @@ function App() {
                           }
                         />
 
-                        {/* Settings Module: Admin Only */}
+                        {/* Settings Module: Admin & Manager */}
                         <Route
                           path="/settings"
                           element={
-                            <ProtectedRoute allowedRoles={['Admin']}>
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
                               <Settings />
                             </ProtectedRoute>
                           }

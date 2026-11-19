@@ -34,10 +34,10 @@ router.put('/:id', requireRole('Admin', 'Manager'), validateBody(validateUpdateD
 router.patch('/:id', requireRole('Admin', 'Manager'), validateBody(validateUpdateDelivery), updateDelivery);
 router.delete('/:id', requireRole('Admin'), deleteDelivery);
 
-// Status transition — Admin/Manager control flow; Agents cannot jump status
+// Status transition — Admin, Manager, and Agent can update status (Agents update field delivery status)
 router.patch(
   '/:id/status',
-  requireRole('Admin', 'Manager'),
+  requireRole('Admin', 'Manager', 'Agent'),
   validateBody(validateDeliveryStatusTransition),
   updateDeliveryStatus
 );

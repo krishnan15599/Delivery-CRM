@@ -29,7 +29,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 select-none disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer';
 
     const variants = {
-      primary: 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white focus:ring-indigo-500/40 shadow-sm',
+      primary: 'bg-black hover:bg-neutral-900 active:bg-neutral-800 text-[#84cc16] border border-black hover:border-neutral-900 focus:ring-2 focus:ring-[#84cc16]/50 shadow-sm font-semibold',
       secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-300',
       outline: 'border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 focus:ring-indigo-200',
       ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-200',

@@ -30,6 +30,7 @@ import { ProofOfDeliveryModal } from '../../components/delivery/ProofOfDeliveryM
 import { PrintShippingLabelModal } from '../../components/delivery/PrintShippingLabelModal';
 import { deliveryService } from '../../services/deliveryService';
 import { agentService } from '../../services/agentService';
+import { useAuth } from '../../context/AuthContext';
 import type { Delivery, DeliveryStatus } from '../../types/delivery';
 import type { Agent } from '../../types/agent';
 
@@ -37,6 +38,7 @@ export const DeliveryDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
+  const { role } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
@@ -169,11 +171,18 @@ export const DeliveryDetails: React.FC = () => {
         title={`Delivery #${delivery.trackingNumber}`}
         subtitle={`Scheduled Delivery • Created on ${String(delivery.date)}`}
         showBack
-        breadcrumbs={[
-          { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Deliveries', path: '/deliveries' },
-          { label: delivery.trackingNumber },
-        ]}
+        breadcrumbs={
+          role === 'Agent'
+            ? [
+                { label: 'Deliveries', path: '/deliveries' },
+                { label: delivery.trackingNumber },
+              ]
+            : [
+                { label: 'Dashboard', path: '/dashboard' },
+                { label: 'Deliveries', path: '/deliveries' },
+                { label: delivery.trackingNumber },
+              ]
+        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -194,14 +203,16 @@ export const DeliveryDetails: React.FC = () => {
                 Record e-POD
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<UserCheck className="w-3.5 h-3.5" />}
-              onClick={() => setIsAssignModalOpen(true)}
-            >
-              Assign Agent
-            </Button>
+            {role !== 'Agent' && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<UserCheck className="w-3.5 h-3.5" />}
+                onClick={() => setIsAssignModalOpen(true)}
+              >
+                Assign Agent
+              </Button>
+            )}
             <Button
               variant="primary"
               size="sm"

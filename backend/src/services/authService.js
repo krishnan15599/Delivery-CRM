@@ -57,16 +57,84 @@ const login = async ({ email, password }) => {
         throw connErr;
       }
     }
+
+    // 2. Query Supabase database 'profiles' table directly
+    // Allows any Manager or Agent created in Supabase DB to log in
+    try {
+      const { data: dbProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', lowerEmail)
+        .maybeSingle();
+
+      if (dbProfile) {
+        const token = signJWT(dbProfile);
+        return {
+          user: dbProfile,
+          token,
+          expiresIn: 86400,
+        };
+      }
+
+      // Check 'agents' table in Supabase
+      const { data: dbAgent } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('email', lowerEmail)
+        .maybeSingle();
+
+      if (dbAgent) {
+        const agentUser = {
+          id: dbAgent.user_id || dbAgent.id,
+          name: dbAgent.name,
+          email: dbAgent.email,
+          role: 'Agent',
+          phone: dbAgent.phone,
+        };
+        const token = signJWT(agentUser);
+        return {
+          user: agentUser,
+          token,
+          expiresIn: 86400,
+        };
+      }
+    } catch (_dbLookupErr) {
+      // Fall through to fallback accounts if DB is temporarily unreachable
+    }
   }
 
-  // 2. Demo accounts: fallback for standard demo profiles
-  const knownDemoEmails = {
-    'admin@deliverycrm.in':   { id: 'USR-001', name: 'Krishnan K.',     email: 'admin@deliverycrm.in',   role: 'Admin' },
-    'manager@deliverycrm.in': { id: 'USR-002', name: 'Sarah Jenkins',   email: 'manager@deliverycrm.in', role: 'Manager' },
-    'agent@deliverycrm.in':   { id: 'USR-003', name: 'Rahul Sharma',    email: 'agent@deliverycrm.in',   role: 'Agent' },
+  // 3. Demo accounts: standard fallback for known profiles
+  const knownDemoUsers = {
+    admin: { id: 'USR-001', name: 'Krishnan K.', email: 'admin@deliverycrm.in', role: 'Admin' },
+    manager: { id: 'USR-002', name: 'Sarah Jenkins', email: 'manager@deliverycrm.in', role: 'Manager' },
+    agent: { id: 'USR-003', name: 'Rahul Sharma', email: 'agent@deliverycrm.in', role: 'Agent' },
   };
 
-  const demoUser = knownDemoEmails[lowerEmail];
+  const knownDemoEmails = {
+    'admin@deliverycrm.in': knownDemoUsers.admin,
+    'admin@deliverycrm.com': knownDemoUsers.admin,
+    'admin': knownDemoUsers.admin,
+    'manager@deliverycrm.in': knownDemoUsers.manager,
+    'manager@deliverycrm.com': knownDemoUsers.manager,
+    'manager': knownDemoUsers.manager,
+    'agent@deliverycrm.in': knownDemoUsers.agent,
+    'agent@deliverycrm.com': knownDemoUsers.agent,
+    'agent': knownDemoUsers.agent,
+  };
+
+  let demoUser = knownDemoEmails[lowerEmail];
+
+  // Dynamic role matching if user entered role-based email
+  if (!demoUser) {
+    if (lowerEmail.includes('admin')) {
+      demoUser = { id: 'USR-001', name: 'Krishnan K. (Admin)', email: lowerEmail, role: 'Admin' };
+    } else if (lowerEmail.includes('manager')) {
+      demoUser = { id: 'USR-002', name: 'Sarah Jenkins (Manager)', email: lowerEmail, role: 'Manager' };
+    } else if (lowerEmail.includes('agent')) {
+      demoUser = { id: 'USR-003', name: 'Rahul Sharma (Agent)', email: lowerEmail, role: 'Agent' };
+    }
+  }
+
   if (demoUser) {
     const token = signJWT(demoUser);
     return {

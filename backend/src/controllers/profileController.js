@@ -44,8 +44,17 @@ const getProfileById = async (req, res) => {
 };
 
 const createProfile = async (req, res) => {
+  // Manager can only create Agent accounts; Admin can create Manager or Agent accounts
+  if (req.user && req.user.role === 'Manager' && req.body.role && req.body.role !== 'Agent') {
+    return sendError(
+      res,
+      403,
+      "Forbidden: Managers are only permitted to create Agent accounts."
+    );
+  }
+
   const profile = await profileService.createProfile(req.body);
-  return sendSuccess(res, 201, 'Profile created successfully', profile);
+  return sendSuccess(res, 201, 'Profile created successfully in Supabase', profile);
 };
 
 const updateProfile = async (req, res) => {

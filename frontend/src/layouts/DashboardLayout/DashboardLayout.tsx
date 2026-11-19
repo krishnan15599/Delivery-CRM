@@ -7,7 +7,7 @@ const DashboardLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-[#f4f6f8] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#fcfcfc] font-sans overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex h-full shrink-0">
         <Sidebar />
