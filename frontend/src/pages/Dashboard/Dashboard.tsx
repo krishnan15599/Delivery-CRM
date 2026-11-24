@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Package,
   Clock,
@@ -41,12 +41,8 @@ import {
 } from '../../components/common';
 import { deliveryService } from '../../services/deliveryService';
 import { agentService } from '../../services/agentService';
-import { collectionService } from '../../services/collectionService';
-import { reportService } from '../../services/reportService';
 import type { Delivery } from '../../types/delivery';
 import type { Agent } from '../../types/agent';
-import type { DeliveryReportSummary } from '../../types/report';
-import type { CollectionSummary } from '../../types/collection';
 
 const getChartStatusColor = (name: string): string => {
   const normalized = name.toLowerCase();
@@ -73,47 +69,86 @@ export const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [reportData, setReportData] = useState<DeliveryReportSummary | null>(null);
-  const [collectionSummary, setCollectionSummary] = useState<CollectionSummary | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: '2026-10-01',
-    endDate: '2026-10-07',
-    preset: 'Last 7 Days',
+    startDate: '',
+    endDate: '',
+    preset: 'All Time',
   });
 
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const [delRes, agRes, repRes, colRes] = await Promise.all([
-        deliveryService.getDeliveries({ pageSize: 5 }),
-        agentService.getAgents({ pageSize: 5 }),
-        reportService.getDeliveryReport(),
-        collectionService.getCollectionSummary(),
+      const [delRes, agRes] = await Promise.all([
+        deliveryService.getDeliveries({
+          pageSize: 100,
+          startDate: dateRange.startDate || undefined,
+          endDate: dateRange.endDate || undefined,
+        }),
+        agentService.getAgents({ pageSize: 50 }),
       ]);
 
-      setDeliveries(delRes.data);
-      setAgents(agRes.data);
-      setReportData(repRes);
-      setCollectionSummary(colRes);
+      setDeliveries(delRes.data || []);
+      setAgents(agRes.data || []);
     } catch {
       setError('Failed to load dashboard data. Please try again.');
       toast.error('Failed to load dashboard data. Please refresh.');
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [dateRange.startDate, dateRange.endDate, toast]);
 
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  const totalCount = reportData?.totalDeliveries || deliveries.length;
-  const inTransitCount = deliveries.filter((d) => d.status === 'In Transit' || d.status === 'Picked Up').length;
-  const pendingCount = deliveries.filter((d) => d.status === 'Pending' || d.status === 'Assigned').length;
-  const deliveredCount = reportData?.delivered || deliveries.filter((d) => d.status === 'Delivered').length;
-  const failedCount = reportData?.failed || deliveries.filter((d) => d.status === 'Failed' || d.status === 'Returned').length;
-  const collectedAmount = collectionSummary?.totalCollectedAmount || 0;
+  const allDeliveries = deliveries;
+  const totalCount = allDeliveries.length;
+  const inTransitCount = allDeliveries.filter(
+    (d) => d.status === 'In Transit' || d.status === 'Picked Up'
+  ).length;
+  const pendingCount = allDeliveries.filter(
+    (d) => d.status === 'Pending' || d.status === 'Assigned'
+  ).length;
+  const deliveredCount = allDeliveries.filter((d) => d.status === 'Delivered').length;
+  const failedCount = allDeliveries.filter(
+    (d) => d.status === 'Failed' || d.status === 'Returned'
+  ).length;
+  const collectedAmount = allDeliveries.reduce(
+    (sum, d) => (d.paymentStatus === 'Paid' ? sum + (d.codAmount || d.amount || 0) : sum),
+    0
+  );
+  const paidOrdersCount = allDeliveries.filter((d) => d.paymentStatus === 'Paid').length;
+  const successRate = totalCount > 0 ? Math.round((deliveredCount / totalCount) * 100) : 0;
+
+  const dynamicStatusBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allDeliveries.forEach((d) => {
+      counts[d.status] = (counts[d.status] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [allDeliveries]);
+
+  const dynamicTrends = useMemo(() => {
+    const map = new Map<string, { total: number; delivered: number; failed: number; inTransit: number }>();
+
+    allDeliveries.forEach((d) => {
+      const dStr = String(d.date || d.createdAt || '').slice(0, 10) || 'Recent';
+      const cur = map.get(dStr) || { total: 0, delivered: 0, failed: 0, inTransit: 0 };
+      cur.total += 1;
+      if (d.status === 'Delivered') cur.delivered += 1;
+      else if (d.status === 'Failed' || d.status === 'Returned') cur.failed += 1;
+      else if (d.status === 'In Transit' || d.status === 'Picked Up') cur.inTransit += 1;
+      map.set(dStr, cur);
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, val]) => ({ date, ...val }));
+  }, [allDeliveries]);
 
   const recentColumns: Column<Delivery>[] = [
     {
@@ -237,7 +272,7 @@ export const Dashboard: React.FC = () => {
           icon={Package}
           color="indigo"
           loading={loading}
-          trend={{ value: '14.2%', isPositive: true }}
+          trend={{ value: `${totalCount} orders`, isPositive: true }}
           onClick={() => navigate('/deliveries')}
         />
         <StatCard
@@ -246,7 +281,10 @@ export const Dashboard: React.FC = () => {
           icon={Truck}
           color="blue"
           loading={loading}
-          trend={{ value: 'Active now', isPositive: null }}
+          trend={{
+            value: inTransitCount > 0 ? `${inTransitCount} active now` : 'None in transit',
+            isPositive: inTransitCount > 0 ? true : null,
+          }}
           onClick={() => navigate('/deliveries?status=In Transit')}
         />
         <StatCard
@@ -255,7 +293,10 @@ export const Dashboard: React.FC = () => {
           icon={Clock}
           color="amber"
           loading={loading}
-          trend={{ value: 'Needs assign', isPositive: false }}
+          trend={{
+            value: pendingCount > 0 ? `${pendingCount} awaiting delivery` : 'All assigned',
+            isPositive: pendingCount === 0,
+          }}
           onClick={() => navigate('/deliveries?status=Pending')}
         />
         <StatCard
@@ -264,7 +305,10 @@ export const Dashboard: React.FC = () => {
           icon={CheckCircle2}
           color="emerald"
           loading={loading}
-          trend={{ value: '94% rate', isPositive: true }}
+          trend={{
+            value: `${successRate}% rate`,
+            isPositive: successRate >= 50,
+          }}
           onClick={() => navigate('/deliveries?status=Delivered')}
         />
         <StatCard
@@ -273,7 +317,10 @@ export const Dashboard: React.FC = () => {
           icon={AlertTriangle}
           color="rose"
           loading={loading}
-          trend={{ value: '2.8%', isPositive: false }}
+          trend={{
+            value: failedCount === 0 ? 'Zero failures' : `${failedCount} issues`,
+            isPositive: failedCount === 0,
+          }}
           onClick={() => navigate('/deliveries?status=Failed')}
         />
         <StatCard
@@ -282,7 +329,10 @@ export const Dashboard: React.FC = () => {
           icon={IndianRupee}
           color="indigo"
           loading={loading}
-          trend={{ value: '18% vs last wk', isPositive: true }}
+          trend={{
+            value: paidOrdersCount > 0 ? `${paidOrdersCount} orders paid` : '₹0 collected yet',
+            isPositive: collectedAmount > 0,
+          }}
           onClick={() => navigate('/collections')}
         />
       </div>
@@ -324,10 +374,10 @@ export const Dashboard: React.FC = () => {
                   ))}
                 </div>
               </div>
-            ) : reportData && reportData.trends.length > 0 ? (
+            ) : dynamicTrends.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={reportData.trends}
+                  data={dynamicTrends}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
                   <defs>
@@ -351,6 +401,7 @@ export const Dashboard: React.FC = () => {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 11, fill: '#64748b' }}
+                    allowDecimals={false}
                   />
                   <Tooltip
                     contentStyle={{
@@ -395,8 +446,8 @@ export const Dashboard: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-semibold text-slate-900">Status Breakdown</h2>
-              <Badge variant="success" size="sm">
-                {reportData?.successRate || 92}% Success
+              <Badge variant={successRate >= 50 ? 'success' : 'neutral'} size="sm">
+                {successRate}% Success
               </Badge>
             </div>
             <p className="text-sm text-slate-500 mb-4">Current order disposition</p>
@@ -406,18 +457,18 @@ export const Dashboard: React.FC = () => {
                 <div className="flex flex-col items-center justify-center">
                   <Skeleton circle className="w-28 h-28" />
                 </div>
-              ) : reportData && reportData.statusBreakdown && reportData.statusBreakdown.length > 0 ? (
+              ) : dynamicStatusBreakdown.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={reportData.statusBreakdown}
+                        data={dynamicStatusBreakdown}
                         innerRadius={50}
                         outerRadius={72}
                         paddingAngle={3}
                         dataKey="value"
                       >
-                        {reportData.statusBreakdown.map((entry, index) => (
+                        {dynamicStatusBreakdown.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={getChartStatusColor(entry.name)} />
                         ))}
                       </Pie>
@@ -454,7 +505,7 @@ export const Dashboard: React.FC = () => {
                   <Skeleton className="h-4 w-full" />
                 </div>
               ) : (
-                reportData?.statusBreakdown.slice(0, 4).map((item, idx) => (
+                dynamicStatusBreakdown.slice(0, 4).map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span
@@ -490,7 +541,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <DataTable
-            data={deliveries}
+            data={deliveries.slice(0, 5)}
             columns={recentColumns}
             loading={loading}
             emptyState={
