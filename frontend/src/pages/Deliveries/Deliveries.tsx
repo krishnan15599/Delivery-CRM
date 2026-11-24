@@ -6,6 +6,8 @@ import {
   Send,
   UserCheck,
   Calendar,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -24,6 +26,7 @@ import {
   type Column,
   type DateRange,
 } from '../../components/common';
+import { RiderMobileView } from '../../components/delivery/RiderMobileView';
 import { deliveryService } from '../../services/deliveryService';
 import { agentService } from '../../services/agentService';
 import { useAuth } from '../../context/AuthContext';
@@ -35,6 +38,8 @@ export const Deliveries: React.FC = () => {
   const [searchParams] = useSearchParams();
   const toast = useToast();
   const { role } = useAuth();
+  const isAgent = role === 'Agent';
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>(isAgent ? 'cards' : 'table');
 
   const [loading, setLoading] = useState(true);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
@@ -53,7 +58,7 @@ export const Deliveries: React.FC = () => {
   });
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(isAgent ? 50 : 10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -65,6 +70,20 @@ export const Deliveries: React.FC = () => {
 
   // Delete modal state
   const [deliveryToDelete, setDeliveryToDelete] = useState<Delivery | null>(null);
+
+  const handleStatusUpdate = async (
+    deliveryId: string,
+    newStatus: DeliveryStatus,
+    note?: string
+  ) => {
+    try {
+      await deliveryService.updateDeliveryStatus(deliveryId, newStatus, note);
+      await fetchDeliveries();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update delivery status');
+      throw err;
+    }
+  };
 
   const fetchDeliveries = useCallback(async () => {
     try {
@@ -237,25 +256,53 @@ export const Deliveries: React.FC = () => {
     },
   ];
 
+  if (isAgent || viewMode === 'cards') {
+    return (
+      <div className="space-y-4 pb-12">
+        {!isAgent && (
+          <div className="flex items-center justify-between p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 shadow-2xs">
+            <span className="font-semibold">
+              Previewing Rider Mobile View (Showing what delivery riders see on their phones)
+            </span>
+            <Button
+              variant="outline"
+              size="xs"
+              leftIcon={<List className="w-3.5 h-3.5" />}
+              onClick={() => setViewMode('table')}
+            >
+              Back to Table View
+            </Button>
+          </div>
+        )}
+        <RiderMobileView
+          deliveries={deliveries}
+          loading={loading}
+          onRefresh={fetchDeliveries}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title={role === 'Agent' ? 'Field Deliveries' : 'Deliveries'}
-        subtitle={
-          role === 'Agent'
-            ? 'View assigned shipments, update live delivery progress and record proof of delivery.'
-            : 'Manage end-to-end shipment lifecycles, route dispatch, and field assignments.'
-        }
-        breadcrumbs={
-          role === 'Agent'
-            ? [{ label: 'Deliveries' }]
-            : [
-                { label: 'Dashboard', path: '/dashboard' },
-                { label: 'Deliveries' },
-              ]
-        }
+        title="Deliveries"
+        subtitle="Manage end-to-end shipment lifecycles, route dispatch, and field assignments."
+        breadcrumbs={[
+          { label: 'Dashboard', path: '/dashboard' },
+          { label: 'Deliveries' },
+        ]}
         actions={
-          role !== 'Agent' ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<LayoutGrid className="w-4 h-4" />}
+              onClick={() => setViewMode('cards')}
+            >
+              Rider View
+            </Button>
             <Button
               variant="primary"
               size="sm"
@@ -264,7 +311,7 @@ export const Deliveries: React.FC = () => {
             >
               Create Delivery
             </Button>
-          ) : undefined
+          </div>
         }
       />
 
@@ -359,22 +406,20 @@ export const Deliveries: React.FC = () => {
           data={deliveries}
           columns={columns}
           loading={loading}
-          selectable={role !== 'Agent'}
+          selectable
           selectedKeys={selectedKeys}
           onSelectionChange={(keys) => setSelectedKeys(keys)}
           emptyText="No deliveries found matching current filters."
           onRowClick={(row) => navigate(`/deliveries/${row.id}`)}
           bulkActions={
-            role !== 'Agent' ? (
-              <Button
-                variant="primary"
-                size="xs"
-                leftIcon={<Send className="w-3 h-3" />}
-                onClick={() => setIsBulkModalOpen(true)}
-              >
-                Bulk Assign Agent ({selectedKeys.length})
-              </Button>
-            ) : undefined
+            <Button
+              variant="primary"
+              size="xs"
+              leftIcon={<Send className="w-3 h-3" />}
+              onClick={() => setIsBulkModalOpen(true)}
+            >
+              Bulk Assign Agent ({selectedKeys.length})
+            </Button>
           }
           pagination={{
             currentPage: page,
