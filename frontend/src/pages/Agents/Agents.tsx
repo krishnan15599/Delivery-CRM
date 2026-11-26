@@ -304,7 +304,6 @@ export const Agents: React.FC = () => {
 
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
         <FilterBar
-          totalResults={totalItems}
           onClearAll={() => {
             setSearch('');
             setStatusFilter('all');
@@ -336,7 +335,7 @@ export const Agents: React.FC = () => {
               setPage(1);
             }}
             placeholder="Search name, phone, plate #..."
-            className="max-w-xs"
+            className="w-full sm:w-64"
           />
 
           <Select
@@ -345,7 +344,8 @@ export const Agents: React.FC = () => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
+            wrapperClassName="w-full sm:w-36"
+            className="text-xs"
             options={[
               { value: 'all', label: 'All Statuses' },
               { value: 'Active', label: 'Active' },
@@ -361,7 +361,8 @@ export const Agents: React.FC = () => {
               setVehicleFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
+            wrapperClassName="w-full sm:w-36"
+            className="text-xs"
             options={[
               { value: 'all', label: 'All Vehicles' },
               { value: 'Bike', label: 'Motorbike' },
@@ -377,7 +378,8 @@ export const Agents: React.FC = () => {
               setHubFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
+            wrapperClassName="w-full sm:w-36"
+            className="text-xs"
             options={[
               { value: '', label: 'All Hubs' },
               { value: 'Indiranagar Hub', label: 'Indiranagar' },

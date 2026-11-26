@@ -13,12 +13,16 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   placeholder?: string;
   error?: boolean | string;
   leftIcon?: React.ReactNode;
+  wrapperClassName?: string;
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className = '', options, placeholder, error, leftIcon, children, ...props }, ref) => {
+  (
+    { className = '', wrapperClassName = 'w-full', options, placeholder, error, leftIcon, children, ...props },
+    ref
+  ) => {
     return (
-      <div className="relative flex items-center w-full">
+      <div className={cn('relative flex items-center', wrapperClassName)}>
         {leftIcon && (
           <div className="absolute left-3 flex items-center pointer-events-none text-slate-400">
             {leftIcon}

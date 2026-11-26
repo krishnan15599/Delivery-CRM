@@ -317,7 +317,7 @@ export const Deliveries: React.FC = () => {
 
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
         <FilterBar
-          totalResults={totalItems}
+          actions={<DateRangePicker value={dateRange} onChange={setDateRange} />}
           onClearAll={() => {
             setSearch('');
             setStatusFilter('all');
@@ -364,7 +364,7 @@ export const Deliveries: React.FC = () => {
               setPage(1);
             }}
             placeholder="Search tracking #, customer, address..."
-            className="max-w-xs"
+            className="w-full sm:w-64"
           />
 
           <Select
@@ -373,7 +373,8 @@ export const Deliveries: React.FC = () => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
+            wrapperClassName="w-full sm:w-36"
+            className="text-xs"
             options={[
               { value: 'all', label: 'All Statuses' },
               { value: 'Pending', label: 'Pending' },
@@ -392,14 +393,13 @@ export const Deliveries: React.FC = () => {
               setAgentFilter(e.target.value);
               setPage(1);
             }}
-            className="w-40 text-xs"
+            wrapperClassName="w-full sm:w-40"
+            className="text-xs"
             options={[
               { value: '', label: 'All Agents' },
               ...agents.map((a) => ({ value: a.id, label: a.name })),
             ]}
           />
-
-          <DateRangePicker value={dateRange} onChange={setDateRange} />
         </FilterBar>
 
         <DataTable
