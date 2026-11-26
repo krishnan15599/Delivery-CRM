@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Mail, Lock, EyeOff, Eye, ArrowRight, Check } from "lucide-react";
+import { Mail, Lock, EyeOff, Eye, ArrowRight, Check, Download } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { usePwaInstall } from "../../context/PwaInstallContext";
 import { useToast } from "../../components/common";
 import type { UserRole } from "../../types/auth";
 
@@ -10,6 +11,7 @@ export const Login: React.FC = () => {
   const location = useLocation();
   const toast = useToast();
   const { login, isLoading, isAuthenticated, getDefaultRoute } = useAuth();
+  const { isInstalled, promptInstall } = usePwaInstall();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -76,16 +78,42 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#eef4ff] relative flex items-center justify-center font-sans antialiased selection:bg-blue-600 selection:text-white px-4 py-2 sm:px-8 lg:px-12">
+    <div className="min-h-[100dvh] lg:h-screen w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden bg-[#eef4ff] relative flex flex-col items-center justify-center font-sans antialiased selection:bg-blue-600 selection:text-white px-4 py-6 sm:px-8 lg:px-12 lg:py-2">
       {/* Background soft decorative gradient blurs and curves */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-orange-400/20 via-blue-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-[-10%] left-[25%] w-[600px] h-[600px] bg-gradient-to-b from-blue-200/40 via-sky-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-gradient-to-tr from-sky-300/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[320px] sm:w-[500px] h-[320px] sm:h-[500px] bg-gradient-to-bl from-orange-400/20 via-blue-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-[-10%] left-[25%] w-[380px] sm:w-[600px] h-[380px] sm:h-[600px] bg-gradient-to-b from-blue-200/40 via-sky-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-gradient-to-tr from-sky-300/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Single-Screen Viewport Container */}
-      <div className="w-full max-w-[1200px] h-full max-h-[88vh] bg-transparent flex flex-col lg:flex-row items-center justify-between relative z-10 gap-6 lg:gap-10">
-        {/* Left Visual Illustration & Brand Side */}
-        <div className="w-full lg:w-[56%] h-full flex flex-col justify-between self-stretch relative select-none">
+      <div className="w-full max-w-[1200px] lg:h-full lg:max-h-[88vh] bg-transparent flex flex-col lg:flex-row items-center justify-center lg:justify-between relative z-10 gap-5 lg:gap-10">
+        {/* Mobile Compact Brand Header (shown only below lg) */}
+        <div className="flex lg:hidden flex-col items-center text-center gap-2 select-none">
+          <div className="flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#1d68f2] to-[#3b82f6] flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                <path d="M15 18H9" />
+                <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+                <circle cx="17" cy="18.5" r="2.5" />
+                <circle cx="7" cy="18.5" r="2.5" />
+              </svg>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-extrabold tracking-tight text-slate-900">
+                Delivery
+              </span>
+              <span className="text-xl font-extrabold tracking-tight text-[#1d68f2]">
+                CRM
+              </span>
+            </div>
+          </div>
+          <p className="text-xs font-medium text-slate-600 max-w-[260px]">
+            Track every <span className="text-[#ff5c00] font-semibold">delivery</span> from dispatch to doorstep.
+          </p>
+        </div>
+
+        {/* Desktop Left Visual Illustration & Brand Side */}
+        <div className="hidden lg:flex w-full lg:w-[56%] h-full flex-col justify-between self-stretch relative select-none">
           {/* Top Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#1d68f2] to-[#3b82f6] flex items-center justify-center text-white shadow-md shadow-blue-500/25">
@@ -181,8 +209,8 @@ export const Login: React.FC = () => {
         </div>
 
         {/* Right Sign-in Form Card */}
-        <div className="w-full lg:w-[44%] max-w-[430px] flex items-center justify-center shrink-0">
-          <div className="w-full bg-white rounded-[24px] shadow-[0_15px_45px_rgba(29,104,242,0.08)] border border-slate-100 p-6 sm:p-9 relative z-20">
+        <div className="w-full lg:w-[44%] max-w-[430px] flex flex-col items-center justify-center shrink-0">
+          <div className="w-full bg-white rounded-[22px] sm:rounded-[24px] shadow-[0_15px_45px_rgba(29,104,242,0.08)] border border-slate-100 p-5 sm:p-9 relative z-20">
             {/* Header */}
             <div className="mb-5">
               <h2 className="text-2xl sm:text-[26px] font-extrabold text-slate-900 tracking-tight">
@@ -208,8 +236,9 @@ export const Login: React.FC = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     type="email"
+                    autoComplete="email"
                     required
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
+                    className="block w-full pl-10 pr-3.5 py-3 sm:py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
                     placeholder="you@company.com"
                   />
                 </div>
@@ -236,8 +265,9 @@ export const Login: React.FC = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
                     required
-                    className="block w-full pl-10 pr-10 py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
+                    className="block w-full pl-10 pr-10 py-3 sm:py-2.5 bg-[#f8faff] border border-slate-200/90 rounded-xl text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d68f2]/30 focus:border-[#1d68f2] focus:bg-white transition-all shadow-2xs"
                     placeholder="Enter your password"
                   />
                   <button
@@ -270,7 +300,7 @@ export const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting || isLoading}
-                className="w-full flex justify-center items-center py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#1d68f2] to-[#0091ff] hover:from-[#1754c5] hover:to-[#007fe3] active:scale-[0.99] transition-all shadow-md shadow-blue-500/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed gap-2 mt-3"
+                className="w-full flex justify-center items-center py-3.5 sm:py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#1d68f2] to-[#0091ff] hover:from-[#1754c5] hover:to-[#007fe3] active:scale-[0.99] transition-all shadow-md shadow-blue-500/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed gap-2 mt-3"
               >
                 {submitting ? (
                   "Signing in..."
@@ -294,6 +324,23 @@ export const Login: React.FC = () => {
                 </a>
               </p>
             </div>
+          </div>
+
+          {/* Install App Button (shown when not installed as PWA) */}
+          {!isInstalled && (
+            <button
+              type="button"
+              onClick={promptInstall}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white border border-blue-200/80 text-xs font-semibold text-[#1d68f2] shadow-xs transition-all cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Install Delivery CRM App</span>
+            </button>
+          )}
+
+          {/* Mobile Footer */}
+          <div className="mt-5 text-center text-[11px] text-slate-400 font-medium lg:hidden">
+            © 2026 Delivery CRM
           </div>
         </div>
       </div>

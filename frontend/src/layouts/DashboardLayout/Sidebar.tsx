@@ -14,8 +14,10 @@ import {
   ChevronRight,
   X,
   Building2,
+  Download,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { usePwaInstall } from '../../context/PwaInstallContext';
 import type { UserRole } from '../../types/auth';
 
 export interface SidebarProps {
@@ -39,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
   const navigate = useNavigate();
   const location = useLocation();
   const { user, role, logout } = useAuth();
+  const { isInstalled, promptInstall } = usePwaInstall();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navGroups: NavGroup[] = [
@@ -270,6 +273,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
           );
         })}
       </div>
+
+      {/* ── Install App Button (shown when not installed as PWA) ── */}
+      {!isInstalled && (
+        <div className="px-1 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              void promptInstall();
+              if (isMobile && onCloseMobile) onCloseMobile();
+            }}
+            title="Install Delivery CRM App"
+            className={`w-full flex items-center gap-2.5 rounded-lg py-2 text-xs font-semibold bg-[#18424A] text-[#F2B705] hover:bg-[#1E525B] transition-colors cursor-pointer ${
+              collapsed ? 'justify-center px-0' : 'px-3'
+            }`}
+          >
+            <Download className="w-4 h-4 shrink-0" />
+            {!collapsed && <span className="truncate">Install App</span>}
+          </button>
+        </div>
+      )}
 
       {/* ── User Profile Footer (.me) ── */}
       <div className="mt-auto pt-3 px-1 border-t border-white/10 flex items-center justify-between">

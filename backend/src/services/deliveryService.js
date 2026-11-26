@@ -314,6 +314,16 @@ const deleteDelivery = async (user, id) => {
     .eq('id', id)
     .select();
   if (error) throw error;
+
+  if (data && data.length > 0) {
+    // Clean up any in-app notifications linked to the deleted delivery
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('organization_id', user.organizationId)
+      .eq('delivery_id', id);
+  }
+
   return data && data.length > 0;
 };
 

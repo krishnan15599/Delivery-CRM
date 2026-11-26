@@ -10,9 +10,12 @@ import {
   LogOut,
   Settings as SettingsIcon,
   Check,
+  X,
+  Download,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePwaInstall } from '../../context/PwaInstallContext';
 import { notificationService, type AppNotification } from '../../services/notificationService';
 import { useToast } from '../../components/common';
 
@@ -23,6 +26,7 @@ export interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   const navigate = useNavigate();
   const { user, role, isAuthenticated, logout } = useAuth();
+  const { isInstalled, promptInstall } = usePwaInstall();
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -53,10 +57,13 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
 
     const interval = window.setInterval(fetchNotifications, 30000);
     const onFocus = () => fetchNotifications();
+    const onRefresh = () => fetchNotifications();
     window.addEventListener('focus', onFocus);
+    window.addEventListener('notifications:refresh', onRefresh);
     return () => {
       window.clearInterval(interval);
       window.removeEventListener('focus', onFocus);
+      window.removeEventListener('notifications:refresh', onRefresh);
     };
   }, [isAuthenticated, fetchNotifications]);
 
@@ -75,12 +82,12 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
     }
   };
 
-  const handleMarkAsRead = async (n: AppNotification) => {
+  const handleMarkAsRead = (n: AppNotification) => {
     setIsNotificationsOpen(false);
     if (!n.read) {
       setNotifications((prev) => prev.map((item) => (item.id === n.id ? { ...item, read: true } : item)));
       setUnreadCount((c) => Math.max(0, c - 1));
-      await notificationService.markAsRead(n.id);
+      void notificationService.markAsRead(n.id);
     }
     navigate(n.delivery_id ? `/deliveries/${n.delivery_id}` : '/deliveries');
   };
@@ -102,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setIsNotificationsOpen(false);
       }
@@ -112,7 +119,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -175,6 +186,20 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
         </button>
       )}
 
+      {/* Install App Button (shown when not already installed as PWA) */}
+      {!isInstalled && (
+        <button
+          type="button"
+          onClick={promptInstall}
+          aria-label="Install app"
+          title="Install Delivery CRM app"
+          className="border border-[#DDE5E3] bg-white hover:bg-[#F2F5F4] rounded-[10px] p-2 sm:px-2.5 sm:py-1.5 text-[#5E716F] hover:text-[#10201F] transition-colors cursor-pointer flex items-center justify-center gap-1.5 text-xs font-semibold"
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden lg:inline">Install App</span>
+        </button>
+      )}
+
       {/* Theme Toggle Button */}
       <button
         type="button"
@@ -207,29 +232,46 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
         </button>
 
         {isNotificationsOpen && (
-          <div className="absolute right-0 mt-2 w-80 bg-white border border-[#DDE5E3] rounded-xl shadow-xl shadow-slate-900/10 p-3.5 z-50 text-xs">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#DDE5E3]">
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-[#10201F] font-['Bricolage_Grotesque',sans-serif]">
-                  Notifications
-                </h4>
-                {unreadCount > 0 && (
-                  <span className="text-[11px] font-semibold text-[#2A2000] bg-[#F2B705] px-2 py-0.5 rounded-full">
-                    {unreadCount} New
-                  </span>
-                )}
+          <>
+            {/* Mobile backdrop so tapping anywhere outside closes the popover */}
+            <div
+              className="fixed inset-0 bg-slate-900/20 z-40 sm:hidden"
+              onClick={() => setIsNotificationsOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 bg-white border border-[#DDE5E3] rounded-xl shadow-xl shadow-slate-900/10 p-3.5 z-50 text-xs">
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#DDE5E3]">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-[#10201F] font-['Bricolage_Grotesque',sans-serif]">
+                    Notifications
+                  </h4>
+                  {unreadCount > 0 && (
+                    <span className="text-[11px] font-semibold text-[#2A2000] bg-[#F2B705] px-2 py-0.5 rounded-full">
+                      {unreadCount} New
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllRead}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563C9] hover:underline cursor-pointer"
+                    >
+                      <Check className="w-3 h-3" />
+                      Mark all read
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="p-1 rounded-md text-[#5E716F] hover:text-[#10201F] hover:bg-[#F2F5F4] sm:hidden cursor-pointer"
+                    aria-label="Close notifications"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={handleMarkAllRead}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563C9] hover:underline cursor-pointer"
-                >
-                  <Check className="w-3 h-3" />
-                  Mark all read
-                </button>
-              )}
-            </div>
 
             {/* PWA Push Subscription Status Bar */}
             {pushPermission !== 'unsupported' && (
@@ -301,7 +343,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
                 View all deliveries
               </button>
             </div>
-          </div>
+            </div>
+          </>
         )}
       </div>
 

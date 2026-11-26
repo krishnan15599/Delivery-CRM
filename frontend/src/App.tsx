@@ -31,6 +31,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CustomerProvider } from './context/CustomerContext';
 import { DeliveryProvider } from './context/DeliveryContext';
+import { PwaInstallProvider } from './context/PwaInstallContext';
 import { ToastProvider, ErrorBoundary, ProtectedRoute } from './components/common';
 
 const RootRedirect = () => {
@@ -68,8 +69,9 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <AuthProvider>
+        <PwaInstallProvider>
+          <ToastProvider>
+            <AuthProvider>
             <CustomerProvider>
               <DeliveryProvider>
                 <BrowserRouter>
@@ -229,6 +231,7 @@ function App() {
             </CustomerProvider>
           </AuthProvider>
         </ToastProvider>
+        </PwaInstallProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

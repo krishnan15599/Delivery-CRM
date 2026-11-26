@@ -64,7 +64,40 @@ const listNotifications = async (user, limit = 20) => {
 
   if (error) throw error;
 
-  const list = data || [];
+  let list = data || [];
+
+  // Filter out notifications whose referenced delivery has been deleted
+  const deliveryIds = [...new Set(list.map((n) => n.delivery_id).filter(Boolean))];
+  if (deliveryIds.length > 0) {
+    const { data: existingDeliveries, error: delErr } = await supabase
+      .from('deliveries')
+      .select('id')
+      .eq('organization_id', user.organizationId)
+      .in('id', deliveryIds);
+
+    if (!delErr && existingDeliveries) {
+      const validIds = new Set(existingDeliveries.map((d) => d.id));
+      const orphanedIds = list
+        .filter((n) => n.delivery_id && !validIds.has(n.delivery_id))
+        .map((n) => n.id);
+
+      if (orphanedIds.length > 0) {
+        list = list.filter((n) => !n.delivery_id || validIds.has(n.delivery_id));
+        // Clean up orphaned rows in background
+        supabase
+          .from('notifications')
+          .delete()
+          .eq('organization_id', user.organizationId)
+          .in('id', orphanedIds)
+          .then(({ error: cleanupErr }) => {
+            if (cleanupErr) {
+              console.warn('[notifications] Orphan cleanup failed:', cleanupErr.message);
+            }
+          });
+      }
+    }
+  }
+
   const unreadCount = list.filter((n) => !n.read).length;
   return { notifications: list, unreadCount };
 };

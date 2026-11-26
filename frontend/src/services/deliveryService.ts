@@ -486,6 +486,7 @@ export const deliveryService = {
   async deleteDelivery(id: string): Promise<boolean> {
     try {
       await api.delete(API_ENDPOINTS.DELIVERIES.BY_ID(id));
+      window.dispatchEvent(new CustomEvent('notifications:refresh'));
       return true;
     } catch (error) {
       console.warn(`Backend API unavailable, falling back to mock storage for deleteDelivery(${id}):`, error);
