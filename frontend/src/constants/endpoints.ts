@@ -37,6 +37,14 @@ export const API_ENDPOINTS = {
     ORGANIZATIONS: '/platform/organizations',
     ORGANIZATION_BY_ID: (id: string) => `/platform/organizations/${id}`,
   },
+  NOTIFICATIONS: {
+    BASE: '/notifications',
+    VAPID_PUBLIC_KEY: '/notifications/vapid-public-key',
+    SUBSCRIBE: '/notifications/subscribe',
+    UNSUBSCRIBE: '/notifications/unsubscribe',
+    READ: (id: string) => `/notifications/${id}/read`,
+    READ_ALL: '/notifications/read-all',
+  },
 } as const;
 
 export default API_ENDPOINTS;

@@ -12,6 +12,7 @@ const {
 } = require('../utils/access');
 const agentService = require('./agentService');
 const teamService = require('./teamService');
+const notificationService = require('./notificationService');
 
 // Admin: all deliveries of the business. Manager: their teams. Agent: assigned to them.
 // Writes go through SQL functions that also check the business (05_tenant_scoped_functions.sql).
@@ -143,6 +144,16 @@ const createDelivery = async (user, input) => {
   });
 
   if (rpcError) throw mapRpcError(rpcError);
+
+  if (input.agentId && rpcData) {
+    notificationService.notifyAgentOnAssignment(user.organizationId, input.agentId, {
+      deliveryId: rpcData.id || deliveryId,
+      trackingNumber: rpcData.tracking_number || trackingNumber,
+      customerName: input.customerName,
+      deliveryAddress: input.deliveryAddress,
+    });
+  }
+
   return rpcData;
 };
 
@@ -189,6 +200,15 @@ const updateDelivery = async (user, id, input) => {
       p_updated_by: user.name || 'Dispatcher',
     });
     if (rpcErr) throw mapRpcError(rpcErr, `Agent with ID '${newAgentId}' not found.`);
+
+    if (newAgentId) {
+      notificationService.notifyAgentOnAssignment(user.organizationId, newAgentId, {
+        deliveryId: id,
+        trackingNumber: existing.tracking_number,
+        customerName: input.customerName ?? existing.customer_name,
+        deliveryAddress: input.deliveryAddress ?? existing.delivery_address,
+      });
+    }
   }
 
   if (Object.keys(updatePayload).length > 1) { // more than just updated_at
@@ -268,6 +288,14 @@ const bulkAssignDeliveries = async (user, deliveryIds, agentId, updatedBy = 'Dis
   });
 
   if (rpcError) throw mapRpcError(rpcError);
+
+  const assignedCount = rpcData?.assignedCount ?? visibleIds.length;
+  if (assignedCount > 0) {
+    notificationService.notifyAgentOnAssignment(user.organizationId, agentId, {
+      count: assignedCount,
+      deliveryId: assignedCount === 1 ? visibleIds[0] : null,
+    });
+  }
 
   return {
     ...rpcData,

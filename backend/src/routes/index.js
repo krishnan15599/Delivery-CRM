@@ -8,6 +8,7 @@ const agentRoutes = require('./agentRoutes');
 const deliveryRoutes = require('./deliveryRoutes');
 const organizationRoutes = require('./organizationRoutes');
 const platformRoutes = require('./platformRoutes');
+const notificationRoutes = require('./notificationRoutes');
 const { ensureDb } = require('../middlewares/ensureDb');
 const { requireAuth, requireOrgUser, rejectTenantFields } = require('../middlewares/auth');
 
@@ -27,6 +28,7 @@ router.use('/customers', ...businessOnly, customerRoutes);
 router.use('/profiles', ...businessOnly, profileRoutes);
 router.use('/agents', ...businessOnly, agentRoutes);
 router.use('/deliveries', ...businessOnly, deliveryRoutes);
+router.use('/notifications', ...businessOnly, notificationRoutes);
 
 // API Documentation / Index route
 router.get('/', (_req, res) => {

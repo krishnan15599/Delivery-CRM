@@ -1,0 +1,19 @@
+{
+  "name": "Delivery CRM",
+  "short_name": "Delivery CRM",
+  "description": "End-to-end delivery operations, field agent dispatch, and live order notifications.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F2F5F4",
+  "theme_color": "#0F2A2E",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

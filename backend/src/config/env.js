@@ -21,4 +21,7 @@ module.exports = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   JWT_SECRET: jwtSecret || 'test-jwt-secret-for-isolated-tests-only',
   NODE_ENV: process.env.NODE_ENV || 'development',
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT || 'mailto:support@deliverycrm.in',
 };

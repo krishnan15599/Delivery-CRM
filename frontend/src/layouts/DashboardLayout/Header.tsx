@@ -1,17 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Search,
   Bell,
+  BellRing,
   Menu,
   Moon,
   Sun,
-  CheckCircle2,
-  Clock,
+  Package,
   LogOut,
   Settings as SettingsIcon,
+  Check,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { notificationService, type AppNotification } from '../../services/notificationService';
+import { useToast } from '../../components/common';
 
 export interface HeaderProps {
   onToggleMobileMenu?: () => void;
@@ -19,14 +22,84 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
   const navigate = useNavigate();
-  const { user, role, logout } = useAuth();
+  const { user, role, isAuthenticated, logout } = useAuth();
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>(() =>
+    notificationService.getPermissionState()
+  );
+  const [subscribingPush, setSubscribingPush] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
+    const res = await notificationService.getNotifications(20);
+    setNotifications(res.notifications);
+    setUnreadCount(res.unreadCount);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchNotifications();
+    notificationService.syncExistingSubscription();
+
+    const interval = window.setInterval(fetchNotifications, 30000);
+    const onFocus = () => fetchNotifications();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [isAuthenticated, fetchNotifications]);
+
+  const handleEnablePush = async () => {
+    try {
+      setSubscribingPush(true);
+      const result = await notificationService.subscribeToPush();
+      setPushPermission(notificationService.getPermissionState());
+      if (result.ok) {
+        toast.success('Push notifications enabled for delivery assignments.');
+      } else if (result.reason) {
+        toast.error(result.reason);
+      }
+    } finally {
+      setSubscribingPush(false);
+    }
+  };
+
+  const handleMarkAsRead = async (n: AppNotification) => {
+    setIsNotificationsOpen(false);
+    if (!n.read) {
+      setNotifications((prev) => prev.map((item) => (item.id === n.id ? { ...item, read: true } : item)));
+      setUnreadCount((c) => Math.max(0, c - 1));
+      await notificationService.markAsRead(n.id);
+    }
+    navigate(n.delivery_id ? `/deliveries/${n.delivery_id}` : '/deliveries');
+  };
+
+  const handleMarkAllRead = async () => {
+    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+    setUnreadCount(0);
+    await notificationService.markAllAsRead();
+  };
+
+  const formatTimeAgo = (iso: string) => {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,30 +128,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
     setIsDark(nextDark);
     document.documentElement.setAttribute('data-theme', nextDark ? 'dark' : 'light');
   };
-
-  const notifications = [
-    {
-      id: 1,
-      title: 'Package TRK-9001 Out for Delivery',
-      time: '10 mins ago',
-      icon: Clock,
-      color: 'text-[#2563C9] bg-[#E0EAFB]',
-    },
-    {
-      id: 2,
-      title: 'Delivery TRK-9002 Completed',
-      time: '1 hour ago',
-      icon: CheckCircle2,
-      color: 'text-[#1E8E5A] bg-[#DDF3E7]',
-    },
-    {
-      id: 3,
-      title: 'Agent Ramesh Collected ₹1,450 COD',
-      time: '2 hours ago',
-      icon: CheckCircle2,
-      color: 'text-[#A66A00] bg-[#FCEFCF]',
-    },
-  ];
 
   const initials = user?.name?.slice(0, 2).toUpperCase() || 'KK';
 
@@ -113,6 +162,19 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
       {/* Spacer */}
       <span className="flex-1" />
 
+      {/* Quick Push Notification Prompt for Agents when permission is not yet granted */}
+      {role === 'Agent' && pushPermission === 'default' && (
+        <button
+          type="button"
+          onClick={handleEnablePush}
+          disabled={subscribingPush}
+          className="hidden sm:inline-flex items-center gap-1.5 bg-[#FCEFCF] hover:bg-[#F2B705] text-[#2A2000] border border-[#F2B705]/60 rounded-[10px] px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <BellRing className="w-3.5 h-3.5" />
+          <span>{subscribingPush ? 'Enabling...' : 'Enable Push Alerts'}</span>
+        </button>
+      )}
+
       {/* Theme Toggle Button */}
       <button
         type="button"
@@ -128,47 +190,103 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
       <div ref={notifRef} className="relative">
         <button
           type="button"
-          onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+          onClick={() => {
+            const next = !isNotificationsOpen;
+            setIsNotificationsOpen(next);
+            if (next) fetchNotifications();
+          }}
           aria-label="Notifications"
           className="relative border border-[#DDE5E3] bg-white hover:bg-[#F2F5F4] rounded-[10px] p-2 text-[#5E716F] hover:text-[#10201F] transition-colors cursor-pointer flex items-center justify-center"
         >
           <Bell className="w-4.5 h-4.5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#C23B3B]" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#C23B3B] text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
 
         {isNotificationsOpen && (
           <div className="absolute right-0 mt-2 w-80 bg-white border border-[#DDE5E3] rounded-xl shadow-xl shadow-slate-900/10 p-3.5 z-50 text-xs">
             <div className="flex items-center justify-between pb-2.5 border-b border-[#DDE5E3]">
-              <h4 className="font-semibold text-[#10201F] font-['Bricolage_Grotesque',sans-serif]">
-                Notifications
-              </h4>
-              <span className="text-[11px] font-semibold text-[#2A2000] bg-[#F2B705] px-2 py-0.5 rounded-full">
-                3 New
-              </span>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-[#10201F] font-['Bricolage_Grotesque',sans-serif]">
+                  Notifications
+                </h4>
+                {unreadCount > 0 && (
+                  <span className="text-[11px] font-semibold text-[#2A2000] bg-[#F2B705] px-2 py-0.5 rounded-full">
+                    {unreadCount} New
+                  </span>
+                )}
+              </div>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563C9] hover:underline cursor-pointer"
+                >
+                  <Check className="w-3 h-3" />
+                  Mark all read
+                </button>
+              )}
             </div>
 
+            {/* PWA Push Subscription Status Bar */}
+            {pushPermission !== 'unsupported' && (
+              <div className="flex items-center justify-between py-2 px-2 mt-2 rounded-lg bg-[#F2F5F4] border border-[#DDE5E3]">
+                <span className="text-[11px] text-[#5E716F] font-medium">
+                  {pushPermission === 'granted'
+                    ? 'PWA Push Alerts Active'
+                    : pushPermission === 'denied'
+                    ? 'Push blocked in browser'
+                    : 'Get notified on new assignments'}
+                </span>
+                {pushPermission === 'default' && (
+                  <button
+                    type="button"
+                    onClick={handleEnablePush}
+                    disabled={subscribingPush}
+                    className="text-[11px] font-semibold bg-[#F2B705] text-[#2A2000] px-2 py-0.5 rounded-md cursor-pointer"
+                  >
+                    {subscribingPush ? '...' : 'Enable'}
+                  </button>
+                )}
+                {pushPermission === 'granted' && (
+                  <span className="text-[10px] font-semibold text-[#1E8E5A] bg-[#DDF3E7] px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="divide-y divide-[#DDE5E3]/60 py-1.5 max-h-72 overflow-y-auto">
-              {notifications.map((n) => {
-                const Icon = n.icon;
-                return (
+              {notifications.length > 0 ? (
+                notifications.map((n) => (
                   <div
                     key={n.id}
-                    onClick={() => {
-                      setIsNotificationsOpen(false);
-                      navigate('/deliveries');
-                    }}
-                    className="py-2 px-1 flex items-start gap-2.5 hover:bg-[#F2F5F4] rounded-lg transition-colors cursor-pointer"
+                    onClick={() => handleMarkAsRead(n)}
+                    className={`py-2 px-1.5 flex items-start gap-2.5 hover:bg-[#F2F5F4] rounded-lg transition-colors cursor-pointer ${
+                      !n.read ? 'bg-[#F2F5F4]/60' : ''
+                    }`}
                   >
-                    <div className={`p-1.5 rounded-lg ${n.color} shrink-0 mt-0.5`}>
-                      <Icon className="w-3.5 h-3.5" />
+                    <div className="p-1.5 rounded-lg text-[#2563C9] bg-[#E0EAFB] shrink-0 mt-0.5">
+                      <Package className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-[#10201F] text-xs truncate">{n.title}</p>
-                      <span className="text-[10px] text-[#5E716F]">{n.time}</span>
+                      <p className={`text-xs truncate ${!n.read ? 'font-semibold text-[#10201F]' : 'font-medium text-[#5E716F]'}`}>
+                        {n.title}
+                      </p>
+                      <p className="text-[11px] text-[#5E716F] truncate">{n.body}</p>
+                      <span className="text-[10px] text-[#5E716F]/80">{formatTimeAgo(n.created_at)}</span>
                     </div>
+                    {!n.read && <span className="w-2 h-2 rounded-full bg-[#F2B705] shrink-0 mt-1.5" />}
                   </div>
-                );
-              })}
+                ))
+              ) : (
+                <div className="py-6 text-center text-[#5E716F] text-xs">
+                  No notifications yet.
+                </div>
+              )}
             </div>
 
             <div className="pt-2 border-t border-[#DDE5E3] text-center">
