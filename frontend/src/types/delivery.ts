@@ -22,6 +22,7 @@ export interface DeliveryTimelineEvent {
 export interface Delivery {
   id: string;
   trackingNumber: string;
+  trackingToken?: string;
   customerName: string;
   customerId?: string;
   customerPhone?: string;
@@ -52,6 +53,7 @@ export interface Delivery {
 export interface BackendDelivery {
   id: string;
   tracking_number: string;
+  tracking_token?: string | null;
   customer_id?: string | null;
   customer_name: string;
   customer_phone?: string | null;

@@ -9,6 +9,35 @@ export interface PrintShippingLabelModalProps {
   delivery: Delivery;
 }
 
+const CODE39: Record<string, string> = {
+  '0': 'nnnwwnwnn', '1': 'wnnwnnnnw', '2': 'nnwwnnnnw', '3': 'wnwwnnnnn',
+  '4': 'nnnwwnnnw', '5': 'wnnwwnnnn', '6': 'nnwwwnnnn', '7': 'nnnwnnwnw',
+  '8': 'wnnwnnwnn', '9': 'nnwwnnwnn', 'A': 'wnnnnwnnw', 'B': 'nnwnnwnnw',
+  'C': 'wnwnnwnnn', 'D': 'nnnnwwnnw', 'E': 'wnnnwwnnn', 'F': 'nnwnwwnnn',
+  'G': 'nnnnnwwnw', 'H': 'wnnnnwwnn', 'I': 'nnwnnwwnn', 'J': 'nnnnwwwnn',
+  'K': 'wnnnnnnww', 'L': 'nnwnnnnww', 'M': 'wnwnnnnwn', 'N': 'nnnnwnnww',
+  'O': 'wnnnwnnwn', 'P': 'nnwnwnnwn', 'Q': 'nnnnnnwww', 'R': 'wnnnnnwwn',
+  'S': 'nnwnnnwwn', 'T': 'nnnnwnwwn', 'U': 'wwnnnnnnw', 'V': 'nwwnnnnnw',
+  'W': 'wwwnnnnnn', 'X': 'nwnnwnnnw', 'Y': 'wwnnwnnnn', 'Z': 'nwwnwnnnn',
+  '-': 'nwnnnnwnw', '.': 'wwnnnnwnn', ' ': 'nwwnnnwnn', '*': 'nwnnwnwnn',
+};
+
+const renderCode39Bars = (text: string) => {
+  const clean = `*${text.toUpperCase().replace(/[^0-9A-Z\-. ]/g, '-')}*`;
+  const bars: { x: number; w: number }[] = [];
+  let x = 0;
+  for (const ch of clean) {
+    const pattern = CODE39[ch] || CODE39['-'];
+    for (let i = 0; i < pattern.length; i++) {
+      const w = pattern[i] === 'w' ? 3 : 1;
+      if (i % 2 === 0) bars.push({ x, w });
+      x += w;
+    }
+    x += 1; // inter-character gap
+  }
+  return { bars, totalWidth: Math.max(x, 1) };
+};
+
 export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = ({
   isOpen,
   onClose,
@@ -17,6 +46,8 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
   const handlePrint = () => {
     window.print();
   };
+
+  const { bars, totalWidth } = renderCode39Bars(delivery.trackingNumber || 'TRK');
 
   return (
     <Modal
@@ -48,17 +79,18 @@ export const PrintShippingLabelModal: React.FC<PrintShippingLabelModalProps> = (
           </div>
 
           {/* Barcode & Tracking Number */}
-          <div className="py-2 text-center bg-slate-50 rounded border border-slate-200">
-            {/* Visual simulated Barcode */}
-            <div className="h-12 w-64 mx-auto flex items-stretch justify-center gap-1 overflow-hidden py-1">
-              {[...Array(38)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`bg-black ${i % 3 === 0 ? 'w-1.5' : i % 2 === 0 ? 'w-1' : 'w-0.5'}`}
-                />
+          <div className="py-2.5 px-4 text-center bg-slate-50 rounded border border-slate-200">
+            <svg
+              viewBox={`0 0 ${totalWidth} 44`}
+              className="h-12 w-full max-w-[300px] mx-auto"
+              preserveAspectRatio="none"
+              aria-label={`Barcode for ${delivery.trackingNumber}`}
+            >
+              {bars.map((b, i) => (
+                <rect key={i} x={b.x} y={0} width={b.w} height={44} fill="#000000" />
               ))}
-            </div>
-            <span className="text-sm font-bold tracking-widest block mt-1">
+            </svg>
+            <span className="text-sm font-bold tracking-widest block mt-1.5">
               {delivery.trackingNumber}
             </span>
           </div>

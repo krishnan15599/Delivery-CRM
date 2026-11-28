@@ -13,6 +13,7 @@ const {
 const agentService = require('./agentService');
 const teamService = require('./teamService');
 const notificationService = require('./notificationService');
+const { emitToTracking } = require('../realtime/socketServer');
 
 // Admin: all deliveries of the business. Manager: their teams. Agent: assigned to them.
 // Writes go through SQL functions that also check the business (05_tenant_scoped_functions.sql).
@@ -257,6 +258,19 @@ const updateDeliveryStatus = async (user, id, status, note = null, updatedBy = '
   if (rpcError) {
     if (rpcError.code === 'P0002') return null;
     throw mapRpcError(rpcError);
+  }
+
+  if (rpcData?.tracking_token) {
+    emitToTracking(rpcData.tracking_token, 'track:status_updated', {
+      trackingNumber: rpcData.tracking_number,
+      status: rpcData.status,
+      timeline: Array.isArray(rpcData.timeline) ? rpcData.timeline : [],
+      scheduledDate: rpcData.scheduled_date || null,
+      agentFirstName: rpcData.agent_name
+        ? String(rpcData.agent_name).trim().split(/\s+/)[0]
+        : null,
+      updatedAt: rpcData.updated_at || null,
+    });
   }
 
   return rpcData;

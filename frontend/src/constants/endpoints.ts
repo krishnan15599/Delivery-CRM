@@ -33,6 +33,12 @@ export const API_ENDPOINTS = {
     BASE: '/organization',
     TEAMS: '/organization/teams',
   },
+  MERCHANTS: {
+    BASE: '/merchants',
+    BY_ID: (id: string) => `/merchants/${id}`,
+    API_KEYS: (id: string) => `/merchants/${id}/api-keys`,
+    REVOKE_KEY: (id: string, keyId: string) => `/merchants/${id}/api-keys/${keyId}`,
+  },
   PLATFORM: {
     ORGANIZATIONS: '/platform/organizations',
     ORGANIZATION_BY_ID: (id: string) => `/platform/organizations/${id}`,
@@ -51,6 +57,11 @@ export const API_ENDPOINTS = {
     DIRECT: '/chat/conversations/direct',
     MESSAGES: (id: string) => `/chat/conversations/${id}/messages`,
     READ: (id: string) => `/chat/conversations/${id}/read`,
+  },
+  TRACKING: {
+    INFO: (token: string) => `/track/${token}`,
+    CHAT: (token: string) => `/track/${token}/chat`,
+    SEND_MESSAGE: (token: string) => `/track/${token}/chat/messages`,
   },
 } as const;
 

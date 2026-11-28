@@ -15,6 +15,8 @@ import {
   X,
   Building2,
   Download,
+  ScanBarcode,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePwaInstall } from '../../context/PwaInstallContext';
@@ -57,6 +59,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
           name: 'Deliveries',
           icon: Package,
           path: '/deliveries',
+        },
+        {
+          name: 'Hub Scan',
+          icon: ScanBarcode,
+          path: '/hub-scan',
+        },
+        {
+          name: 'Merchants',
+          icon: Store,
+          path: '/merchants',
         },
         {
           name: 'Customers',
@@ -116,6 +128,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile, isMobile = fals
     Dashboard: ['Admin', 'Manager'],
     Customers: ['Admin', 'Manager'],
     Deliveries: ['Admin', 'Manager', 'Agent'],
+    'Hub Scan': ['Admin', 'Manager'],
+    Merchants: ['Admin', 'Manager'],
     Agents: ['Admin', 'Manager'],
     Collections: ['Admin'],
     Chat: ['Admin', 'Manager', 'Agent'],

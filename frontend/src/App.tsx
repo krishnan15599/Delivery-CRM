@@ -17,7 +17,10 @@ const Collections = lazy(() => import('./pages/Collections/Collections'));
 const Chat = lazy(() => import('./pages/Chat/Chat'));
 const Reports = lazy(() => import('./pages/Reports/Reports'));
 const Settings = lazy(() => import('./pages/Settings/Settings'));
+const Merchants = lazy(() => import('./pages/Merchants/Merchants'));
+const HubScan = lazy(() => import('./pages/HubScan/HubScan'));
 const Login = lazy(() => import('./pages/Login/Login'));
+const CustomerTracking = lazy(() => import('./pages/Track/CustomerTracking'));
 const Platform = lazy(() => import('./pages/Platform/Platform'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const ComponentShowcase = lazy(() =>
@@ -77,8 +80,9 @@ function App() {
                 <BrowserRouter>
                   <Suspense fallback={<PageLoadingFallback />}>
                     <Routes>
-                      {/* Public Auth Route */}
+                      {/* Public Auth & Customer Tracking Routes */}
                       <Route path="/login" element={<Login />} />
+                      <Route path="/track/:trackingToken" element={<CustomerTracking />} />
 
                       {/* Authenticated Dashboard Routes */}
                       <Route
@@ -202,6 +206,24 @@ function App() {
                           element={
                             <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
                               <Reports />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Hub Inbound Scan & Merchants: Admin & Manager */}
+                        <Route
+                          path="/hub-scan"
+                          element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                              <HubScan />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/merchants"
+                          element={
+                            <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+                              <Merchants />
                             </ProtectedRoute>
                           }
                         />

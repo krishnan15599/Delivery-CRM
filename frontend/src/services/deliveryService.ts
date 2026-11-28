@@ -17,6 +17,7 @@ import { API_ENDPOINTS } from '../constants/endpoints';
 export const mapBackendDelivery = (d: BackendDelivery | any): Delivery => ({
   id: d.id,
   trackingNumber: d.tracking_number || d.trackingNumber || '',
+  trackingToken: d.tracking_token || d.trackingToken || undefined,
   customerName: d.customer_name || d.customerName || '',
   customerId: d.customer_id || d.customerId || undefined,
   customerPhone: d.customer_phone || d.customerPhone || undefined,

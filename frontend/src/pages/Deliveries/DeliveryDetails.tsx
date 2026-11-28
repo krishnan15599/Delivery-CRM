@@ -10,6 +10,7 @@ import {
   UserCheck,
   Printer,
   ShieldCheck,
+  Link2,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -185,6 +186,20 @@ export const DeliveryDetails: React.FC = () => {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {delivery.trackingToken && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Link2 className="w-3.5 h-3.5" />}
+                onClick={async () => {
+                  const url = `${window.location.origin}/track/${delivery.trackingToken}`;
+                  await navigator.clipboard.writeText(url);
+                  toast.success('Customer tracking link copied!');
+                }}
+              >
+                Copy Tracking Link
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

@@ -14,6 +14,7 @@ const {
 const {
   emitToConversation,
   emitToUser,
+  emitToTracking,
   isUserOnline,
 } = require('../realtime/socketServer');
 
@@ -403,6 +404,20 @@ const sendStaffMessage = async (user, conversationId, { text, visibility = MESSA
   // Real-time broadcast via Socket.IO
   emitToConversation(conversation.id, 'chat:message', createdMsg);
 
+  if (visibility === MESSAGE_VISIBILITY.PUBLIC && delivery?.tracking_token) {
+    emitToTracking(delivery.tracking_token, 'track:message', {
+      id: createdMsg.id,
+      conversation_id: createdMsg.conversation_id,
+      delivery_id: createdMsg.delivery_id,
+      sender_name: createdMsg.sender_name,
+      sender_role: createdMsg.sender_role,
+      sender_type: createdMsg.sender_type,
+      text: createdMsg.text,
+      timestamp: createdMsg.timestamp,
+      created_at: createdMsg.created_at,
+    });
+  }
+
   const convUpdate = {
     conversationId: conversation.id,
     lastMessage: cleanText,
@@ -523,6 +538,30 @@ const getOrCreatePublicDeliveryConversation = async (delivery) => {
   return created;
 };
 
+const sanitizePublicTrackingInfo = (delivery) => ({
+  trackingNumber: delivery.tracking_number,
+  status: delivery.status,
+  city: delivery.city || null,
+  packageType: delivery.package_type || 'Standard',
+  scheduledDate: delivery.scheduled_date || null,
+  timeline: Array.isArray(delivery.timeline) ? delivery.timeline : [],
+  agentFirstName: delivery.agent_name
+    ? String(delivery.agent_name).trim().split(/\s+/)[0]
+    : null,
+  updatedAt: delivery.updated_at || null,
+});
+
+const getCustomerTrackingInfo = async (trackingToken) => {
+  const { data: delivery, error: delErr } = await supabase
+    .from('deliveries')
+    .select('*')
+    .eq('tracking_token', trackingToken)
+    .single();
+
+  if (delErr || !delivery) throw httpError(404, 'Tracking link not found or expired.');
+  return sanitizePublicTrackingInfo(delivery);
+};
+
 const getCustomerTrackingChat = async (trackingToken) => {
   const { data: delivery, error: delErr } = await supabase
     .from('deliveries')
@@ -607,6 +646,11 @@ const sendCustomerMessage = async (trackingToken, { text }) => {
     })
     .eq('id', conversation.id);
 
+  emitToConversation(conversation.id, 'chat:message', createdMsg);
+  if (delivery.tracking_token) {
+    emitToTracking(delivery.tracking_token, 'track:message', createdMsg);
+  }
+
   return createdMsg;
 };
 
@@ -620,6 +664,7 @@ module.exports = {
   sendStaffMessage,
   markConversationRead,
   updateConversationStatus,
+  getCustomerTrackingInfo,
   getCustomerTrackingChat,
   sendCustomerMessage,
 };

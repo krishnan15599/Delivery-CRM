@@ -73,7 +73,16 @@ const updateConversationStatus = async (req, res, next) => {
   }
 };
 
-// Public Option B Customer Tracking Chat
+// Public Option B Customer Tracking Info & Chat
+const getCustomerTrackingInfo = async (req, res, next) => {
+  try {
+    const data = await chatService.getCustomerTrackingInfo(req.params.trackingToken);
+    return sendSuccess(res, 200, 'Tracking info retrieved', data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const getCustomerTrackingChat = async (req, res, next) => {
   try {
     const data = await chatService.getCustomerTrackingChat(req.params.trackingToken);
@@ -101,6 +110,7 @@ module.exports = {
   sendStaffMessage,
   markConversationRead,
   updateConversationStatus,
+  getCustomerTrackingInfo,
   getCustomerTrackingChat,
   sendCustomerMessage,
 };

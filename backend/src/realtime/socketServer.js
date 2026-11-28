@@ -22,6 +22,11 @@ const emitToUser = (userId, event, payload) => {
   ioInstance.to(`user:${userId}`).emit(event, payload);
 };
 
+const emitToTracking = (trackingToken, event, payload) => {
+  if (!ioInstance || !trackingToken) return;
+  ioInstance.of('/track').to(`track:${trackingToken}`).emit(event, payload);
+};
+
 const authenticateSocket = async (socket, next) => {
   try {
     const rawAuth =
@@ -154,6 +159,34 @@ const initSocketServer = (httpServer) => {
     });
   });
 
+  // Public customer tracking namespace (no login required, token-gated)
+  const trackNs = ioInstance.of('/track');
+  trackNs.on('connection', (socket) => {
+    socket.on('track:join', async (payload, ack) => {
+      try {
+        const trackingToken =
+          typeof payload === 'string' ? payload : payload?.trackingToken;
+        if (!trackingToken || typeof trackingToken !== 'string') {
+          return ack?.({ ok: false, error: 'trackingToken is required' });
+        }
+        if (supabase) {
+          const { data, error } = await supabase
+            .from('deliveries')
+            .select('id')
+            .eq('tracking_token', trackingToken)
+            .maybeSingle();
+          if (error || !data) {
+            return ack?.({ ok: false, error: 'Invalid tracking token' });
+          }
+        }
+        socket.join(`track:${trackingToken}`);
+        return ack?.({ ok: true });
+      } catch (err) {
+        return ack?.({ ok: false, error: err.message });
+      }
+    });
+  });
+
   return ioInstance;
 };
 
@@ -161,5 +194,6 @@ module.exports = {
   initSocketServer,
   emitToConversation,
   emitToUser,
+  emitToTracking,
   isUserOnline,
 };

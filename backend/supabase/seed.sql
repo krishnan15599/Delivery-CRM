@@ -18,6 +18,7 @@ ALTER TABLE conversations ALTER COLUMN organization_id SET DEFAULT 'ORG-DEFAULT'
 
 -- Profiles / Admin Users
 
+
 INSERT INTO profiles (id, name, email, role, phone, avatar_url)
 VALUES
   ('USR-001', 'Krishnan K.', 'admin@deliverycrm.in', 'Admin', '+91 98450 12345', NULL),
