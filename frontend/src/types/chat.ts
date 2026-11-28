@@ -21,10 +21,14 @@ export interface Conversation {
   participantPhone?: string;
   participantAvatar?: string;
   lastMessage?: string;
+  lastMessageRole?: SenderRole;
   lastMessageTime?: string;
   unreadCount: number;
   isOnline: boolean;
+  relatedDeliveryId?: string;
   relatedDeliveryTracking?: string;
+  deliveryStatus?: string;
+  codAmount?: number;
 }
 
 export interface SendMessageInput {

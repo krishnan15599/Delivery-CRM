@@ -9,6 +9,8 @@ const deliveryRoutes = require('./deliveryRoutes');
 const organizationRoutes = require('./organizationRoutes');
 const platformRoutes = require('./platformRoutes');
 const notificationRoutes = require('./notificationRoutes');
+const chatRoutes = require('./chatRoutes');
+const trackingChatRoutes = require('./trackingChatRoutes');
 const { ensureDb } = require('../middlewares/ensureDb');
 const { requireAuth, requireOrgUser, rejectTenantFields } = require('../middlewares/auth');
 
@@ -17,6 +19,9 @@ router.use(rejectTenantFields);
 
 // Public auth routes (login)
 router.use('/auth', authRoutes);
+
+// Option B: Public customer tracking link chat (no login, token-gated)
+router.use('/track', ensureDb, trackingChatRoutes);
 
 // Platform owner (SuperAdmin): create / list / suspend businesses
 router.use('/platform', requireAuth, ensureDb, platformRoutes);
@@ -29,6 +34,7 @@ router.use('/profiles', ...businessOnly, profileRoutes);
 router.use('/agents', ...businessOnly, agentRoutes);
 router.use('/deliveries', ...businessOnly, deliveryRoutes);
 router.use('/notifications', ...businessOnly, notificationRoutes);
+router.use('/chat', ...businessOnly, chatRoutes);
 
 // API Documentation / Index route
 router.get('/', (_req, res) => {
