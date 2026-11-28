@@ -199,7 +199,7 @@ export const CustomerDetails: React.FC = () => {
         <StatCard
           title="Active Deliveries"
           value={
-            deliveries.filter((d) => d.status === 'In Transit' || d.status === 'Picked Up').length
+            deliveries.filter((d) => d.status === 'Out for Delivery' || d.status === 'Picked Up').length
           }
           icon={Package}
           color="indigo"

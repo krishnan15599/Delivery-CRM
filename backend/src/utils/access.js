@@ -22,7 +22,7 @@ const ROLES = Object.freeze({
 const BUSINESS_ROLES = Object.freeze([ROLES.ADMIN, ROLES.MANAGER, ROLES.AGENT]);
 
 // Field statuses an Agent may set on their own deliveries
-const AGENT_ALLOWED_DELIVERY_STATUSES = Object.freeze(['Picked Up', 'In Transit', 'Delivered', 'Failed']);
+const AGENT_ALLOWED_DELIVERY_STATUSES = Object.freeze(['Picked Up', 'Out for Delivery', 'Delivered', 'Failed']);
 
 const hasBusiness = (user) => Boolean(user && user.organizationId);
 const isSuperAdmin = (user) => user?.role === ROLES.SUPER_ADMIN;

@@ -54,14 +54,14 @@ export const RiderMobileView: React.FC<RiderMobileViewProps> = ({
     let pendingCOD = 0;
 
     deliveries.forEach((d) => {
-      if (['Assigned', 'Picked Up', 'In Transit', 'Pending'].includes(d.status)) {
+      if (['Order Created', 'Received at Hub', 'Ready for Dispatch', 'Assigned', 'Picked Up', 'Out for Delivery'].includes(d.status)) {
         toDeliver += 1;
         if (d.paymentStatus !== 'Paid') {
           pendingCOD += d.codAmount || d.amount || 0;
         }
       } else if (d.status === 'Delivered') {
         completed += 1;
-      } else if (d.status === 'Failed' || d.status === 'Returned') {
+      } else if (['Failed', 'Returned to Hub', 'Returned to Merchant'].includes(d.status)) {
         failed += 1;
       }
     });
@@ -74,7 +74,7 @@ export const RiderMobileView: React.FC<RiderMobileViewProps> = ({
     return deliveries.filter((d) => {
       // Tab check
       if (activeTab === 'to_deliver') {
-        if (!['Assigned', 'Picked Up', 'In Transit', 'Pending'].includes(d.status)) {
+        if (!['Order Created', 'Received at Hub', 'Ready for Dispatch', 'Assigned', 'Picked Up', 'Out for Delivery'].includes(d.status)) {
           return false;
         }
       } else if (activeTab === 'completed') {

@@ -35,7 +35,7 @@ const activeDeliveryAG1 = {
   organization_id: 'ORG-A',
   team_id: 'T1',
   agent_id: 'AG1',
-  status: 'In Transit',
+  status: 'Out for Delivery',
   tracking_token: 'tok_123',
 };
 
@@ -106,11 +106,12 @@ test('Other org Admin cannot see ORG-A conversation', () => {
 });
 
 console.log('\n3. Agent <-> Customer active delivery condition:');
-test('Active statuses are Assigned, Picked Up, In Transit', () => {
+test('Active statuses are Assigned, Picked Up, Out for Delivery', () => {
   assert.ok(isDeliveryActiveForAgentChat({ status: 'Assigned' }));
   assert.ok(isDeliveryActiveForAgentChat({ status: 'Picked Up' }));
-  assert.ok(isDeliveryActiveForAgentChat({ status: 'In Transit' }));
-  assert.ok(!isDeliveryActiveForAgentChat({ status: 'Pending' }));
+  assert.ok(isDeliveryActiveForAgentChat({ status: 'Out for Delivery' }));
+  assert.ok(!isDeliveryActiveForAgentChat({ status: 'Order Created' }));
+  assert.ok(!isDeliveryActiveForAgentChat({ status: 'Received at Hub' }));
   assert.ok(!isDeliveryActiveForAgentChat({ status: 'Delivered' }));
   assert.ok(!isDeliveryActiveForAgentChat({ status: 'Failed' }));
 });

@@ -8,9 +8,9 @@ describe('StatusBadge Component', () => {
     expect(screen.getByText('Delivered')).toBeInTheDocument();
   });
 
-  it('renders In Transit badge with correct status label', () => {
-    render(<StatusBadge status="In Transit" />);
-    expect(screen.getByText('In Transit')).toBeInTheDocument();
+  it('renders Out for Delivery badge with correct status label', () => {
+    render(<StatusBadge status="Out for Delivery" />);
+    expect(screen.getByText('Out for Delivery')).toBeInTheDocument();
   });
 
   it('renders Pending badge', () => {

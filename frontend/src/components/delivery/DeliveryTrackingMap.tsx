@@ -10,18 +10,22 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({ delive
   const [progress, setProgress] = useState(
     delivery.status === 'Delivered'
       ? 100
-      : delivery.status === 'In Transit'
+      : delivery.status === 'Out for Delivery'
       ? 65
       : delivery.status === 'Picked Up'
-      ? 35
+      ? 40
       : delivery.status === 'Assigned'
+      ? 25
+      : delivery.status === 'Ready for Dispatch'
       ? 15
+      : delivery.status === 'Received at Hub'
+      ? 10
       : 5
   );
 
   // Subtle real-time pulsing simulation
   useEffect(() => {
-    if (delivery.status === 'In Transit') {
+    if (delivery.status === 'Out for Delivery') {
       const interval = setInterval(() => {
         setProgress((prev) => (prev >= 85 ? 55 : prev + 2));
       }, 3500);
@@ -48,7 +52,7 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({ delive
         </div>
 
         <div className="flex items-center gap-2">
-          {delivery.status === 'In Transit' && (
+          {delivery.status === 'Out for Delivery' && (
             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full animate-pulse">
               <Radio className="w-3 h-3 text-emerald-600 animate-spin" />
               Live Telemetry

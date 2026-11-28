@@ -2,12 +2,16 @@ import React from 'react';
 import { Badge, type BadgeSize } from './Badge';
 
 export type DeliveryStatus =
-  | 'Pending'
+  | 'Order Created'
+  | 'Received at Hub'
+  | 'Ready for Dispatch'
   | 'Assigned'
-  | 'In Transit'
+  | 'Picked Up'
+  | 'Out for Delivery'
   | 'Delivered'
   | 'Failed'
-  | 'Returned'
+  | 'Returned to Hub'
+  | 'Returned to Merchant'
   | 'Unassigned'
   | 'Paid'
   | 'Unpaid'
@@ -43,11 +47,22 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       label = normalized === 'delivered' ? 'Delivered' : normalized === 'paid' ? 'Paid' : 'Active';
       break;
 
+    case 'out for delivery':
     case 'in transit':
     case 'intransit':
     case 'in progress':
       variant = 'primary';
-      label = 'In Transit';
+      label = 'Out for Delivery';
+      break;
+
+    case 'picked up':
+      variant = 'info';
+      label = 'Picked Up';
+      break;
+
+    case 'order created':
+      variant = 'warning';
+      label = 'Order Created';
       break;
 
     case 'pending':
@@ -55,6 +70,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     case 'awaiting':
       variant = 'warning';
       label = normalized === 'pending' ? 'Pending' : 'Unpaid';
+      break;
+
+    case 'received at hub':
+      variant = 'info';
+      label = 'Received at Hub';
+      break;
+
+    case 'ready for dispatch':
+      variant = 'warning';
+      label = 'Ready for Dispatch';
       break;
 
     case 'assigned':
@@ -69,10 +94,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       label = normalized === 'failed' ? 'Failed' : 'Cancelled';
       break;
 
+    case 'returned to hub':
     case 'returned':
     case 'return':
       variant = 'danger';
-      label = 'Returned';
+      label = 'Returned to Hub';
+      break;
+
+    case 'returned to merchant':
+      variant = 'neutral';
+      label = 'Returned to Merchant';
       break;
 
     case 'unassigned':

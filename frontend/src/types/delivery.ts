@@ -1,11 +1,14 @@
 export type DeliveryStatus =
-  | 'Pending'
+  | 'Order Created'
+  | 'Received at Hub'
+  | 'Ready for Dispatch'
   | 'Assigned'
   | 'Picked Up'
-  | 'In Transit'
+  | 'Out for Delivery'
   | 'Delivered'
   | 'Failed'
-  | 'Returned';
+  | 'Returned to Hub'
+  | 'Returned to Merchant';
 
 export type PaymentStatus = 'paid' | 'pending' | 'failed' | 'Paid' | 'Pending' | 'Failed';
 

@@ -97,10 +97,13 @@ test('Nobody creates a SuperAdmin; Agents create nobody', () => {
 
 console.log('\n4. Agent status changes & team management:');
 test('Agent may only set field statuses', () => {
+  assert.ok(canAgentSetStatus('Picked Up'));
+  assert.ok(canAgentSetStatus('Out for Delivery'));
   assert.ok(canAgentSetStatus('Delivered'));
   assert.ok(canAgentSetStatus('Failed'));
-  assert.ok(!canAgentSetStatus('Pending'));
-  assert.ok(!canAgentSetStatus('Returned'));
+  assert.ok(!canAgentSetStatus('Order Created'));
+  assert.ok(!canAgentSetStatus('Received at Hub'));
+  assert.ok(!canAgentSetStatus('Returned to Merchant'));
 });
 test('canManageTeam: Admin any, Manager own, Agent none', () => {
   assert.ok(canManageTeam(adminA, 'T2'));

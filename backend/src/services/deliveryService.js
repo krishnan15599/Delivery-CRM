@@ -119,6 +119,8 @@ const createDelivery = async (user, input) => {
     id:             deliveryId,
     trackingNumber,
     teamId,
+    merchantId:     input.merchantId || null,
+    externalOrderId: input.externalOrderId || null,
     customerId:     input.customerId || null,
     customerName:   input.customerName,
     customerPhone:  input.customerPhone || null,
@@ -164,7 +166,7 @@ const updateDelivery = async (user, id, input) => {
   const existing = await getDeliveryById(user, id);
   if (!existing) return null;
 
-  if (['Delivered', 'Returned'].includes(existing.status) && input.agentId !== undefined) {
+  if (['Delivered', 'Returned to Merchant'].includes(existing.status) && input.agentId !== undefined) {
     throw httpError(400, `Cannot reassign a delivery that is already ${existing.status}.`);
   }
 
@@ -241,7 +243,7 @@ const updateDeliveryStatus = async (user, id, status, note = null, updatedBy = '
   if (!existing) return null;
 
   if (isAgent(user) && !canAgentSetStatus(status)) {
-    throw httpError(403, `Agents can only set these statuses: Picked Up, In Transit, Delivered, Failed.`);
+    throw httpError(403, `Agents can only set these statuses: Picked Up, Out for Delivery, Delivered, Failed.`);
   }
 
   const { data: rpcData, error: rpcError } = await supabase.rpc('update_delivery_status', {

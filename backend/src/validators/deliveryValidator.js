@@ -1,13 +1,16 @@
 const { safeTrim } = require('../utils/sanitize');
 
 const VALID_DELIVERY_STATUSES = [
-  'Pending',
+  'Order Created',
+  'Received at Hub',
+  'Ready for Dispatch',
   'Assigned',
   'Picked Up',
-  'In Transit',
+  'Out for Delivery',
   'Delivered',
   'Failed',
-  'Returned',
+  'Returned to Hub',
+  'Returned to Merchant',
 ];
 
 const VALID_PAYMENT_STATUSES = ['Paid', 'Pending', 'Failed'];

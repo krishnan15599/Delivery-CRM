@@ -46,7 +46,7 @@ export const DeliveryDetails: React.FC = () => {
 
   // Status update modal state
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [newStatus, setNewStatus] = useState<DeliveryStatus>('In Transit');
+  const [newStatus, setNewStatus] = useState<DeliveryStatus>('Out for Delivery');
   const [statusNote, setStatusNote] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
@@ -149,7 +149,7 @@ export const DeliveryDetails: React.FC = () => {
     const isCurrent = idx === delivery.timeline.length - 1;
     let eventStatus: 'completed' | 'current' | 'upcoming' | 'failed' = 'completed';
 
-    if (item.status === 'Failed' || item.status === 'Returned') {
+    if (item.status === 'Failed' || item.status === 'Returned to Hub' || item.status === 'Returned to Merchant') {
       eventStatus = 'failed';
     } else if (isCurrent) {
       eventStatus = 'current';
@@ -431,13 +431,16 @@ export const DeliveryDetails: React.FC = () => {
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value as DeliveryStatus)}
               options={[
-                { value: 'Pending', label: 'Pending' },
+                { value: 'Order Created', label: 'Order Created' },
+                { value: 'Received at Hub', label: 'Received at Hub' },
+                { value: 'Ready for Dispatch', label: 'Ready for Dispatch' },
                 { value: 'Assigned', label: 'Assigned' },
                 { value: 'Picked Up', label: 'Picked Up' },
-                { value: 'In Transit', label: 'In Transit' },
+                { value: 'Out for Delivery', label: 'Out for Delivery' },
                 { value: 'Delivered', label: 'Delivered (Complete & Collect)' },
                 { value: 'Failed', label: 'Failed (Customer Unavailable / Reject)' },
-                { value: 'Returned', label: 'Returned (Sent Back to Hub)' },
+                { value: 'Returned to Hub', label: 'Returned to Hub' },
+                { value: 'Returned to Merchant', label: 'Returned to Merchant' },
               ]}
             />
           </FormField>

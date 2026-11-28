@@ -8,7 +8,7 @@
  *   Manager  <-> Admin, Agent, Customer (deliveries in managed teams)
  *   Agent    <-> Admin, Manager, Customer (ONLY their own active assigned delivery's customer)
  *   Agent    <-> Agent : DISALLOWED
- *   Customer <-> Agent : ONLY while delivery is active ('Assigned', 'Picked Up', 'In Transit')
+ *   Customer <-> Agent : ONLY while delivery is active ('Assigned', 'Picked Up', 'Out for Delivery')
  *   Customer <-> Admin/Manager : allowed for support/complaints unless conversation is closed
  */
 
@@ -24,7 +24,7 @@ const teamIdsOf = (user) => (Array.isArray(user?.teamIds) ? user.teamIds : []);
 const ACTIVE_AGENT_CHAT_DELIVERY_STATUSES = Object.freeze([
   'Assigned',
   'Picked Up',
-  'In Transit',
+  'Out for Delivery',
 ]);
 
 const CONVERSATION_TYPES = Object.freeze({

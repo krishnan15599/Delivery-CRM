@@ -377,13 +377,16 @@ export const Deliveries: React.FC = () => {
             className="text-xs"
             options={[
               { value: 'all', label: 'All Statuses' },
-              { value: 'Pending', label: 'Pending' },
+              { value: 'Order Created', label: 'Order Created' },
+              { value: 'Received at Hub', label: 'Received at Hub' },
+              { value: 'Ready for Dispatch', label: 'Ready for Dispatch' },
               { value: 'Assigned', label: 'Assigned' },
               { value: 'Picked Up', label: 'Picked Up' },
-              { value: 'In Transit', label: 'In Transit' },
+              { value: 'Out for Delivery', label: 'Out for Delivery' },
               { value: 'Delivered', label: 'Delivered' },
               { value: 'Failed', label: 'Failed' },
-              { value: 'Returned', label: 'Returned' },
+              { value: 'Returned to Hub', label: 'Returned to Hub' },
+              { value: 'Returned to Merchant', label: 'Returned to Merchant' },
             ]}
           />
 

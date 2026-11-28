@@ -26,18 +26,21 @@ export const reportService = {
         case 'Delivered':
           delivered++;
           break;
-        case 'In Transit':
+        case 'Out for Delivery':
         case 'Picked Up':
           inTransit++;
           break;
-        case 'Pending':
+        case 'Order Created':
+        case 'Received at Hub':
+        case 'Ready for Dispatch':
         case 'Assigned':
           pending++;
           break;
         case 'Failed':
           failed++;
           break;
-        case 'Returned':
+        case 'Returned to Hub':
+        case 'Returned to Merchant':
           returned++;
           break;
       }

@@ -189,13 +189,13 @@ export const RiderDeliveryCard: React.FC<RiderDeliveryCardProps> = ({
             className="w-full py-3 text-sm font-bold bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-indigo-500/20"
             disabled={updating}
             leftIcon={<Bike className="w-4 h-4" />}
-            onClick={() => handleQuickStatus('In Transit', 'Rider is out for delivery')}
+            onClick={() => handleQuickStatus('Out for Delivery', 'Rider is out for delivery')}
           >
             {updating ? 'Updating...' : 'Start Delivery (Out for Delivery)'}
           </Button>
         )}
 
-        {delivery.status === 'In Transit' && (
+        {delivery.status === 'Out for Delivery' && (
           <div className="space-y-2">
             <Button
               variant="primary"
@@ -238,7 +238,7 @@ export const RiderDeliveryCard: React.FC<RiderDeliveryCardProps> = ({
               size="xs"
               className="w-full text-xs font-semibold"
               disabled={updating}
-              onClick={() => handleQuickStatus('In Transit', 'Rider retrying delivery')}
+              onClick={() => handleQuickStatus('Out for Delivery', 'Rider retrying delivery')}
             >
               Retry Delivery
             </Button>

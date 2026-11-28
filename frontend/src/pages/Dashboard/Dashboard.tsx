@@ -58,13 +58,13 @@ export const Dashboard: React.FC = () => {
   // Real delivery counts
   const totalCount = deliveries.length;
   const createdCount = deliveries.filter(
-    (d) => !d.agentId || d.status === 'Pending'
+    (d) => !d.agentId || ['Order Created', 'Received at Hub', 'Ready for Dispatch'].includes(d.status)
   ).length;
   const assignedCount = deliveries.filter(
-    (d) => d.agentId && (d.status === 'Assigned' || d.status === 'Pending')
+    (d) => d.agentId && d.status === 'Assigned'
   ).length;
   const inTransitCount = deliveries.filter(
-    (d) => d.status === 'In Transit' || d.status === 'Picked Up'
+    (d) => d.status === 'Out for Delivery' || d.status === 'Picked Up'
   ).length;
   const deliveredCount = deliveries.filter((d) => d.status === 'Delivered').length;
 
@@ -120,7 +120,7 @@ export const Dashboard: React.FC = () => {
       if (daysMap[dStr]) {
         matchedAny = true;
         if (del.status === 'Delivered') daysMap[dStr].delivered++;
-        else if (del.status === 'Failed' || del.status === 'Returned') daysMap[dStr].failed++;
+        else if (['Failed', 'Returned to Hub', 'Returned to Merchant'].includes(del.status)) daysMap[dStr].failed++;
         else daysMap[dStr].pending++;
       }
     });
@@ -133,7 +133,7 @@ export const Dashboard: React.FC = () => {
         const dayName = isNaN(parsedDate.getTime()) ? dStr.slice(-5) : daysOfWeek[parsedDate.getDay()];
         const cur = dateGroups.get(dStr) || { day: dayName, delivered: 0, pending: 0, failed: 0 };
         if (del.status === 'Delivered') cur.delivered++;
-        else if (del.status === 'Failed' || del.status === 'Returned') cur.failed++;
+        else if (['Failed', 'Returned to Hub', 'Returned to Merchant'].includes(del.status)) cur.failed++;
         else cur.pending++;
         dateGroups.set(dStr, cur);
       });
@@ -178,9 +178,9 @@ export const Dashboard: React.FC = () => {
 
     return deliveries.filter((d) => {
       if (statusFilter === 'delivered') return d.status === 'Delivered';
-      if (statusFilter === 'transit') return d.status === 'In Transit' || d.status === 'Picked Up';
-      if (statusFilter === 'pending') return d.status === 'Pending' || d.status === 'Assigned';
-      if (statusFilter === 'failed') return d.status === 'Failed' || d.status === 'Returned';
+      if (statusFilter === 'transit') return d.status === 'Out for Delivery' || d.status === 'Picked Up';
+      if (statusFilter === 'pending') return ['Order Created', 'Received at Hub', 'Ready for Dispatch', 'Assigned'].includes(d.status);
+      if (statusFilter === 'failed') return ['Failed', 'Returned to Hub', 'Returned to Merchant'].includes(d.status);
       return true;
     });
   }, [deliveries, statusFilter]);

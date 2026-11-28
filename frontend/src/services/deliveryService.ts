@@ -89,7 +89,7 @@ export const deliveryService = {
 
       if (filter.status && filter.status !== 'all') {
         if (filter.status.toLowerCase() === 'unassigned') {
-          items = items.filter((d) => !d.agentId || d.status === 'Pending');
+          items = items.filter((d) => !d.agentId || d.status === 'Order Created');
         } else {
           items = items.filter((d) => d.status.toLowerCase() === filter.status?.toLowerCase());
         }
@@ -197,7 +197,7 @@ export const deliveryService = {
         }
       }
 
-      const initialStatus: DeliveryStatus = input.agentId ? 'Assigned' : 'Pending';
+      const initialStatus: DeliveryStatus = input.agentId ? 'Assigned' : 'Order Created';
 
       const newDelivery: Delivery = {
         id: newId,
@@ -220,7 +220,7 @@ export const deliveryService = {
         paymentStatus: input.paymentStatus || (input.codAmount ? 'pending' : 'paid'),
         timeline: [
           {
-            status: 'Pending',
+            status: 'Order Created',
             timestamp: `${dateStr} ${timeStr}`,
             note: 'Delivery order created',
           },
