@@ -4,7 +4,7 @@
   "description": "Backend service for Delivery CRM.",
   "main": "src/server.js",
   "scripts": {
-    "test": "node tests/access.test.js && node tests/chatAccess.test.js && node tests/delivery.test.js && node tests/crud.test.js",
+    "test": "node tests/access.test.js && node tests/chatAccess.test.js && node tests/delivery.test.js && node tests/merchantIntegration.test.js && node tests/crud.test.js",
     "sync-auth-users": "node scripts/sync-auth-users.js",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"

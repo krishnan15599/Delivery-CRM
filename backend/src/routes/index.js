@@ -11,6 +11,8 @@ const platformRoutes = require('./platformRoutes');
 const notificationRoutes = require('./notificationRoutes');
 const chatRoutes = require('./chatRoutes');
 const trackingChatRoutes = require('./trackingChatRoutes');
+const merchantRoutes = require('./merchantRoutes');
+const integrationRoutes = require('./integrationRoutes');
 const { ensureDb } = require('../middlewares/ensureDb');
 const { requireAuth, requireOrgUser, rejectTenantFields } = require('../middlewares/auth');
 
@@ -22,6 +24,9 @@ router.use('/auth', authRoutes);
 
 // Option B: Public customer tracking link chat (no login, token-gated)
 router.use('/track', ensureDb, trackingChatRoutes);
+
+// Merchant e-commerce integration API (API-key gated, no user login)
+router.use('/integrations', ensureDb, integrationRoutes);
 
 // Platform owner (SuperAdmin): create / list / suspend businesses
 router.use('/platform', requireAuth, ensureDb, platformRoutes);
@@ -35,6 +40,7 @@ router.use('/agents', ...businessOnly, agentRoutes);
 router.use('/deliveries', ...businessOnly, deliveryRoutes);
 router.use('/notifications', ...businessOnly, notificationRoutes);
 router.use('/chat', ...businessOnly, chatRoutes);
+router.use('/merchants', ...businessOnly, merchantRoutes);
 
 // API Documentation / Index route
 router.get('/', (_req, res) => {
