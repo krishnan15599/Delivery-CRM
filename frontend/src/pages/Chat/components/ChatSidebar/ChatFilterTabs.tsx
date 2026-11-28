@@ -17,7 +17,8 @@ export const ChatFilterTabs: React.FC<ChatFilterTabsProps> = ({
   const tabs: { key: ChatFilter; label: string }[] = [
     { key: 'all', label: 'All' },
     { key: 'unread', label: `Unread (${unreadTotal})` },
-    { key: 'customer', label: 'Customers' },
+    { key: 'admin', label: 'Admins' },
+    { key: 'manager', label: 'Managers' },
     { key: 'agent', label: 'Agents' },
   ];
 

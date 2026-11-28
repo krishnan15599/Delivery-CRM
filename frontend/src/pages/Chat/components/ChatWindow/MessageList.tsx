@@ -4,22 +4,20 @@ import { MessageBubble } from './MessageBubble';
 
 export interface MessageListProps {
   messages: ChatMessage[];
-  participantName: string;
-  isTyping: boolean;
+  currentUserId: string;
+  typingUserName: string | null;
 }
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
-  participantName,
-  isTyping,
+  currentUserId,
+  typingUserName,
 }) => {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
-
-  const displayName = participantName.replace(/\s*\(Agent\)\s*$/i, '').trim();
+  }, [messages, typingUserName]);
 
   return (
     <div
@@ -31,12 +29,16 @@ export const MessageList: React.FC<MessageListProps> = ({
       </span>
 
       {messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} />
+        <MessageBubble
+          key={msg.id}
+          message={msg}
+          isMe={msg.senderId === currentUserId || msg.senderProfileId === currentUserId}
+        />
       ))}
 
-      {isTyping && (
+      {typingUserName && (
         <div className="self-start text-[#5E716F] text-[13px] px-1.5 py-0.5">
-          {displayName} is typing…
+          {typingUserName} is typing…
         </div>
       )}
 

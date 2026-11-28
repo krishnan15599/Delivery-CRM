@@ -18,9 +18,16 @@ const getInitials = (name: string): string =>
     .join('')
     .toUpperCase();
 
+const ROLE_SUBTITLE: Record<string, string> = {
+  admin: 'Admin',
+  manager: 'Manager',
+  agent: 'Delivery agent',
+  customer: 'Customer',
+};
+
 export const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
-  const isAgent = conversation.participantType === 'agent';
   const displayName = conversation.participantName.replace(/\s*\(Agent\)\s*$/i, '').trim();
+  const roleLabel = ROLE_SUBTITLE[conversation.participantType] || 'Staff';
 
   return (
     <header className="bg-white border-b border-[#DDE5E3] px-3.5 sm:px-5 py-3 flex items-center gap-3 shrink-0">
@@ -51,8 +58,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) 
           {displayName}
         </b>
         <small className="block text-[12px] text-[#5E716F] truncate">
-          {conversation.isOnline ? 'Online now' : 'Last seen today'} ·{' '}
-          {isAgent ? 'Delivery agent' : 'Customer'}
+          {conversation.isOnline ? 'Online now' : 'Offline'} · {roleLabel}
         </small>
       </div>
 

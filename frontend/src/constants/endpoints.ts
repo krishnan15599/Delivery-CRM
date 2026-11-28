@@ -45,6 +45,13 @@ export const API_ENDPOINTS = {
     READ: (id: string) => `/notifications/${id}/read`,
     READ_ALL: '/notifications/read-all',
   },
+  CHAT: {
+    CONTACTS: '/chat/contacts',
+    CONVERSATIONS: '/chat/conversations',
+    DIRECT: '/chat/conversations/direct',
+    MESSAGES: (id: string) => `/chat/conversations/${id}/messages`,
+    READ: (id: string) => `/chat/conversations/${id}/read`,
+  },
 } as const;
 
 export default API_ENDPOINTS;

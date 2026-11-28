@@ -3,11 +3,10 @@ import type { ChatMessage } from '../../../../types/chat';
 
 export interface MessageBubbleProps {
   message: ChatMessage;
+  isMe: boolean;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
-  const isMe = message.senderRole === 'admin';
-
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMe }) => {
   return (
     <div
       className={`max-w-[min(520px,78%)] px-[13px] py-[9px] text-[14px] leading-[1.5] break-words border ${

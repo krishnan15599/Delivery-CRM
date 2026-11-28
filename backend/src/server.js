@@ -1,6 +1,7 @@
 const app = require('./app');
 const env = require('./config/env');
 const { isDbConfigured } = require('./config/supabase');
+const { initSocketServer } = require('./realtime/socketServer');
 
 const server = app.listen(env.PORT, () => {
   console.log(`===============================================`);
@@ -18,6 +19,8 @@ const server = app.listen(env.PORT, () => {
     console.warn('⚠️  Note: Please configure backend/.env with SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   }
 });
+
+initSocketServer(server);
 
 module.exports = server;
 

@@ -1,8 +1,9 @@
 import React from 'react';
-import type { Conversation } from '../../../../types/chat';
+import type { Conversation, ParticipantType, SenderRole } from '../../../../types/chat';
 
 export interface ChatListItemProps {
   conversation: Conversation;
+  currentUserRole?: SenderRole;
   isActive: boolean;
   onSelect: (id: string) => void;
 }
@@ -18,14 +19,23 @@ const getInitials = (name: string): string =>
     .join('')
     .toUpperCase();
 
+const ROLE_BADGE_MAP: Record<ParticipantType, { label: string; classes: string }> = {
+  admin: { label: 'Admin', classes: 'bg-[#DDF3E7] text-[#1E8E5A]' },
+  manager: { label: 'Manager', classes: 'bg-[#E0EAFB] text-[#2563C9]' },
+  agent: { label: 'Agent', classes: 'bg-[#FCEFCF] text-[#A66A00]' },
+  customer: { label: 'Customer', classes: 'bg-[#E0EAFB] text-[#2563C9]' },
+};
+
 export const ChatListItem: React.FC<ChatListItemProps> = ({
   conversation,
+  currentUserRole,
   isActive,
   onSelect,
 }) => {
   const hasUnread = conversation.unreadCount > 0;
-  const isAgent = conversation.participantType === 'agent';
   const displayName = conversation.participantName.replace(/\s*\(Agent\)\s*$/i, '').trim();
+  const badge = ROLE_BADGE_MAP[conversation.participantType] || ROLE_BADGE_MAP.agent;
+  const isSentByMe = Boolean(currentUserRole && conversation.lastMessageRole === currentUserRole);
 
   return (
     <button
@@ -51,13 +61,9 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       <div className="min-w-0">
         <div className="font-semibold text-[14px] text-[#10201F] truncate">
           <span
-            className={`inline-block text-[11px] font-semibold rounded-[6px] px-1.5 mr-1.5 ${
-              isAgent
-                ? 'bg-[#FCEFCF] text-[#A66A00]'
-                : 'bg-[#E0EAFB] text-[#2563C9]'
-            }`}
+            className={`inline-block text-[11px] font-semibold rounded-[6px] px-1.5 mr-1.5 ${badge.classes}`}
           >
-            {isAgent ? 'Agent' : 'Customer'}
+            {badge.label}
           </span>
           {displayName}
         </div>
@@ -66,8 +72,8 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
             hasUnread ? 'text-[#10201F] font-medium' : 'text-[#5E716F]'
           }`}
         >
-          {conversation.lastMessageRole === 'admin' ? 'You: ' : ''}
-          {conversation.lastMessage || 'No messages yet'}
+          {isSentByMe ? 'You: ' : ''}
+          {conversation.lastMessage || 'Start a conversation'}
         </div>
       </div>
 

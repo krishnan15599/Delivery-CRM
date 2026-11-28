@@ -9,8 +9,9 @@ import { EmptyChatState } from './EmptyChatState';
 export interface ChatWindowProps {
   conversation?: Conversation;
   messages: ChatMessage[];
+  currentUserId: string;
   inputText: string;
-  isTyping: boolean;
+  typingUserName: string | null;
   quickReplies: string[];
   isVisibleOnMobile: boolean;
   onBack: () => void;
@@ -21,8 +22,9 @@ export interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   conversation,
   messages,
+  currentUserId,
   inputText,
-  isTyping,
+  typingUserName,
   quickReplies,
   isVisibleOnMobile,
   onBack,
@@ -42,8 +44,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <DeliveryContextBar conversation={conversation} />
           <MessageList
             messages={messages}
-            participantName={conversation.participantName}
-            isTyping={isTyping}
+            currentUserId={currentUserId}
+            typingUserName={typingUserName}
           />
           <ChatComposer
             value={inputText}

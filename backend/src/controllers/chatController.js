@@ -1,6 +1,15 @@
 const chatService = require('../services/chatService');
 const { sendSuccess } = require('../utils/apiResponse');
 
+const listStaffContacts = async (req, res, next) => {
+  try {
+    const data = await chatService.listStaffContacts(req.user);
+    return sendSuccess(res, 200, 'Staff contacts retrieved', data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const listConversations = async (req, res, next) => {
   try {
     const data = await chatService.listConversations(req.user, { type: req.query.type });
@@ -46,6 +55,15 @@ const sendStaffMessage = async (req, res, next) => {
   }
 };
 
+const markConversationRead = async (req, res, next) => {
+  try {
+    const data = await chatService.markConversationRead(req.user, req.params.id);
+    return sendSuccess(res, 200, 'Conversation marked as read', data);
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const updateConversationStatus = async (req, res, next) => {
   try {
     const data = await chatService.updateConversationStatus(req.user, req.params.id, req.body.status);
@@ -75,11 +93,13 @@ const sendCustomerMessage = async (req, res, next) => {
 };
 
 module.exports = {
+  listStaffContacts,
   listConversations,
   getOrCreateDeliveryConversation,
   getOrCreateDirectStaffConversation,
   getStaffConversationMessages,
   sendStaffMessage,
+  markConversationRead,
   updateConversationStatus,
   getCustomerTrackingChat,
   sendCustomerMessage,

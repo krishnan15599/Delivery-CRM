@@ -11,11 +11,62 @@ const {
   canCustomerSendMessage,
   getChatCapabilities,
 } = require('../utils/chatAccess');
+const {
+  emitToConversation,
+  emitToUser,
+  isUserOnline,
+} = require('../realtime/socketServer');
 
 const senderRoleFromUser = (user) => {
   if (isAdmin(user)) return 'admin';
   if (isManager(user)) return 'manager';
   return 'agent';
+};
+
+/**
+ * Verify a staff user can access a conversation (used by Socket.IO join).
+ */
+const assertConversationAccess = async (user, conversationId) => {
+  const { data: conversation, error } = await supabase
+    .from('conversations')
+    .select('*')
+    .eq('id', conversationId)
+    .single();
+
+  if (error || !conversation) throw httpError(404, 'Conversation not found.');
+  if (!canSeeConversation(user, conversation)) {
+    throw httpError(403, 'You do not have access to this conversation.');
+  }
+  return conversation;
+};
+
+/**
+ * List eligible staff contacts the current user can chat with (Admin/Manager/Agent).
+ * Agent <-> Agent is filtered out by canStartDirectStaffChat.
+ */
+const listStaffContacts = async (user) => {
+  if (!user || !user.organizationId) return [];
+
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select('id, name, role, phone, avatar_url, status, organization_id')
+    .eq('organization_id', user.organizationId)
+    .neq('id', user.id)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+
+  return (profiles || [])
+    .filter((p) => p.status !== 'Inactive')
+    .filter((p) => canStartDirectStaffChat(user, { ...p, organizationId: p.organization_id }))
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      role: p.role,
+      phone: p.phone || null,
+      avatarUrl: p.avatar_url || null,
+      isOnline: isUserOnline(p.id),
+    }));
 };
 
 /**
@@ -51,7 +102,45 @@ const listConversations = async (user, filters = {}) => {
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).filter((c) => canSeeConversation(user, c));
+
+  const visible = (data || []).filter((c) => canSeeConversation(user, c));
+
+  // Enrich direct_staff conversations with the OTHER participant's profile & online status
+  const otherUserIds = [
+    ...new Set(
+      visible
+        .filter((c) => c.conversation_type === CONVERSATION_TYPES.DIRECT_STAFF)
+        .map((c) => (c.staff_user_a === user.id ? c.staff_user_b : c.staff_user_a))
+        .filter(Boolean)
+    ),
+  ];
+
+  let profileMap = new Map();
+  if (otherUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, name, role, phone, avatar_url')
+      .in('id', otherUserIds);
+    (profiles || []).forEach((p) => profileMap.set(p.id, p));
+  }
+
+  return visible.map((c) => {
+    if (c.conversation_type !== CONVERSATION_TYPES.DIRECT_STAFF) {
+      return c;
+    }
+    const otherId = c.staff_user_a === user.id ? c.staff_user_b : c.staff_user_a;
+    const other = profileMap.get(otherId);
+    if (!other) return c;
+    return {
+      ...c,
+      participant_id: other.id,
+      participant_name: other.name,
+      participant_type: other.role.toLowerCase(), // 'admin' | 'manager' | 'agent'
+      participant_phone: other.phone || null,
+      participant_avatar: other.avatar_url || null,
+      is_online: isUserOnline(other.id),
+    };
+  });
 };
 
 /**
@@ -148,7 +237,17 @@ const getOrCreateDirectStaffConversation = async (user, targetProfileId) => {
     .maybeSingle();
 
   if (existing) {
-    return { conversation: existing, capabilities: getChatCapabilities('staff', null, existing) };
+    return {
+      conversation: {
+        ...existing,
+        participant_id: target.id,
+        participant_name: target.name,
+        participant_type: target.role.toLowerCase(),
+        participant_phone: target.phone || null,
+        is_online: isUserOnline(target.id),
+      },
+      capabilities: getChatCapabilities('staff', null, existing),
+    };
   }
 
   const now = new Date().toISOString();
@@ -175,7 +274,19 @@ const getOrCreateDirectStaffConversation = async (user, targetProfileId) => {
     .single();
 
   if (createErr) throw createErr;
-  return { conversation: created, capabilities: getChatCapabilities('staff', null, created) };
+
+  const enriched = {
+    ...created,
+    participant_id: target.id,
+    participant_name: target.name,
+    participant_type: target.role.toLowerCase(),
+    participant_phone: target.phone || null,
+    is_online: isUserOnline(target.id),
+  };
+
+  emitToUser(target.id, 'chat:conversation_created', { conversationId: created.id });
+
+  return { conversation: enriched, capabilities: getChatCapabilities('staff', null, enriched) };
 };
 
 /**
@@ -287,7 +398,40 @@ const sendStaffMessage = async (user, conversationId, { text, visibility = MESSA
     })
     .eq('id', conversation.id);
 
+  // Real-time broadcast via Socket.IO
+  emitToConversation(conversation.id, 'chat:message', createdMsg);
+
+  const convUpdate = {
+    conversationId: conversation.id,
+    lastMessage: cleanText,
+    lastMessageRole: senderRole,
+    lastMessageTime: now,
+    senderId: user.id,
+  };
+  if (conversation.staff_user_a) emitToUser(conversation.staff_user_a, 'chat:conversation_updated', convUpdate);
+  if (conversation.staff_user_b) emitToUser(conversation.staff_user_b, 'chat:conversation_updated', convUpdate);
+
   return createdMsg;
+};
+
+/**
+ * Mark unread messages in a conversation as read for staff.
+ */
+const markConversationRead = async (user, conversationId) => {
+  const conversation = await assertConversationAccess(user, conversationId);
+
+  await supabase
+    .from('chat_messages')
+    .update({ read: true, read_by_staff: true })
+    .eq('conversation_id', conversation.id)
+    .neq('sender_profile_id', user.id);
+
+  await supabase
+    .from('conversations')
+    .update({ unread_count: 0 })
+    .eq('id', conversation.id);
+
+  return { conversationId: conversation.id, unreadCount: 0 };
 };
 
 /**
@@ -465,11 +609,14 @@ const sendCustomerMessage = async (trackingToken, { text }) => {
 };
 
 module.exports = {
+  assertConversationAccess,
+  listStaffContacts,
   listConversations,
   getOrCreateDeliveryConversation,
   getOrCreateDirectStaffConversation,
   getStaffConversationMessages,
   sendStaffMessage,
+  markConversationRead,
   updateConversationStatus,
   getCustomerTrackingChat,
   sendCustomerMessage,
