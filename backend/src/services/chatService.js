@@ -103,7 +103,9 @@ const listConversations = async (user, filters = {}) => {
   const { data, error } = await query;
   if (error) throw error;
 
-  const visible = (data || []).filter((c) => canSeeConversation(user, c));
+  const visible = (data || [])
+    .filter((c) => !(c.conversation_type === CONVERSATION_TYPES.DELIVERY && !c.delivery_id))
+    .filter((c) => canSeeConversation(user, c));
 
   // Enrich direct_staff conversations with the OTHER participant's profile & online status
   const otherUserIds = [

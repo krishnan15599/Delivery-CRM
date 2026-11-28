@@ -110,9 +110,10 @@ class SocketChatService {
     return res.data.data || [];
   }
 
-  async getConversations(): Promise<Conversation[]> {
+  async getConversations(type?: 'delivery' | 'direct_staff'): Promise<Conversation[]> {
     const res = await api.get<{ data: Record<string, unknown>[] }>(
-      API_ENDPOINTS.CHAT.CONVERSATIONS
+      API_ENDPOINTS.CHAT.CONVERSATIONS,
+      type ? { params: { type } } : undefined
     );
     return (res.data.data || []).map(mapConversation);
   }

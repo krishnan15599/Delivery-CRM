@@ -1,17 +1,19 @@
 import React from 'react';
-import type { ParticipantType } from '../../../../types/chat';
+import type { ParticipantType, SenderRole } from '../../../../types/chat';
 
 export type ChatFilter = 'all' | 'unread' | ParticipantType;
 
 export interface ChatFilterTabsProps {
   activeFilter: ChatFilter;
   unreadTotal: number;
+  currentUserRole?: SenderRole;
   onChangeFilter: (filter: ChatFilter) => void;
 }
 
 export const ChatFilterTabs: React.FC<ChatFilterTabsProps> = ({
   activeFilter,
   unreadTotal,
+  currentUserRole,
   onChangeFilter,
 }) => {
   const tabs: { key: ChatFilter; label: string }[] = [
@@ -19,7 +21,7 @@ export const ChatFilterTabs: React.FC<ChatFilterTabsProps> = ({
     { key: 'unread', label: `Unread (${unreadTotal})` },
     { key: 'admin', label: 'Admins' },
     { key: 'manager', label: 'Managers' },
-    { key: 'agent', label: 'Agents' },
+    ...(currentUserRole === 'agent' ? [] : [{ key: 'agent' as ChatFilter, label: 'Agents' }]),
   ];
 
   return (

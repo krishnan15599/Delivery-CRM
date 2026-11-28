@@ -45,7 +45,10 @@ export const Chat: React.FC = () => {
     let isMounted = true;
     chatService.connect();
 
-    Promise.all([chatService.getConversations(), chatService.getStaffContacts()])
+    Promise.all([
+      chatService.getConversations('direct_staff'),
+      chatService.getStaffContacts(),
+    ])
       .then(([convs, contacts]) => {
         if (!isMounted) return;
         setConversations(convs);
@@ -71,7 +74,7 @@ export const Chat: React.FC = () => {
       setConversations((prev) => {
         const exists = prev.some((c) => c.id === evt.conversationId);
         if (!exists) {
-          void chatService.getConversations().then((fresh) => setConversations(fresh));
+          void chatService.getConversations('direct_staff').then((fresh) => setConversations(fresh));
           return prev;
         }
         const isCurrent = activeConvIdRef.current === evt.conversationId;

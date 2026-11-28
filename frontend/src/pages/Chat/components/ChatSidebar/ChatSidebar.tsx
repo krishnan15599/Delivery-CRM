@@ -29,6 +29,12 @@ const getInitials = (name: string): string =>
     .join('')
     .toUpperCase();
 
+const CONTACT_ROLE_BADGE: Record<StaffContact['role'], string> = {
+  Admin: 'bg-[#DDF3E7] text-[#1E8E5A]',
+  Manager: 'bg-[#E0EAFB] text-[#2563C9]',
+  Agent: 'bg-[#FCEFCF] text-[#A66A00]',
+};
+
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   conversations,
   staffContacts,
@@ -46,6 +52,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [showContacts, setShowContacts] = useState(false);
 
   const filteredContacts = staffContacts.filter((c) => {
+    if (activeFilter !== 'all' && activeFilter !== 'unread') {
+      if (c.role.toLowerCase() !== activeFilter) return false;
+    }
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return `${c.name} ${c.role}`.toLowerCase().includes(q);
@@ -55,6 +64,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     await onStartDirectChat(contactId);
     setShowContacts(false);
   };
+
+  const showQuickContacts = !showContacts && conversations.length === 0 && activeFilter !== 'unread';
 
   return (
     <section
@@ -86,48 +97,61 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={showContacts ? 'Search staff by name or role' : 'Search name, order or message'}
+            placeholder={showContacts ? 'Search staff by name or role' : 'Search staff or message'}
             aria-label="Search chats"
             className="border-0 bg-transparent outline-none flex-1 text-[14px] text-[#10201F] placeholder:text-[#5E716F] min-w-0"
           />
         </label>
 
-        {!showContacts && (
-          <ChatFilterTabs
-            activeFilter={activeFilter}
-            unreadTotal={unreadTotal}
-            onChangeFilter={onFilterChange}
-          />
-        )}
+        <ChatFilterTabs
+          activeFilter={activeFilter}
+          unreadTotal={unreadTotal}
+          currentUserRole={currentUserRole}
+          onChangeFilter={onFilterChange}
+        />
       </div>
 
       {/* Scrollable List: Staff Contacts Picker OR Conversations */}
       <div className="flex-1 overflow-y-auto px-2 pt-1 pb-3 space-y-0.5">
-        {showContacts ? (
+        {showContacts || showQuickContacts ? (
           filteredContacts.length > 0 ? (
-            filteredContacts.map((contact) => (
-              <button
-                key={contact.id}
-                type="button"
-                onClick={() => handlePickContact(contact.id)}
-                className="grid grid-cols-[auto_1fr] items-center gap-3 w-full text-left px-2.5 py-[11px] rounded-[12px] hover:bg-[#F2F5F4] transition-colors cursor-pointer"
-              >
-                <span className="relative w-[38px] h-[38px] rounded-full bg-[#2B5B62] text-white flex items-center justify-center font-semibold text-[13px] shrink-0">
-                  {getInitials(contact.name)}
-                  {contact.isOnline && (
-                    <span className="absolute right-0 bottom-0 w-[11px] h-[11px] rounded-full bg-[#1E8E5A] border-2 border-white" />
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <div className="font-semibold text-[14px] text-[#10201F] truncate">
-                    {contact.name}
-                  </div>
-                  <div className="text-[12px] text-[#5E716F]">
-                    {contact.role} · {contact.isOnline ? 'Online' : 'Offline'}
-                  </div>
+            <>
+              {showQuickContacts && (
+                <div className="px-2.5 pt-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E716F]">
+                  Staff Directory — click to chat
                 </div>
-              </button>
-            ))
+              )}
+              {filteredContacts.map((contact) => (
+                <button
+                  key={contact.id}
+                  type="button"
+                  onClick={() => handlePickContact(contact.id)}
+                  className="grid grid-cols-[auto_1fr] items-center gap-3 w-full text-left px-2.5 py-[11px] rounded-[12px] hover:bg-[#F2F5F4] transition-colors cursor-pointer"
+                >
+                  <span className="relative w-[38px] h-[38px] rounded-full bg-[#2B5B62] text-white flex items-center justify-center font-semibold text-[13px] shrink-0">
+                    {getInitials(contact.name)}
+                    {contact.isOnline && (
+                      <span className="absolute right-0 bottom-0 w-[11px] h-[11px] rounded-full bg-[#1E8E5A] border-2 border-white" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-[14px] text-[#10201F] truncate">
+                      <span
+                        className={`inline-block text-[11px] font-semibold rounded-[6px] px-1.5 mr-1.5 ${
+                          CONTACT_ROLE_BADGE[contact.role]
+                        }`}
+                      >
+                        {contact.role}
+                      </span>
+                      {contact.name}
+                    </div>
+                    <div className="text-[12px] text-[#5E716F]">
+                      {contact.isOnline ? 'Online now' : 'Offline'}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </>
           ) : (
             <div className="px-6 py-7 text-center text-[14px] text-[#5E716F]">
               No eligible staff members found.
@@ -145,7 +169,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           ))
         ) : (
           <div className="px-6 py-7 text-center text-[14px] text-[#5E716F]">
-            No chats yet. Click <b>+</b> above to message a colleague.
+            No unread chats found.
           </div>
         )}
       </div>
