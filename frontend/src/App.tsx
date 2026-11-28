@@ -21,6 +21,7 @@ const Merchants = lazy(() => import('./pages/Merchants/Merchants'));
 const HubScan = lazy(() => import('./pages/HubScan/HubScan'));
 const Login = lazy(() => import('./pages/Login/Login'));
 const CustomerTracking = lazy(() => import('./pages/Track/CustomerTracking'));
+const DemoShop = lazy(() => import('./pages/DemoShop/DemoShop'));
 const Platform = lazy(() => import('./pages/Platform/Platform'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const ComponentShowcase = lazy(() =>
@@ -80,9 +81,10 @@ function App() {
                 <BrowserRouter>
                   <Suspense fallback={<PageLoadingFallback />}>
                     <Routes>
-                      {/* Public Auth & Customer Tracking Routes */}
+                      {/* Public Auth, Customer Tracking & Demo Shop Routes */}
                       <Route path="/login" element={<Login />} />
                       <Route path="/track/:trackingToken" element={<CustomerTracking />} />
+                      <Route path="/demo-shop" element={<DemoShop />} />
 
                       {/* Authenticated Dashboard Routes */}
                       <Route

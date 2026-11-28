@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Store,
   Plus,
@@ -8,6 +9,7 @@ import {
   Trash2,
   ShieldAlert,
   RefreshCw,
+  ShoppingBag,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -216,9 +218,16 @@ export const Merchants: React.FC = () => {
         title="Merchants & E-Commerce Stores"
         subtitle="Manage partner shops sending orders into your courier hubs and generate their API keys."
         actions={
-          <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />} onClick={openCreateModal}>
-            Add Merchant
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link to="/demo-shop">
+              <Button variant="outline" leftIcon={<ShoppingBag className="w-4 h-4" />}>
+                Open Demo Shop
+              </Button>
+            </Link>
+            <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />} onClick={openCreateModal}>
+              Add Merchant
+            </Button>
+          </div>
         }
       />
 
