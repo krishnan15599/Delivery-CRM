@@ -21,7 +21,13 @@ const getOrderStatus = async (req, res) => {
   return sendSuccess(res, 200, 'Order status retrieved', order);
 };
 
+const createDemoOrder = async (req, res) => {
+  const result = await integrationService.createDemoShopOrder(req.body);
+  return sendSuccess(res, 201, 'Order placed successfully', result);
+};
+
 module.exports = {
   createOrder,
   getOrderStatus,
+  createDemoOrder,
 };

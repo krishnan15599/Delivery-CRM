@@ -10,14 +10,11 @@ import {
   Minus,
   Trash2,
   X,
-  Key,
   CheckCircle2,
   ExternalLink,
   Truck,
   ShieldCheck,
   Sparkles,
-  Settings2,
-  Package,
 } from 'lucide-react';
 import { Button, Input, FormField, Modal } from '../../components/common';
 
@@ -125,19 +122,14 @@ const PRODUCTS: Product[] = [
 ];
 
 const CATEGORIES = ['All', 'Electronics', 'Apparel', 'Home & Kitchen', 'Beauty'];
-const API_KEY_STORAGE = 'delivery_crm_demo_shop_api_key';
 
 export const DemoShop: React.FC = () => {
-  const [apiKey, setApiKey] = useState<string>(
-    () => localStorage.getItem(API_KEY_STORAGE) || ''
-  );
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState<CartItem[]>([{ product: PRODUCTS[0], qty: 1 }]);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
 
   const [customerName, setCustomerName] = useState('Karthik Subramanian');
   const [customerPhone, setCustomerPhone] = useState('+91 98401 11223');
@@ -149,11 +141,6 @@ export const DemoShop: React.FC = () => {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrderResult | null>(null);
-
-  const handleApiKeyChange = (val: string) => {
-    setApiKey(val);
-    localStorage.setItem(API_KEY_STORAGE, val);
-  };
 
   const filteredProducts = useMemo(() => {
     return PRODUCTS.filter((p) => {
@@ -208,10 +195,6 @@ export const DemoShop: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    if (!apiKey.trim()) {
-      setError('Merchant API Key is required. Click "API Settings" above or paste it below.');
-      return;
-    }
     if (cart.length === 0) {
       setError('Your cart is empty.');
       return;
@@ -229,7 +212,7 @@ export const DemoShop: React.FC = () => {
     try {
       setPlacing(true);
       const res = await shopApi.post<{ data: PlacedOrderResult }>(
-        '/integrations/orders',
+        '/demo-shop/orders',
         {
           externalOrderId,
           customerName: customerName.trim(),
@@ -243,9 +226,6 @@ export const DemoShop: React.FC = () => {
           codAmount: paymentMode === 'COD' ? totalAmount : 0,
           paymentStatus: paymentMode === 'COD' ? 'Pending' : 'Paid',
           notes: 'Order placed via FreshKart Storefront',
-        },
-        {
-          headers: { 'x-api-key': apiKey.trim() },
         }
       );
 
@@ -255,7 +235,7 @@ export const DemoShop: React.FC = () => {
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          'Failed to place order. Please check your Merchant API Key.'
+          'Unable to place order right now. Please try again.'
       );
     } finally {
       setPlacing(false);
@@ -301,23 +281,6 @@ export const DemoShop: React.FC = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setIsApiModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-              title="Configure Merchant API Key"
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  apiKey.trim() ? 'bg-emerald-500' : 'bg-amber-400'
-                }`}
-              />
-              <Settings2 className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">
-                {apiKey.trim() ? 'Store Connected' : 'Connect Store Key'}
-              </span>
-            </button>
-
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
@@ -628,31 +591,13 @@ export const DemoShop: React.FC = () => {
                   </Button>
                 </Link>
               )}
-              <Link to="/hub-scan">
-                <Button variant="outline" leftIcon={<Package className="w-4 h-4" />}>
-                  Open Hub Scan
-                </Button>
-              </Link>
+              <Button variant="outline" onClick={() => setIsCheckoutOpen(false)}>
+                Continue Shopping
+              </Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handlePlaceOrder} className="space-y-4">
-            {!apiKey.trim() && (
-              <FormField
-                label="Merchant API Key"
-                required
-                helperText="Paste your key from CRM → Merchants → API Keys"
-              >
-                <Input
-                  value={apiKey}
-                  onChange={(e) => handleApiKeyChange(e.target.value)}
-                  placeholder="dk_live_..."
-                  leftIcon={<Key className="w-4 h-4 text-slate-400" />}
-                  className="font-mono text-xs"
-                  required
-                />
-              </FormField>
-            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField label="Full Name" required>
@@ -733,35 +678,6 @@ export const DemoShop: React.FC = () => {
             </div>
           </form>
         )}
-      </Modal>
-
-      {/* Store API Key Settings Modal */}
-      <Modal
-        isOpen={isApiModalOpen}
-        onClose={() => setIsApiModalOpen(false)}
-        title="Storefront API Connection"
-        description="Link this demo store to a Merchant in your Delivery CRM."
-        size="md"
-      >
-        <div className="space-y-4">
-          <FormField
-            label="Merchant API Key"
-            helperText="Generated in Delivery CRM → Merchants → API Keys"
-          >
-            <Input
-              value={apiKey}
-              onChange={(e) => handleApiKeyChange(e.target.value)}
-              placeholder="dk_live_..."
-              leftIcon={<Key className="w-4 h-4 text-slate-400" />}
-              className="font-mono text-xs"
-            />
-          </FormField>
-          <div className="flex justify-end">
-            <Button variant="primary" size="sm" onClick={() => setIsApiModalOpen(false)}>
-              Save &amp; Continue Shopping
-            </Button>
-          </div>
-        </div>
       </Modal>
     </div>
   );

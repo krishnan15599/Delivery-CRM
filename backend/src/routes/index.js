@@ -13,6 +13,9 @@ const chatRoutes = require('./chatRoutes');
 const trackingChatRoutes = require('./trackingChatRoutes');
 const merchantRoutes = require('./merchantRoutes');
 const integrationRoutes = require('./integrationRoutes');
+const integrationController = require('../controllers/integrationController');
+const { validateBody } = require('../middlewares/validate');
+const { validateIntegrationOrder } = require('../validators/integrationValidator');
 const { ensureDb } = require('../middlewares/ensureDb');
 const { requireAuth, requireOrgUser, rejectTenantFields } = require('../middlewares/auth');
 
@@ -27,6 +30,9 @@ router.use('/track', ensureDb, trackingChatRoutes);
 
 // Merchant e-commerce integration API (API-key gated, no user login)
 router.use('/integrations', ensureDb, integrationRoutes);
+
+// Internal Demo Storefront checkout endpoint (resolves store merchant server-side)
+router.post('/demo-shop/orders', ensureDb, validateBody(validateIntegrationOrder), integrationController.createDemoOrder);
 
 // Platform owner (SuperAdmin): create / list / suspend businesses
 router.use('/platform', requireAuth, ensureDb, platformRoutes);

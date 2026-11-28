@@ -1,6 +1,7 @@
 const { supabase } = require('../config/supabase');
 const { generateId, generateTrackingNumber } = require('../utils/idGenerator');
 const { httpError } = require('../utils/access');
+const { hashApiKey } = require('./merchantService');
 
 const resolveIntegrationTeamId = async (organizationId, requestedTeamId, merchantDefaultTeamId) => {
   const candidate = requestedTeamId || merchantDefaultTeamId;
@@ -129,7 +130,84 @@ const getOrderByTrackingNumber = async (integration, trackingNumber) => {
   };
 };
 
+const resolveDemoMerchant = async () => {
+  if (process.env.DEMO_MERCHANT_API_KEY) {
+    const keyHash = hashApiKey(process.env.DEMO_MERCHANT_API_KEY.trim());
+    const { data: keyRow } = await supabase
+      .from('api_keys')
+      .select('organization_id, merchant_id, status')
+      .eq('key_hash', keyHash)
+      .eq('status', 'Active')
+      .maybeSingle();
+
+    if (keyRow) {
+      const { data: merchant } = await supabase
+        .from('merchants')
+        .select('*')
+        .eq('id', keyRow.merchant_id)
+        .eq('status', 'Active')
+        .maybeSingle();
+      if (merchant) return { organizationId: keyRow.organization_id, merchant };
+    }
+  }
+
+  // Fallback: first active merchant
+  const { data: merchants } = await supabase
+    .from('merchants')
+    .select('*')
+    .eq('status', 'Active')
+    .order('created_at', { ascending: true })
+    .limit(1);
+
+  if (merchants && merchants.length > 0) {
+    return { organizationId: merchants[0].organization_id, merchant: merchants[0] };
+  }
+
+  // Auto-provision a FreshKart Demo Store merchant under the first active organization
+  const { data: orgs } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('status', 'Active')
+    .order('created_at', { ascending: true })
+    .limit(1);
+
+  if (!orgs || orgs.length === 0) {
+    throw httpError(400, 'No active organization found to receive demo orders.');
+  }
+  const orgId = orgs[0].id;
+  const defaultTeamId = await resolveIntegrationTeamId(orgId, null, null);
+  const now = new Date().toISOString();
+
+  const { data: createdMerchant, error: mErr } = await supabase
+    .from('merchants')
+    .insert({
+      id: generateId('MER'),
+      organization_id: orgId,
+      name: 'FreshKart Demo Store',
+      contact_name: 'Store Ops',
+      phone: '+91 98400 00000',
+      pickup_address: '12, Guindy Industrial Estate, Chennai',
+      city: 'Chennai',
+      pincode: '600032',
+      default_team_id: defaultTeamId,
+      status: 'Active',
+      created_at: now,
+      updated_at: now,
+    })
+    .select('*')
+    .single();
+
+  if (mErr) throw mErr;
+  return { organizationId: orgId, merchant: createdMerchant };
+};
+
+const createDemoShopOrder = async (input) => {
+  const integration = await resolveDemoMerchant();
+  return createOrderFromMerchant(integration, input);
+};
+
 module.exports = {
   createOrderFromMerchant,
   getOrderByTrackingNumber,
+  createDemoShopOrder,
 };
